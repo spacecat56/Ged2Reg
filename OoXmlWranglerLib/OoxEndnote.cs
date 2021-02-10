@@ -25,14 +25,8 @@ namespace OoXmlWranglerLib
         {
             id = (doc.MaxEndnoteId() + 1);
         }
-        //internal override bool ApplyToDocument()
-        //{
-        //    return doc.Apply(this);
-        //}
-        internal override OoxHyperlink BuildHyperlink(Fragment fragment)
+         internal override OoxHyperlink BuildHyperlink(Fragment fragment)
         {
-            //Hyperlink h = doc.AddHyperlinkToFootnotes(fragment.Content, new Uri(fragment.Content));
-            //OoxHyperlink h = doc.AddHyperlink(this, fragment.Content, new Uri(fragment.Content));
             OoxHyperlink h = new OoxHyperlink()
             {
                 Anchor = fragment.Content,

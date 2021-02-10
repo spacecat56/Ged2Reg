@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.IO.Packaging;
 using System.Linq;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml;
@@ -59,7 +57,6 @@ namespace OoXmlWranglerLib
                 _mainPart = _doc.AddMainDocumentPart();
                 _mainPart.Document = new Document();
                 _body = _mainPart.Document.AppendChild(new Body());
-                //CreateFootnotePart();
                 CreateStylePart();
             }
             else
@@ -100,11 +97,12 @@ namespace OoXmlWranglerLib
             {
                 // final sectPr goes directly in the body
                 // any earlier ones go in the final para
-                //Paragraph p = new Paragraph();
-                //p.Append(new ParagraphProperties(_sectionProperties));
-                //p.Append(_sectionProperties);
                 _body.Append(_sectionProperties);
             }
+
+            if (_corePropsState == CorePropsState.Open)
+                CloseCoreProps();
+
             _doc.Save();
         }
 
@@ -133,42 +131,7 @@ namespace OoXmlWranglerLib
             }
         }
 
-        //public bool OpenCoreProps()
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //public void CloseCoreProps()
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //public void SetCoreProperty(string name, string value)
-        //{
-        //    if (string.IsNullOrEmpty(name))
-        //        return;
-
-        //    if (_doc.CoreFilePropertiesPart == null)
-        //        _doc.AddCoreFilePropertiesPart();
-        //    if (name.IndexOf("title", StringComparison.Ordinal) >= 0)
-        //        _doc.Package.PackageProperties.Title = value;
-        //    else if (name.IndexOf("author", StringComparison.Ordinal) >= 0)
-        //        _doc.Package.PackageProperties.Creator = value;
-        //}
-
         #region CorePropertiesLashup
-        /*
-         * The core properties "features" in the Classic branch are a hopeless mess...
-         * it works once, IFF certain other parts do not exist.
-         * 
-         * This is an attempt to make it work without all the effort of fixing the
-         * overall structure of the class... and, critically, without copying (without
-         * reference to) the Xceed branch....
-         *
-         * ...and, it works.  Once per doc.  
-         *
-         */
-
         internal enum CorePropsState
         {
             None,
@@ -300,20 +263,12 @@ namespace OoXmlWranglerLib
             _body.Append(brk);
         }
 
-
         public OoxParagraph InsertParagraph(string text = null)
         {
             _para = new OoxParagraph(_body.AppendChild(new Paragraph()));
 
             return _para.Append(text);
-
         }
-
-        //public bool Apply(Footnote f)
-        //{
-        //    _footnotesPart.Footnotes.AppendChild(f);
-        //    return false;
-        //}
 
         int maxFootnoteId = 0;
         int maxEndnoteId = 0;
@@ -327,11 +282,6 @@ namespace OoXmlWranglerLib
         {
             return maxEndnoteId++;
         }
-
-        //internal OoxHyperlink AddHyperlink(OoxFootnote ooxFootnote, string content, Uri uri)
-        //{
-        //    return null; // 
-        //}
 
         public void Dispose()
         {
@@ -377,7 +327,6 @@ namespace OoXmlWranglerLib
         {
             return _footnotesPart?.Footnotes.LongCount() > 2;
         }
-
         public HyperlinkRelationship AddHyperlinkRelationship(Uri uri, bool external, OoxHyperlink.LinkLocation inFootnote)
         {
             switch (inFootnote)

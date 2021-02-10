@@ -25,7 +25,6 @@ namespace OoXmlWranglerLib
             if (InsertHyperlink)
                 sb.Append("\\h ");
 
-            // todo: Xml = Build(sb.ToString(), ContentText);
             FieldText = sb.ToString();
             return this;
         }

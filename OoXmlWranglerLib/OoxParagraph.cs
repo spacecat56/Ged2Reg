@@ -1,9 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Wordprocessing;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DocumentFormat.OpenXml;
 
 namespace OoXmlWranglerLib
@@ -66,12 +62,6 @@ namespace OoXmlWranglerLib
                 MyParagraph.ParagraphProperties = new ParagraphProperties();
             pp.AppendChild(border);
         }
-
-        //internal int Append(OoxFootnote ooxFootnote, bool bookmarked)
-        //{
-        //    //throw new NotImplementedException();
-        //    return -2;
-        //}
 
         public void Append(Run run)
         {

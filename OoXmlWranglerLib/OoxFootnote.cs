@@ -8,38 +8,6 @@ namespace OoXmlWranglerLib
 {
     public class OoxFootnote 
     {
-        /*
-         *
-         *
-        a complete end/footnote entry is a distinct structure that looks like this (with optional added []s)
-
-        <w:footnote w:id="1">
-            <w:p>
-                <w:pPr><w:pStyle w:val="FootnoteText"/></w:pPr>
-                <w:r>
-                    <w:rPr><w:rStyle w:val="FootnoteReference"/></w:rPr>
-                    <w:t>[</w:t>
-                    <w:footnoteRef/>
-                    <w:t>]</w:t>
-                 </w:r>
-                <w:r><w:t xml:space="preserve"> This is my footnote.</w:t></w:r>
-            </w:p>
-        </w:footnote>
-
-        and a reference is a run (with added []s) that looks like this
-
-        <w:r>
-            <w:rPr>
-                <w:rStyle w:val="FootnoteReference" />
-            </w:rPr>
-            <w:t>[</w:t>
-            <w:footnoteReference w:id="2" />
-            <w:t>]</w:t>
-        </w:r>
-
-         *
-         *
-         */
 
         public static RunStyle FootnoteRefstyle { get; set; } = new RunStyle(){Val = "FootnoteReference" };
         public VerticalTextAlignment FootnoteRefFormat { get; set; } = new VerticalTextAlignment { Val = VerticalPositionValues.Superscript };
@@ -148,13 +116,6 @@ namespace OoXmlWranglerLib
             id = (doc.MaxFootnoteId() + 1);
         }
 
-        //internal virtual bool ApplyToDocument()
-        //{
-        //    //Xml = noteElement;
-        //    //return doc.AppendFootnote(noteElement);
-        //    return doc.Apply(this);
-        //}
-
         public void Apply(OoxParagraph bodyPara, bool bookmarked = false)
         {
             if (IsApplied)
@@ -174,9 +135,6 @@ namespace OoXmlWranglerLib
             OoxParagraph footPara = new OoxParagraph(f.AppendChild(new Paragraph()));
             footPara.StyleName = NoteTextStyle;
             footPara.Append(BuildNoteRefMark());
-            //Paragraph footPara = f.AppendChild(new Paragraph(new Run(new FootnoteReferenceMark()) { RunProperties = new RunProperties((RunStyle) FootnoteRefstyle.Clone()) }));
-            // make sure there is separation between the fn# and the contents
-            //Run r = null;
             string space = (Fragments[0].Content ?? "").StartsWith(" ") ? "" : " ";
             foreach (Fragment fragment in Fragments)
             {
@@ -211,11 +169,8 @@ namespace OoXmlWranglerLib
             }
 
             doc.Apply(f);
-            //doc._footnotesPart.Footnotes.AppendChild(f);
-
             IsApplied = true;
 
-            //ApplyInline(bodyPara, bookmarked);
             FootnoteEndnoteReferenceType footnoteReference = CreateNoteReference();
             VerticalTextAlignment footRefFormat = new VerticalTextAlignment { Val = VerticalPositionValues.Superscript };
             Run footnoteReferenceRun = new Run() { RunProperties = new RunProperties(footRefFormat) };
@@ -254,7 +209,6 @@ namespace OoXmlWranglerLib
 
         internal virtual OoxHyperlink BuildHyperlink(Fragment fragment)
         {
-            //Hyperlink h = doc.AddHyperlinkToFootnotes(fragment.Content, new Uri(fragment.Content));
             OoxHyperlink h = new OoxHyperlink()
             {
                 Anchor = fragment.Content,
@@ -267,51 +221,10 @@ namespace OoXmlWranglerLib
 
         internal void ApplyInline(OoxParagraph p, bool bookmarked)
         {
-            // todo: brackets
-            //Run run = p.AppendChild(new Run());
-            //run.AppendChild(new Text("Create text in body - CreateWordprocessingDocument"));
-            //para.AppendChild(new Run(fr) { RunProperties = new RunProperties(footRefFormat) });
-
             FootnoteReference fr = (new FootnoteReference() { Id = id });
             Run r = new Run(fr) { RunProperties = new RunProperties(FootnoteRefFormat.Clone() as RunStyle) };
             
             p.MyParagraph.AppendChild(r);
-
-
-            //// create the reference element...
-            //noteRefElement = new XElement(OoxDoc.w  + "r",
-            //    new XElement(OoxDoc.w  + "rPr",
-            //        new XElement(OoxDoc.w  + "rStyle", new XAttribute(OoxDoc.w  + "val", NoteReferenceStyle))));
-            //// ... optionally wrapped in brackets (choose when needed to distinguish footnotes from exponents etc.)
-            //if (brackets != null)
-            //    noteRefElement.Add(new XElement(OoxDoc.w  + "t", brackets[0]));
-            //// optionally wrapped in a bookmark marker
-            //if (bookmarked)
-            //{
-            //    BookmarkId = NextBookmarkId;
-            //    BookmarkName = string.Format(BookmarkNamePattern, BookmarkId);
-            //    XElement wBookmarkStart = new XElement(
-            //        XName.Get("bookmarkStart", OoxDoc.w .NamespaceName),
-            //        new XAttribute(XName.Get("id", OoxDoc.w .NamespaceName), BookmarkId),
-            //        new XAttribute(XName.Get("name", OoxDoc.w .NamespaceName), BookmarkName));
-            //    noteRefElement.Add(wBookmarkStart);
-            //}
-
-            //noteRefElement.Add(new XElement(OoxDoc.w  + NoteReferenceNode, new XAttribute(OoxDoc.w  + "id", id)));
-            //if (bookmarked)
-            //{
-            //    XElement wBookmarkEnd = new XElement(
-            //        XName.Get("bookmarkEnd", OoxDoc.w .NamespaceName),
-            //        new XAttribute(XName.Get("id", OoxDoc.w .NamespaceName), BookmarkId),
-            //        new XAttribute(XName.Get("name", OoxDoc.w .NamespaceName), BookmarkName));
-            //    noteRefElement.Add(wBookmarkEnd);
-            //}
-
-            //if (brackets != null)
-            //    noteRefElement.Add(new XElement(OoxDoc.w  + "t", brackets[1]));
-
-            //// append the reference run to the paragraph
-            //p.Xml.Add(noteRefElement);
         }
     }
 }
