@@ -242,7 +242,7 @@ namespace Ged2Reg.Model
 
         private void SelectByFrequencyOfUse(bool least = false)
         {
-            int undecided;
+            int undecided = _allEntityEventCitations.Sum(eec => eec.Undecided);
 
             // even for frequency of use, we need to "push down" the ones with negative priority
             // otherwise, negative priorities don't really work
@@ -259,7 +259,8 @@ namespace Ged2Reg.Model
                 if (ReportContext.Instance.Model.CheckCancel()) throw new CanceledByUserException();
                 //int priorPriority = int.MaxValue;
                 int decisionsMade = 0;
-                while (withPotential.Count > 0 && (undecided = _allEntityEventCitations.Sum(eec => eec.Undecided)) > 0)
+                //while (withPotential.Count > 0 && (undecided = _allEntityEventCitations.Sum(eec => eec.Undecided)) > 0)
+                while (withPotential.Count > 0 && (undecided > 0))
                 {
                     if (ReportContext.Instance.Model.CheckCancel()) throw new CanceledByUserException();
                     // the best next choice may(?) change with each iteration as some get filled in 
@@ -274,7 +275,9 @@ namespace Ged2Reg.Model
                     //priorPriority = choice.Priority;
                     foreach (CitableEntityEvents e in wantingCitations)
                     {
-                        decisionsMade += e.Select(choice);
+                        int dNow = e.Select(choice);
+                        undecided -= dNow;
+                        decisionsMade += dNow;
                     }
 
                     if (decisionsMade >= 100)
