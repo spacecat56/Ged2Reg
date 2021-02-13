@@ -4,7 +4,7 @@ using System.Xml.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
 
-namespace OoXmlWranglerLib
+namespace WpdInterfaceLib
 {
     public class OoxFootnote 
     {
@@ -12,16 +12,16 @@ namespace OoXmlWranglerLib
         public static RunStyle FootnoteRefstyle { get; set; } = new RunStyle(){Val = "FootnoteReference" };
         public VerticalTextAlignment FootnoteRefFormat { get; set; } = new VerticalTextAlignment { Val = VerticalPositionValues.Superscript };
 
-        public enum FragmentType
+        public enum WpdFragmentType
         {
             Text,
             Noteref,
             Hyperlink
         }
 
-        internal class Fragment
+        public class WpdNoteFragment
         {
-            public FragmentType Type { get; set; }
+            public WpdFragmentType Type { get; set; }
             public string Content { get; set; }
             public object DataObject { get; set; }
         }
@@ -41,7 +41,7 @@ namespace OoXmlWranglerLib
         public string BookmarkName { get; set; }
         public int BookmarkId { get; set; }
         public OoxFootnote ReferenceNote { get; set; }
-        internal List<Fragment> Fragments { get; set; }
+        internal List<WpdNoteFragment> Fragments { get; set; }
 
         internal OoxDoc doc;
         internal string[] brackets;
@@ -83,7 +83,7 @@ namespace OoXmlWranglerLib
         {
             doc = document;
             if (!string.IsNullOrEmpty(text))
-                (Fragments = new List<Fragment>()).Add(new Fragment() { Content = text, Type = FragmentType.Text });
+                (Fragments = new List<WpdNoteFragment>()).Add(new WpdNoteFragment() { Content = text, Type = WpdFragmentType.Text });
             if (pBrackets == null) return;
             if (pBrackets.Length != 2)
                 throw new ArgumentException("brackets parameter must be null or two elements");
@@ -92,22 +92,22 @@ namespace OoXmlWranglerLib
 
         public OoxFootnote AppendText(string t)
         {
-            (Fragments ??= new List<Fragment>())
-                .Add(new Fragment() { Type = FragmentType.Text, Content = t });
+            (Fragments ??= new List<WpdNoteFragment>())
+                .Add(new WpdNoteFragment() { Type = WpdFragmentType.Text, Content = t });
             return this;
         }
 
         public OoxFootnote AppendNoteRef(OoxFootnote other)
         {
-            (Fragments ?? (Fragments = new List<Fragment>()))
-                .Add(new Fragment() { Type = FragmentType.Noteref, DataObject = other});
+            (Fragments ??= new List<WpdNoteFragment>())
+                .Add(new WpdNoteFragment() { Type = WpdFragmentType.Noteref, DataObject = other});
             return this;
         }
 
         public OoxFootnote AppendHyperlink(string t)
         {
-            (Fragments ?? (Fragments = new List<Fragment>()))
-                .Add(new Fragment() { Type = FragmentType.Hyperlink, Content = t });
+            (Fragments ??= new List<WpdNoteFragment>())
+                .Add(new WpdNoteFragment() { Type = WpdFragmentType.Hyperlink, Content = t });
             return this;
         }
 
@@ -116,7 +116,7 @@ namespace OoXmlWranglerLib
             id = (doc.MaxFootnoteId() + 1);
         }
 
-        public void Apply(OoxParagraph bodyPara, bool bookmarked = false)
+        public void Apply(IWpdParagraph bodyParaI, bool bookmarked = false)
         {
             if (IsApplied)
             {
@@ -127,6 +127,8 @@ namespace OoXmlWranglerLib
                 throw new InvalidOperationException("note has no content");
             }
 
+            OoxParagraph bodyPara = bodyParaI as OoxParagraph;
+
             AssignNextId();
 
             // todo: rework, abstraction needed
@@ -136,15 +138,15 @@ namespace OoXmlWranglerLib
             footPara.StyleName = NoteTextStyle;
             footPara.Append(BuildNoteRefMark());
             string space = (Fragments[0].Content ?? "").StartsWith(" ") ? "" : " ";
-            foreach (Fragment fragment in Fragments)
+            foreach (WpdNoteFragment fragment in Fragments)
             {
                 switch (fragment.Type)
                 {
-                    case FragmentType.Text:
+                    case WpdFragmentType.Text:
                         footPara.Append(new Run(new Text(space+fragment.Content) { Space = SpaceProcessingModeValues.Preserve }));
                         space = "";
                         break;
-                    case FragmentType.Noteref:
+                    case WpdFragmentType.Noteref:
                         // insert a bookmark reference back to another foot/endnote
                         // this is limited to the note number, because any other text included 
                         // with it will be deleted if/when Word renumbers the notes, e.g. on <Ctrl>A, F9
@@ -153,7 +155,7 @@ namespace OoXmlWranglerLib
                         NoteRefField nrf = new NoteRefField(doc, null) { MarkName = ReferenceNote.BookmarkName, ContentText = $"{ReferenceNote.Id}", InsertHyperlink = true };
                         nrf.Apply(footPara);
                         break;
-                    case FragmentType.Hyperlink:
+                    case WpdFragmentType.Hyperlink:
                         try
                         {
                             BuildHyperlink(fragment).Apply(footPara);
@@ -207,7 +209,7 @@ namespace OoXmlWranglerLib
             return new Footnote() { Id = id };
         }
 
-        internal virtual OoxHyperlink BuildHyperlink(Fragment fragment)
+        internal virtual OoxHyperlink BuildHyperlink(WpdNoteFragment fragment)
         {
             OoxHyperlink h = new OoxHyperlink()
             {

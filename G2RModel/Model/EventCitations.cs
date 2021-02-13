@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SimpleGedcomLib;
-using OoXmlWranglerLib;
+using WpdInterfaceLib;
 
 //using Novacode.Src;
 
@@ -45,7 +45,7 @@ namespace Ged2Reg.Model
         /// <param name="doc"></param>
         /// <param name="p"></param>
         /// <returns></returns>
-        public bool EmitNote(OoxDoc doc, OoxParagraph p)
+        public bool EmitNote(OoxDoc doc, IWpdParagraph p)
         {
             if (SelectedItem == null)
                 return false;

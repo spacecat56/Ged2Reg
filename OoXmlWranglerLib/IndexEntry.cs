@@ -1,19 +1,27 @@
 ﻿using System.Text;
 using System.Xml.Linq;
 
-namespace OoXmlWranglerLib
+namespace WpdInterfaceLib
 {
-    public class IndexEntry : AbstractField
+    public interface IWpdIndexEntry
+    {
+        string IndexValue { get; set; }
+        string IndexName { get; set; }
+        string SeeInstead { get; set; }
+    }
+
+    public class IndexEntry : OoxFieldBase, IWpdIndexEntry
     {
         public string IndexValue { get; set; }
         public string IndexName { get; set; }
         public string SeeInstead { get; set; }
+        public IWpdDocument Document { get; set; }
 
-        public IndexEntry(OoxDoc document) : base(document) { }
+        public IndexEntry(IWpdDocument document) : base(document) { }
 
         #region Overrides of AbstractField
 
-        public override AbstractField Build()
+        public override OoxFieldBase Build()
         {
             // build the contents of the field
             string fieldContents = $" XE \"{IndexValue}\" ";
@@ -37,7 +45,7 @@ namespace OoXmlWranglerLib
     /// NB several of the less-common options may not have been tested
     /// 
     /// </summary>
-    public class IndexField : AbstractField
+    public class IndexField : OoxFieldBase
     {
         public static string UpdateFieldPrompt { get; set; } = "Right-click and Update (this) field to generate the index";
         public string Bookmark { get; set; }
@@ -61,7 +69,7 @@ namespace OoXmlWranglerLib
 
         #region Overrides of AbstractField
 
-        public override AbstractField Build()
+        public override OoxFieldBase Build()
         {
             StringBuilder sb = new StringBuilder();
 

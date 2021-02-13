@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OoXmlWranglerLib\OoXmlWranglerLib.csproj" />
+    <ProjectReference Include="..\WpdInterfaceLib\WpdInterfaceLib.csproj" />
   </ItemGroup>
 
   <ItemGroup>

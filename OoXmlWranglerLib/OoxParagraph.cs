@@ -2,9 +2,9 @@
 using System;
 using DocumentFormat.OpenXml;
 
-namespace OoXmlWranglerLib
+namespace WpdInterfaceLib
 {
-    public class OoxParagraph
+    public class OoxParagraph : IWpdParagraph
     {
         public OoxParagraph(Paragraph myParagraph)
         {
@@ -26,7 +26,7 @@ namespace OoXmlWranglerLib
             }
         }
 
-        public OoxParagraph Append(string text)
+        public IWpdParagraph Append(string text)
         {
             if (text == null)
                 return this;
@@ -34,16 +34,16 @@ namespace OoXmlWranglerLib
             return this;
         }
 
-        public void AppendField(AbstractField field)
+        public void AppendField(IWpdFieldBase field)
         {
-            field.Apply(this);
+            ((OoxFieldBase)field).Apply(this);
         }
 
         public void Append(string text, bool unk, Formatting formatting)
         {
             if (text == null)
                 return ;
-            MyParagraph.AppendChild(new Run(new Text(text){ Space = SpaceProcessingModeValues.Preserve }){RunProperties = Builders.BuildRunProperties(formatting)});
+            MyParagraph.AppendChild(new Run(new Text(text){ Space = SpaceProcessingModeValues.Preserve }){RunProperties = OoxBuilders.BuildRunProperties(formatting)});
         }
 
         public void InsertHorizontalLine(string lineType, string position = "bottom")
@@ -70,7 +70,7 @@ namespace OoXmlWranglerLib
 
         public void Append(Hyperlink h)
         {
-            MyParagraph.AppendChild(h);
+            MyParagraph.AppendChild((Hyperlink)h);
         }
     }
 }

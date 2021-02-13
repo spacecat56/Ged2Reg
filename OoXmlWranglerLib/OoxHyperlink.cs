@@ -2,7 +2,7 @@
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 
-namespace OoXmlWranglerLib
+namespace WpdInterfaceLib
 {
     public class OoxHyperlink
     {

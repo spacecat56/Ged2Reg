@@ -8,25 +8,9 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using OpenXmlPowerTools;
 
-namespace OoXmlWranglerLib
+namespace WpdInterfaceLib
 {
-    public class WpDocPageSettings
-    {
-        public float PageHeight { get; set; }
-
-        public float PageWidth { get; set; }
-
-        public float MarginBottom { get; set; }
-
-        public float MarginLeft { get; set; }
-
-        public float MarginRight { get; set; }
-
-        public float MarginTop { get; set; }
-
-
-    }
-    public class OoxDoc : IDisposable
+    public partial class OoxDoc : IWpdDocument
     {
         private WordprocessingDocument _doc;
         private MainDocumentPart _mainPart;
@@ -38,7 +22,7 @@ namespace OoXmlWranglerLib
         
         private SectionProperties _sectionProperties;
 
-        public bool SkipPageSettings { get; set; } = false;
+        private bool SkipPageSettings { get; set; } = false;
 
         public static OoxDoc Create(string path)
         {
@@ -185,6 +169,9 @@ namespace OoXmlWranglerLib
 
         public bool SetCoreProperty(string propertyName, string propertyValue)
         {
+            if (_corePropsState != CorePropsState.Open)
+                OpenCoreProps();
+
             if (_corePropsState != CorePropsState.Open || _corePropDoc == null)
                 return false;
 
@@ -226,7 +213,7 @@ namespace OoXmlWranglerLib
         #endregion
 
 
-        public void Apply(WpDocPageSettings ps)
+        public void Apply(WpdPageSettings ps)
         {
             _sectionProperties = new SectionProperties();
             PageMargin pageMargin = new PageMargin()
@@ -263,7 +250,7 @@ namespace OoXmlWranglerLib
             _body.Append(brk);
         }
 
-        public OoxParagraph InsertParagraph(string text = null)
+        public IWpdParagraph InsertParagraph(string text = null)
         {
             _para = new OoxParagraph(_body.AppendChild(new Paragraph()));
 
@@ -293,12 +280,6 @@ namespace OoXmlWranglerLib
         {
             OoxDoc rv = new OoxDoc() {_doc = WordprocessingDocument.Open(docstream, editable)};
             return rv;
-        }
-        public class StyleInfo
-        {
-            public string Name { get; set; }
-            public string Id { get; set; }
-            public string StyleType { get; set; }
         }
 
         public List<StyleInfo> ListStyles()

@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using DocumentFormat.OpenXml.Wordprocessing;
 
-namespace OoXmlWranglerLib
+namespace WpdInterfaceLib
 {
-    public static class Builders
+    public static class OoxBuilders
     {
         public static RunProperties BuildRunProperties(Formatting fmt)
         {

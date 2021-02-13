@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
+//using System.Runtime.InteropServices;
 using G2RModel.Model;
 using SimpleGedcomLib;
-using OoXmlWranglerLib;
+using WpdInterfaceLib;
 
 
 namespace Ged2Reg.Model
@@ -49,6 +49,7 @@ namespace Ged2Reg.Model
         {
             List<string[]> rvl = new List<string[]>();
 
+            // TODO: convert this
             using (OoxDoc dt = OoxDoc.Load(docstream))
             {
                 foreach (var styleInfo in dt.ListStyles().OrderBy(si => si.Name))
@@ -105,11 +106,11 @@ namespace Ged2Reg.Model
             Doc.ApplyTemplateStyles(Settings.GetStylesStream(), true);
 
             // clear author and title - may be copied from template
-            if (Doc.OpenCoreProps())
+            //if (Doc.OpenCoreProps())
             {
                  Doc.SetCoreProperty("dc:title", Settings.Title??"");
                  Doc.SetCoreProperty("dc:creator", Settings.Author??"");
-                 Doc.CloseCoreProps();
+                 //Doc.CloseCoreProps();
             }
 
             const float pointsPerInch = 72f;
@@ -123,7 +124,7 @@ namespace Ged2Reg.Model
             //Doc.MarginLeft = Settings.MarginL * pointsPerInch;
             //Doc.MarginRight = Settings.MarginR * pointsPerInch;
             //Doc.MarginTop = Settings.MarginT * pointsPerInch;
-            var ps = new WpDocPageSettings()
+            var ps = new WpdPageSettings()
             {
                 PageHeight = Settings.PageH * pointsPerInch,
                 PageWidth = Settings.PageW * pointsPerInch,

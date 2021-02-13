@@ -2,9 +2,9 @@
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 
-namespace OoXmlWranglerLib
+namespace WpdInterfaceLib
 {
-    public class NoteRefField : AbstractField
+    public class NoteRefField : OoxFieldBase
     {
         public string MarkName { get; set; }
         public bool SameFormatting { get; set; }
@@ -14,7 +14,7 @@ namespace OoXmlWranglerLib
 
         #region Overrides of AbstractField
 
-        public override AbstractField Build()
+        public override WpdFieldBase Build()
         {
             StringBuilder sb = new StringBuilder();
             sb.Append(" NOTEREF ").Append(MarkName).Append(' ');

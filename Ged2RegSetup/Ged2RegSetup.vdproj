@@ -88,6 +88,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
             }
         }
     }
@@ -227,15 +235,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Ged2Reg"
-        "ProductCode" = "8:{9776FC1F-870B-4BFD-AA37-B6BA490CA992}"
-        "PackageCode" = "8:{EC740F42-C920-4979-A55A-DEA4AACE08F3}"
+        "ProductCode" = "8:{7B66FDF7-5D71-4258-80F8-7FEAEDE2A73A}"
+        "PackageCode" = "8:{AD8F85F9-F903-42AA-8462-4B3298655AC9}"
         "UpgradeCode" = "8:{793E0840-273B-4A53-85F6-389FBF30957E}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.29"
+        "ProductVersion" = "8:1.0.30"
         "Manufacturer" = "8:West Leitrim Software"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -777,7 +785,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_E11F5B3E4D1E4D4AADB0937F01E9578D"
             {
-            "SourcePath" = "8:..\\Ged2Reg\\obj\\Debug\\net5.0-windows\\apphost.exe"
+            "SourcePath" = "8:..\\Ged2Reg\\obj\\Release\\net5.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_B4538F535ADA458798BF9DD8AE3BA00C"

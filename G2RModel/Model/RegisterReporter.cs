@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using G2RModel.Model;
 using SimpleGedcomLib;
 //using Novacode;
-using OoXmlWranglerLib;
+using WpdInterfaceLib;
 
 //using Novacode.Src;
 
@@ -251,7 +251,7 @@ namespace Ged2Reg.Model
         {
             if (!ixs.Enabled) return false;
             doc.InsertPageBreak();
-            OoxParagraph p = doc.InsertParagraph(ixs.IndexHeading);
+            IWpdParagraph p = doc.InsertParagraph(ixs.IndexHeading);
             p = doc.InsertParagraph();
             var ixf = new IndexField(doc)
             {
@@ -269,7 +269,7 @@ namespace Ged2Reg.Model
             Formatting generationNumberFormatting = new Formatting() { CharacterStyleName = _styleMap[StyleSlots.GenerationNumber].CharacterStyleName }; //  switched this to the style
             Formatting introFormatting = new Formatting(){Bold = _c.Settings.IntroBold, Italic = _c.Settings.IntroItalic};
             // begin main person content
-            OoxParagraph p = doc.InsertParagraph();
+            IWpdParagraph p = doc.InsertParagraph();
             p.StyleName = _styleMap[StyleSlots.MainPersonText].CharacterStyleName;
             p.Append($"{individual.AssignedMainNumber}. ");
             p.Append(individual.SafeGivenName, false, _styleMap[StyleSlots.MainPerson]);
@@ -378,7 +378,7 @@ namespace Ged2Reg.Model
         private Regex _rexDivider1 = new Regex(@"^[\-_]+$");
         private Regex _rexDivider2 = new Regex(@"^[=]+$");
 
-        private bool AppliesAsDivider(OoxParagraph p, string s)
+        private bool AppliesAsDivider(IWpdParagraph p, string s)
         {
             if (string.IsNullOrEmpty(s)) return false;
             if (_rexDivider1.IsMatch(s))
@@ -396,7 +396,7 @@ namespace Ged2Reg.Model
             return true;
         }
 
-        internal bool ConditionallyEmitNameIndex(OoxDoc doc, OoxParagraph p, GedcomIndividual indi)
+        internal bool ConditionallyEmitNameIndex(OoxDoc doc, IWpdParagraph p, GedcomIndividual indi)
         {
             if (!_c.Settings.NameIndexSettings.Enabled) return false;
             string ixn = _c.Settings.NameIndexSettings.IndexName;
@@ -411,7 +411,7 @@ namespace Ged2Reg.Model
             p.AppendField(ex);
             return true;
         }
-        internal bool ConditionallyEmitPlaceIndex(OoxDoc doc, OoxParagraph p, FormattedEvent fe)
+        internal bool ConditionallyEmitPlaceIndex(OoxDoc doc, IWpdParagraph p, FormattedEvent fe)
         {
             if (!_c.Settings.PlaceIndexSettings.Enabled || string.IsNullOrEmpty(fe?.PlaceIndexEntry)) return false;
             string ixn = _c.Settings.PlaceIndexSettings.IndexName;
@@ -427,7 +427,7 @@ namespace Ged2Reg.Model
             return true;
         }
 
-        private List<GedcomIndividual> AppendPersonDetails(OoxParagraph p, GedcomIndividual indi, bool isChild = false)
+        private List<GedcomIndividual> AppendPersonDetails(IWpdParagraph p, GedcomIndividual indi, bool isChild = false)
         {
             List<GedcomIndividual> toDoNotes = new List<GedcomIndividual>();
             // optional minimized or reduced output for child listing if there are descendants, except for the last reported generation
@@ -667,7 +667,7 @@ namespace Ged2Reg.Model
             return toDoNotes;
         }
 
-        private bool AppendSpouseSentence2(OoxParagraph p, GedcomIndividual spouse)
+        private bool AppendSpouseSentence2(IWpdParagraph p, GedcomIndividual spouse)
         {
             GedcomFamily spousesChildhoodFamily = ReportContext.Instance.Model.FindAsChildInFamily(spouse);
             if (spousesChildhoodFamily == null) return false;

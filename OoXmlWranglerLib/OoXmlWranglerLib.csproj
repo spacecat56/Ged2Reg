@@ -19,4 +19,8 @@
     <PackageReference Include="OpenXmlPowerToolsStandard" Version="5.0.57-prerelease" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\WpdInterfaceLib\WpdInterfaceLib.csproj" />
+  </ItemGroup>
+
 </Project>

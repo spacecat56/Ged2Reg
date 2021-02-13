@@ -1,7 +1,7 @@
 ﻿using System;
 using DocumentFormat.OpenXml.Wordprocessing;
 
-namespace OoXmlWranglerLib
+namespace WpdInterfaceLib
 {
     public class OoxEndnote : OoxFootnote
     {
@@ -25,7 +25,7 @@ namespace OoXmlWranglerLib
         {
             id = (doc.MaxEndnoteId() + 1);
         }
-         internal override OoxHyperlink BuildHyperlink(Fragment fragment)
+         internal override OoxHyperlink BuildHyperlink(WpdNoteFragment fragment)
         {
             OoxHyperlink h = new OoxHyperlink()
             {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using OoXmlWranglerLib;
+using WpdInterfaceLib;
 
 
 namespace Ged2Reg.Model
@@ -30,7 +30,7 @@ namespace Ged2Reg.Model
             return rv;
         }
 
-        public void Emit(OoxParagraph p, OoXmlWranglerLib.Formatting fmtName, OoXmlWranglerLib.Formatting fmtNumber)
+        public void Emit(IWpdParagraph p, WpdInterfaceLib.Formatting fmtName, WpdInterfaceLib.Formatting fmtNumber)
         {
             p.Append(" (");
             bool furst = true;

@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
-using System.Xml.Linq;
-using DocumentFormat.OpenXml.Wordprocessing;
+//using System.Xml.Linq;
+//using DocumentFormat.OpenXml.Wordprocessing;
 using Color = System.Drawing.Color;
 
-namespace OoXmlWranglerLib
+namespace WpdInterfaceLib
 {
     /// <summary>
     /// A text formatting.
     /// </summary>
     public class Formatting : IComparable
     {
-		private XElement rPr;
+		//private XElement rPr;
 		private bool? hidden;
 		private bool? bold;
 		private bool? italic;
@@ -25,7 +25,7 @@ namespace OoXmlWranglerLib
 		private UnderlineStyle? underlineStyle;
 		private Misc? misc;
 		private CapsStyle? capsStyle;
-		private Font fontFamily;
+		//private Font fontFamily;
 		private int? percentageScale;
 		private int? kerning;
 		private int? position;
@@ -38,12 +38,12 @@ namespace OoXmlWranglerLib
         /// </summary>
         public Formatting()
         {
-            capsStyle = OoXmlWranglerLib.CapsStyle.none;
-            strikethrough = OoXmlWranglerLib.StrikeThrough.none;
-            script = OoXmlWranglerLib.Script.none;
-            highlight = OoXmlWranglerLib.Highlight.none;
-            underlineStyle = OoXmlWranglerLib.UnderlineStyle.none;
-            misc = OoXmlWranglerLib.Misc.none;
+            capsStyle = WpdInterfaceLib.CapsStyle.none;
+            strikethrough = WpdInterfaceLib.StrikeThrough.none;
+            script = WpdInterfaceLib.Script.none;
+            highlight = WpdInterfaceLib.Highlight.none;
+            underlineStyle = WpdInterfaceLib.UnderlineStyle.none;
+            misc = WpdInterfaceLib.Misc.none;
 
             // Use current culture by default
             language = CultureInfo.CurrentCulture;
@@ -77,7 +77,7 @@ namespace OoXmlWranglerLib
 			newf.Bold = bold;
 			newf.CapsStyle = capsStyle;
 			newf.FontColor = fontColor;
-			newf.FontFamily = fontFamily;
+			//newf.FontFamily = fontFamily;
 			newf.Hidden = hidden;
 			newf.Highlight = highlight;
 			newf.Italic = italic;
@@ -492,7 +492,7 @@ namespace OoXmlWranglerLib
         /// Bug found and fixed by krugs525 on August 12 2009.
         /// Use TFS compare to see exact code change.
         /// -->
-        public Font FontFamily { get { return fontFamily; } set { fontFamily = value; } }
+        //public Font FontFamily { get { return fontFamily; } set { fontFamily = value; } }
 
         public int CompareTo(object obj)
         {
@@ -534,8 +534,8 @@ namespace OoXmlWranglerLib
             if(other.capsStyle != this.capsStyle)
                 return -1;
 
-            if(other.fontFamily != this.fontFamily)
-                return -1;
+            //if(other.fontFamily != this.fontFamily)
+            //    return -1;
 
             if(other.percentageScale != this.percentageScale)
                 return -1;
