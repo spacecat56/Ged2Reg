@@ -11,6 +11,8 @@ namespace OdtAdapterLib
 
         public IWpdDocument Load(Stream stream, bool editable = false)
         {
+            OdtDocument.ResetContext();
+
             // todo: is the editable flag useful / needed here?
             OdtDocument doc = OdtDocument.Load(stream);
             return new OalDocument() { Document = doc };
@@ -18,9 +20,12 @@ namespace OdtAdapterLib
 
         public IWpdDocument Create(string filename)
         {
+            OdtDocument.ResetContext();
+
             OdtDocument doc = string.IsNullOrEmpty(filename) || !File.Exists(filename)
                 ? OdtDocument.New() 
                 : OdtDocument.Load(filename);
+            
             return new OalDocument(){Document = doc, FileName = filename};
         }
 

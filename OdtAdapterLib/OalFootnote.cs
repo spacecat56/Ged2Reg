@@ -40,10 +40,16 @@ namespace OdtAdapterLib
                         Footnote.Append(new OdtSpan(){Text = fragment.Content}.Build());
                         break;
                     case WpdFragmentType.Noteref:
-                        // todo
+                        var frref = (fragment.DataObject as OalFootnote)?.Footnote?.GetNoteRef;
+                        if (frref == null) break;
+                        Footnote.Append(frref);
                         break;
                     case WpdFragmentType.Hyperlink:
-                        // todo
+                        Footnote.Append(new OdtHyperlink()
+                        {
+                            Document = Document,
+                            URL = fragment.Content
+                        }.Build());
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();

@@ -80,7 +80,7 @@ namespace OdtAdapterLib
         public WpdFootnoteBase BuildFootNote(string noteText = null, string[] brackets = null)
         {
             var f = new OdtFootnote(){Document = Document}; // todo: brackets???
-            var rv = new OalFootnote(){Footnote = f, brackets = brackets};
+            var rv = new OalFootnote(noteText){Footnote = f, brackets = brackets, Document = Document};
             
             return rv;
         }
