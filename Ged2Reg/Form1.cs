@@ -8,7 +8,8 @@ using System.Windows.Forms;
 using CommonClassesLib;
 using G2RModel.Model;
 using Ged2Reg.Model;
-using OoXmlWranglerLib;
+using DocxAdapterLib;
+using OdtAdapterLib;
 
 namespace Ged2Reg
 {
@@ -267,6 +268,9 @@ namespace Ged2Reg
                 // clear instances based on editable collections so they will be recreated with current contents
                 _rrm.Settings.Reset(); 
                 object o = dgvStartPerson.SelectedRows[0]?.DataBoundItem;
+
+                // last chance:
+                SetDocFactory();
                 
                 DateTime start = DateTime.Now;
                 if (_debugging)
@@ -339,7 +343,7 @@ namespace Ged2Reg
                     OverwritePrompt = true,
                     AddExtension = true,
                     DefaultExt = ".docx",
-                    Filter = "document files (*.docx)|*.docx|All files (*.*)|*.*"
+                    Filter = "Word files (*.docx)|*.docx|Open Document files (*.odt)|*.odt"
                 };
                 if (!string.IsNullOrEmpty(teOutFile.Text) 
                     && !string.IsNullOrEmpty(Path.GetDirectoryName(teOutFile.Text)))
@@ -348,11 +352,29 @@ namespace Ged2Reg
                 }
                 if (sfd.ShowDialog() != DialogResult.OK) return;
                 _rrm.Settings.OutFile = teOutFile.Text = sfd.FileName;
+                SetDocFactory();
             }
             catch (Exception ex)
             {
                 Log(ex);
                 MessageBox.Show($"Exception:{ex}");
+            }
+        }
+
+        private void SetDocFactory()
+        {
+            string ext = Path.GetExtension(_rrm.Settings.OutFile);
+            switch (ext)
+            {
+                case ".docx":
+                    _rrm.DocFactory = new OoxDocFactory();
+                    break;
+                case ".odt":
+                    _rrm.DocFactory = new OalDocFactory();
+                    break;
+                default:
+                    // todo: complain?
+                    break;
             }
         }
 

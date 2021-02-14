@@ -4,7 +4,7 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
 using WpdInterfaceLib;
 
-namespace OoXmlWranglerLib
+namespace DocxAdapterLib
 {
     public class OoxNoteRefField : WpdNoteRefField
     {

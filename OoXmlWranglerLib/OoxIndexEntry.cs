@@ -2,7 +2,7 @@
 using System.Xml.Linq;
 using WpdInterfaceLib;
 
-namespace OoXmlWranglerLib
+namespace DocxAdapterLib
 {
     public class OoxIndexEntry : WpdIndexEntry
     {

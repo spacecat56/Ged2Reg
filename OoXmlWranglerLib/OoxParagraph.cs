@@ -3,7 +3,7 @@ using System;
 using DocumentFormat.OpenXml;
 using WpdInterfaceLib;
 
-namespace OoXmlWranglerLib
+namespace DocxAdapterLib
 {
     public class OoxParagraph : IWpdParagraph
     {

@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using WpdInterfaceLib;
 
-namespace OoXmlWranglerLib
+namespace DocxAdapterLib
 {
     public class OoxDocFactory : IWpdFactory
     {

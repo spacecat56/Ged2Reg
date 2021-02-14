@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using G2RModel.Model;
-using OoXmlWranglerLib;
+using DocxAdapterLib;
 using SimpleGedcomLib;
 //using Novacode;
 using WpdInterfaceLib;

@@ -1,7 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Wordprocessing;
 using WpdInterfaceLib;
 
-namespace OoXmlWranglerLib
+namespace DocxAdapterLib
 {
     public static class OoxBuilders
     {

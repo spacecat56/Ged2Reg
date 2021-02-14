@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 //using System.Runtime.InteropServices;
 using G2RModel.Model;
-using OoXmlWranglerLib;
+using DocxAdapterLib;
 using SimpleGedcomLib;
 using WpdInterfaceLib;
 
@@ -104,8 +104,9 @@ namespace Ged2Reg.Model
             ActionDelegates?.PostStatusReport($"begin processing; starting person: {root.NameForward}");
 
             // reset the output
-            Doc = OoxDoc.Create(Settings.OutFile);
+            Doc = DocFactory.Create(Settings.OutFile);
             //Doc.ApplyTemplate(Settings.GetStylesStream(), false);
+            // todo: this has to be factory-type-aware; or otherwise reconciled
             Doc.ApplyTemplateStyles(Settings.GetStylesStream(), true);
 
             // clear author and title - may be copied from template

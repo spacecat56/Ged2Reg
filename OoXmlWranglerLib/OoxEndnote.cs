@@ -2,7 +2,7 @@
 using DocumentFormat.OpenXml.Wordprocessing;
 using WpdInterfaceLib;
 
-namespace OoXmlWranglerLib
+namespace DocxAdapterLib
 {
     public class OoxEndnote : OoxFootnote
     {

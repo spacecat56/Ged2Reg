@@ -9,7 +9,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using OpenXmlPowerTools;
 using WpdInterfaceLib;
 
-namespace OoXmlWranglerLib
+namespace DocxAdapterLib
 {
     public partial class OoxDoc : IWpdDocument
     {

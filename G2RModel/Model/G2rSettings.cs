@@ -30,6 +30,12 @@ namespace Ged2Reg.Model
         GenerationNumber,
     }
 
+    public enum DocumentType
+    {
+        DocX,
+        Odt
+    }
+
     public class StyleAssignment  : AbstractBindableModel
     {
         private StyleSlots _slot;
@@ -283,6 +289,17 @@ namespace Ged2Reg.Model
         private IndexSettings _nameIndexSettings;
 
         private IndexSettings _placeIndexSettings;
+
+        private DocumentType _documentType;
+
+        [DataMember]
+        public DocumentType DocumentType
+        {
+            get { return _documentType; }
+            set { _documentType = value; OnPropertyChanged(); }
+        }
+
+
 
         // todo: dersialization will not init (some of) these
         public void DefaultNameIndex()
