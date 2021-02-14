@@ -189,7 +189,7 @@ namespace Ged2Reg.Model
             Process(nextGen);
         }
 
-        public void Exec(OoxDoc doc)
+        public void Exec(IWpdDocument doc)
         {
             _styleMap = new Dictionary<StyleSlots, Formatting>();
             foreach (StyleAssignment s in _c.Settings.StyleMap)
@@ -247,7 +247,7 @@ namespace Ged2Reg.Model
             return sb.ToString();
         }
 
-        private static bool ConditionallyEmitIndexField(OoxDoc doc, IndexSettings ixs)
+        private static bool ConditionallyEmitIndexField(IWpdDocument doc, IndexSettings ixs)
         {
             if (!ixs.Enabled) return false;
             doc.InsertPageBreak();
@@ -263,7 +263,7 @@ namespace Ged2Reg.Model
             return true;
         }
 
-        private void Emit(OoxDoc doc, GedcomIndividual individual, int gen)
+        private void Emit(IWpdDocument doc, GedcomIndividual individual, int gen)
         {
             //Formatting superFormatting = new Formatting() { Script = Script.superscript };
             Formatting generationNumberFormatting = new Formatting() { CharacterStyleName = _styleMap[StyleSlots.GenerationNumber].CharacterStyleName }; //  switched this to the style
@@ -396,7 +396,7 @@ namespace Ged2Reg.Model
             return true;
         }
 
-        internal bool ConditionallyEmitNameIndex(OoxDoc doc, IWpdParagraph p, GedcomIndividual indi)
+        internal bool ConditionallyEmitNameIndex(IWpdDocument doc, IWpdParagraph p, GedcomIndividual indi)
         {
             if (!_c.Settings.NameIndexSettings.Enabled) return false;
             string ixn = _c.Settings.NameIndexSettings.IndexName;
@@ -411,7 +411,7 @@ namespace Ged2Reg.Model
             p.AppendField(ex);
             return true;
         }
-        internal bool ConditionallyEmitPlaceIndex(OoxDoc doc, IWpdParagraph p, FormattedEvent fe)
+        internal bool ConditionallyEmitPlaceIndex(IWpdDocument doc, IWpdParagraph p, FormattedEvent fe)
         {
             if (!_c.Settings.PlaceIndexSettings.Enabled || string.IsNullOrEmpty(fe?.PlaceIndexEntry)) return false;
             string ixn = _c.Settings.PlaceIndexSettings.IndexName;

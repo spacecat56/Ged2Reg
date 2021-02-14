@@ -3,14 +3,8 @@ using System.Xml.Linq;
 
 namespace WpdInterfaceLib
 {
-    public interface IWpdIndexEntry
-    {
-        string IndexValue { get; set; }
-        string IndexName { get; set; }
-        string SeeInstead { get; set; }
-    }
 
-    public class IndexEntry : OoxFieldBase, IWpdIndexEntry
+    public class IndexEntry : OoxFieldBase
     {
         public string IndexValue { get; set; }
         public string IndexName { get; set; }
@@ -21,7 +15,7 @@ namespace WpdInterfaceLib
 
         #region Overrides of AbstractField
 
-        public override OoxFieldBase Build()
+        public override WpdFieldBase Build()
         {
             // build the contents of the field
             string fieldContents = $" XE \"{IndexValue}\" ";
@@ -69,7 +63,7 @@ namespace WpdInterfaceLib
 
         #region Overrides of AbstractField
 
-        public override OoxFieldBase Build()
+        public override WpdFieldBase Build()
         {
             StringBuilder sb = new StringBuilder();
 

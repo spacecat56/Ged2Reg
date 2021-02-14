@@ -15,7 +15,7 @@ namespace Ged2Reg.Model
         public AsyncActionDelegates ActionDelegates { get; private set; }
         public ListOfSettingsSets SettingsSets { get; set; }
         public G2RSettings Settings { get; set; }
-        public OoxDoc Doc { get; set; }
+        public IWpdDocument Doc { get; set; }
 
         public GedcomFile GedcomFile { get; set; }
 

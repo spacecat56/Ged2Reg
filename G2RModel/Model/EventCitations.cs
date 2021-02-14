@@ -45,7 +45,7 @@ namespace Ged2Reg.Model
         /// <param name="doc"></param>
         /// <param name="p"></param>
         /// <returns></returns>
-        public bool EmitNote(OoxDoc doc, IWpdParagraph p)
+        public bool EmitNote(IWpdDocument doc, IWpdParagraph p)
         {
             if (SelectedItem == null)
                 return false;
