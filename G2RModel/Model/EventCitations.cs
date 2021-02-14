@@ -61,7 +61,7 @@ namespace Ged2Reg.Model
                     ? $"[{SelectedItem.FirstFootnote.Id}]"
                     : $"{SelectedItem.FirstFootnote.Id}";
                 nrf.InsertHyperlink = true;
-                //    new NoteRefField(doc, null)
+                //    new OoxNoteRefField(doc, null)
                 //{
                 //    // CharStyle = "FootnoteReference",
                 //    MarkName = SelectedItem.FirstFootnote.BookmarkName, 

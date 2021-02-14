@@ -11,7 +11,7 @@ namespace WpdInterfaceLib
     /// A text formatting.
     /// </summary>
     public class Formatting : IComparable
-    {
+    {   // todo: clean this up, most is unused and unwanted
 		//private XElement rPr;
 		private bool? hidden;
 		private bool? bold;

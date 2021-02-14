@@ -1,8 +1,9 @@
 ﻿using DocumentFormat.OpenXml.Wordprocessing;
 using System;
 using DocumentFormat.OpenXml;
+using WpdInterfaceLib;
 
-namespace WpdInterfaceLib
+namespace OoXmlWranglerLib
 {
     public class OoxParagraph : IWpdParagraph
     {

@@ -1,9 +1,8 @@
 ﻿using System;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
-using OoXmlWranglerLib;
 
-namespace WpdInterfaceLib
+namespace OoXmlWranglerLib
 {
     public class OoxHyperlink
     {

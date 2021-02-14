@@ -1,6 +1,6 @@
 ﻿namespace WpdInterfaceLib
 {
-    public class StyleInfo
+    public class WpdStyleInfo
     {
         public string Name { get; set; }
         public string Id { get; set; }

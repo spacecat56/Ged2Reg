@@ -260,7 +260,7 @@ namespace OoXmlWranglerLib
 
         public WpdNoteRefField BuildNoteRef()
         {
-            return new NoteRefField(this);
+            return new OoxNoteRefField(this);
         }
 
         public WpdIndexField BuildIndexField()
@@ -308,15 +308,15 @@ namespace OoXmlWranglerLib
             return rv;
         }
 
-        public List<StyleInfo> ListStyles()
+        public List<WpdStyleInfo> ListStyles()
         {
             var sxDoc = _doc.MainDocumentPart.StyleDefinitionsPart.GetXDocument();
-            List<StyleInfo> rvl = new List<StyleInfo>();
+            List<WpdStyleInfo> rvl = new List<WpdStyleInfo>();
             if ((sxDoc?.Root?.IsEmpty ?? true))
                 return rvl;
             foreach (XElement styleElement in sxDoc.Root.Elements(W.style))
             {
-                rvl.Add(new StyleInfo()
+                rvl.Add(new WpdStyleInfo()
                 {
                     Id = (string)styleElement.Attribute(W.styleId),
                     Name = (string)styleElement.Elements(W.name).Attributes(W.val).FirstOrDefault(),

@@ -88,8 +88,6 @@ namespace OoXmlWranglerLib
 
             AssignNextId();
 
-            // todo: rework, abstraction needed
-
             FootnoteEndnoteType f = CreateNoteInstance();
             OoxParagraph footPara = new OoxParagraph(f.AppendChild(new Paragraph()));
             footPara.StyleName = NoteTextStyle;
@@ -109,7 +107,7 @@ namespace OoXmlWranglerLib
                         // with it will be deleted if/when Word renumbers the notes, e.g. on <Ctrl>A, F9
                         if ((ReferenceNote ??= fragment.DataObject as OoxFootnote)?.BookmarkName == null)
                             break;
-                        NoteRefField nrf = new NoteRefField(doc, null) { MarkName = ReferenceNote.BookmarkName, ContentText = $"{ReferenceNote.Id}", InsertHyperlink = true };
+                        OoxNoteRefField nrf = new OoxNoteRefField(doc, null) { MarkName = ReferenceNote.BookmarkName, ContentText = $"{ReferenceNote.Id}", InsertHyperlink = true };
                         nrf.Apply(footPara);
                         break;
                     case WpdFragmentType.Hyperlink:

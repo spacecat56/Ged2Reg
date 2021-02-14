@@ -11,7 +11,7 @@ namespace WpdInterfaceLib
         bool SetCoreProperty(string propertyName, string propertyValue);
         void Apply(WpdPageSettings ps);
         void InsertPageBreak();
-         List<StyleInfo> ListStyles();
+         List<WpdStyleInfo> ListStyles();
         //void Apply(FootnoteEndnoteType fe);
 
         // factory methods are required to participate

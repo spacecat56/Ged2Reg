@@ -6,7 +6,7 @@ using WpdInterfaceLib;
 
 namespace OoXmlWranglerLib
 {
-    public class NoteRefField : WpdNoteRefField
+    public class OoxNoteRefField : WpdNoteRefField
     {
   
         #region Overrides of AbstractField
@@ -46,10 +46,10 @@ namespace OoXmlWranglerLib
 
         #endregion
 
-        public NoteRefField(OoxDoc document, XElement xml = null) : base(document) { }
+        public OoxNoteRefField(OoxDoc document, XElement xml = null) : base(document) { }
     }
 
-    public class FieldHelper
+    internal class FieldHelper
     {
         internal static void ApplyField(OoxParagraph oxpara, WpdFieldBase f)
         {

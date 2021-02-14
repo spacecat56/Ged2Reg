@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DocumentFormat.OpenXml.Wordprocessing;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using WpdInterfaceLib;
 
-namespace WpdInterfaceLib
+namespace OoXmlWranglerLib
 {
     public static class OoxBuilders
     {

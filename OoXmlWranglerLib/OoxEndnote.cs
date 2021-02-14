@@ -1,8 +1,8 @@
 ﻿using System;
 using DocumentFormat.OpenXml.Wordprocessing;
-using OoXmlWranglerLib;
+using WpdInterfaceLib;
 
-namespace WpdInterfaceLib
+namespace OoXmlWranglerLib
 {
     public class OoxEndnote : OoxFootnote
     {
