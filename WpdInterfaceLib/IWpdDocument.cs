@@ -11,8 +11,17 @@ namespace WpdInterfaceLib
         bool SetCoreProperty(string propertyName, string propertyValue);
         void Apply(WpdPageSettings ps);
         void InsertPageBreak();
-        IWpdParagraph InsertParagraph(string text = null);
-        List<StyleInfo> ListStyles();
+         List<StyleInfo> ListStyles();
         //void Apply(FootnoteEndnoteType fe);
+
+        // factory methods are required to participate
+        IWpdParagraph InsertParagraph(string text = null);
+        WpdNoteRefField BuildNoteRef();
+        WpdIndexField BuildIndexField();
+        WpdIndexEntry BuildIndexEntryField(string indexName, string indexValue);
+        WpdFootnoteBase BuildFootNote(string noteText = null, string[] brackets = null);
+        WpdFootnoteBase BuildEndNote(string noteText = null, string[] brackets = null); // Endnote must be a subclass of Footnote
+        bool HasNonDefaultEndnotes();
+        bool HasNonDefaultFootnotes();
     }
 }

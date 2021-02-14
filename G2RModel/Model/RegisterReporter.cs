@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using G2RModel.Model;
+using OoXmlWranglerLib;
 using SimpleGedcomLib;
 //using Novacode;
 using WpdInterfaceLib;
@@ -253,13 +254,17 @@ namespace Ged2Reg.Model
             doc.InsertPageBreak();
             IWpdParagraph p = doc.InsertParagraph(ixs.IndexHeading);
             p = doc.InsertParagraph();
-            var ixf = new IndexField(doc)
-            {
-                IndexName = ixs.IndexName,
-                Columns = ixs.Columns,
-                EntryPageSeparator = ixs.Separator
-            }; //.Build();
-            p.AppendField(ixf);
+            var ixf = doc.BuildIndexField();
+            ixf.IndexName = ixs.IndexName;
+            ixf.Columns = ixs.Columns;
+            ixf.EntryPageSeparator = ixs.Separator;
+            //var ixf = new OoxIndexField(doc)
+            //{
+            //    IndexName = ixs.IndexName,
+            //    Columns = ixs.Columns,
+            //    EntryPageSeparator = ixs.Separator
+            //}; //.Build();
+            p.AppendField(ixf.Build());
             return true;
         }
 
@@ -402,12 +407,7 @@ namespace Ged2Reg.Model
             string ixn = _c.Settings.NameIndexSettings.IndexName;
             if (string.IsNullOrEmpty(ixn))
                 ixn = null;
-            var ex = new IndexEntry(doc)
-                {
-                    IndexName = ixn,
-                    IndexValue = $"{indi.SafeSurname}:{indi.SafeGivenName}"
-                }
-                .Build();
+            var ex = doc.BuildIndexEntryField(ixn, $"{indi.SafeSurname}:{indi.SafeGivenName}").Build();
             p.AppendField(ex);
             return true;
         }
@@ -417,12 +417,7 @@ namespace Ged2Reg.Model
             string ixn = _c.Settings.PlaceIndexSettings.IndexName;
             if (string.IsNullOrEmpty(ixn))
                 ixn = null;
-            var ex = new IndexEntry(doc)
-                {
-                    IndexName = ixn,
-                    IndexValue = fe.PlaceIndexEntry
-                }
-                .Build();
+            var ex = doc.BuildIndexEntryField(ixn, fe.PlaceIndexEntry).Build();
             p.AppendField(ex); // todo: consider INSERTING it if there is more text after the place
             return true;
         }

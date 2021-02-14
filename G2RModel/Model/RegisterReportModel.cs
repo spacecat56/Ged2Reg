@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 //using System.Runtime.InteropServices;
 using G2RModel.Model;
+using OoXmlWranglerLib;
 using SimpleGedcomLib;
 using WpdInterfaceLib;
 
@@ -20,6 +21,8 @@ namespace Ged2Reg.Model
         public GedcomFile GedcomFile { get; set; }
 
         public ListOfGedcomIndividuals Individuals { get; set; }
+
+        public IWpdFactory DocFactory { get; set; }
 
         //public List<GedcomFamily> AllFamilies { get; set; }
 
@@ -45,12 +48,12 @@ namespace Ged2Reg.Model
             return rv;
         }
 
-        public static List<string[]> ListAvailableStyles(Stream docstream)
+        public static List<string[]> ListAvailableStyles(IWpdFactory docFactory, Stream docstream)
         {
             List<string[]> rvl = new List<string[]>();
 
             // TODO: convert this
-            using (OoxDoc dt = OoxDoc.Load(docstream))
+            using (IWpdDocument dt = docFactory.Load(docstream))
             {
                 foreach (var styleInfo in dt.ListStyles().OrderBy(si => si.Name))
                 {
@@ -61,12 +64,12 @@ namespace Ged2Reg.Model
             return rvl;
         }
 
-        public static bool ValidateStylesDoc(Stream docstream)
+        public static bool ValidateStylesDoc(IWpdFactory docFactory, Stream docstream)
         {
-            OoxDoc dt = null;
+            IWpdDocument dt = null;
             try
             {
-                dt = OoxDoc.Load(docstream);
+                dt = docFactory.Load(docstream);
                 return !(dt.HasNonDefaultEndnotes() || dt.HasNonDefaultFootnotes());
             }
             finally

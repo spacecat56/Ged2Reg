@@ -7,8 +7,9 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using OpenXmlPowerTools;
+using WpdInterfaceLib;
 
-namespace WpdInterfaceLib
+namespace OoXmlWranglerLib
 {
     public partial class OoxDoc : IWpdDocument
     {
@@ -255,6 +256,31 @@ namespace WpdInterfaceLib
             _para = new OoxParagraph(_body.AppendChild(new Paragraph()));
 
             return _para.Append(text);
+        }
+
+        public WpdNoteRefField BuildNoteRef()
+        {
+            return new NoteRefField(this);
+        }
+
+        public WpdIndexField BuildIndexField()
+        {
+            return new OoxIndexField(this);
+        }
+
+        public WpdIndexEntry BuildIndexEntryField(string indexName, string indexValue)
+        {
+            return new OoxIndexEntry(this){IndexName = indexName, IndexValue = indexValue};
+        }
+
+        public WpdFootnoteBase BuildFootNote(string noteText = null, string[] brackets = null)
+        {
+            return new OoxFootnote(this, noteText, brackets);
+        }
+
+        public WpdFootnoteBase BuildEndNote(string noteText = null, string[] brackets = null)
+        {
+            return new OoxEndnote(this, noteText, brackets);
         }
 
         int maxFootnoteId = 0;

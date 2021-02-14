@@ -1,11 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
+using WpdInterfaceLib;
 
-namespace WpdInterfaceLib
+namespace OoXmlWranglerLib
 {
-    public class OoxDocFactory
-    { }
+    public class OoxDocFactory : IWpdFactory
+    {
+        #region Implementation of IWpdFactory
+
+        public string DocType => ".docx";
+
+        public IWpdDocument Load(Stream stream, bool editable = false)
+        {
+            return OoxDoc.Load(stream, editable);
+        }
+
+        public IWpdDocument Create(string filename)
+        {
+            return OoxDoc.Create(filename);
+        }
+
+        #endregion
+    }
 }

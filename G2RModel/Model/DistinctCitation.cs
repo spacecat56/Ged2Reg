@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using OoXmlWranglerLib;
 using SimpleGedcomLib;
 using WpdInterfaceLib;
 
@@ -37,9 +38,9 @@ namespace Ged2Reg.Model
         public bool IsEmitted { get; set; }
         //public int FirstUse { get; set; }
 
-        private OoxFootnote _firstFootnote;
+        private WpdFootnoteBase _firstFootnote;
 
-        public OoxFootnote FirstFootnote
+        public WpdFootnoteBase FirstFootnote
         {
             get => _firstFootnote;
             set

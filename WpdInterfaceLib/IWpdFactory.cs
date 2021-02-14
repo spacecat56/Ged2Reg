@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.IO;
 
 namespace WpdInterfaceLib
 {
     public interface IWpdFactory
     {
+        IWpdDocument Load(Stream stream, bool editable = false);
+        IWpdDocument Create(string filename);
+        string DocType { get; }
     }
 }

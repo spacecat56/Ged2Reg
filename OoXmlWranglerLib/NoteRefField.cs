@@ -1,17 +1,14 @@
 ﻿using System.Text;
 using System.Xml.Linq;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
+using WpdInterfaceLib;
 
-namespace WpdInterfaceLib
+namespace OoXmlWranglerLib
 {
-    public class NoteRefField : OoxFieldBase
+    public class NoteRefField : WpdNoteRefField
     {
-        public string MarkName { get; set; }
-        public bool SameFormatting { get; set; }
-        public bool InsertHyperlink { get; set; }
-        public bool InsertRelativePosition { get; set; }
- 
-
+  
         #region Overrides of AbstractField
 
         public override WpdFieldBase Build()
@@ -29,8 +26,41 @@ namespace WpdInterfaceLib
             return this;
         }
 
+        public override void Apply(IWpdParagraph p)
+        {
+            Build();
+
+            FieldHelper.ApplyField(p as OoxParagraph, this);
+        }
+
+        internal void ApplyField(OoxParagraph oxpara)
+        {
+            FieldCode fc = new FieldCode(FieldText) {Space = SpaceProcessingModeValues.Preserve};
+            oxpara.Append(new Run(new FieldChar() {FieldCharType = FieldCharValues.Begin}));
+            oxpara.Append(new Run(fc));
+            oxpara.Append(new Run(new FieldChar() {FieldCharType = FieldCharValues.Separate}));
+            if (!string.IsNullOrEmpty(ContentText))
+                oxpara.Append(new Run(new Text(ContentText)));
+            oxpara.Append(new Run(new FieldChar() {FieldCharType = FieldCharValues.End}));
+        }
+
         #endregion
 
         public NoteRefField(OoxDoc document, XElement xml = null) : base(document) { }
+    }
+
+    public class FieldHelper
+    {
+        internal static void ApplyField(OoxParagraph oxpara, WpdFieldBase f)
+        {
+            FieldCode fc = new FieldCode(f.FieldText) { Space = SpaceProcessingModeValues.Preserve };
+            oxpara.Append(new Run(new FieldChar() { FieldCharType = FieldCharValues.Begin }));
+            oxpara.Append(new Run(fc));
+            oxpara.Append(new Run(new FieldChar() { FieldCharType = FieldCharValues.Separate }));
+            if (!string.IsNullOrEmpty(f.ContentText))
+                oxpara.Append(new Run(new Text(f.ContentText)));
+            oxpara.Append(new Run(new FieldChar() { FieldCharType = FieldCharValues.End }));
+        }
+
     }
 }

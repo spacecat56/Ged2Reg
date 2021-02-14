@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using CommonClassesLib;
 using G2RModel.Model;
 using Ged2Reg.Model;
+using OoXmlWranglerLib;
 
 namespace Ged2Reg
 {
@@ -40,7 +41,11 @@ namespace Ged2Reg
             citationStrategyChoicesBindingSource1.DataSource = _csssFill;
             baptismOptionChoicesBindingSource.DataSource = _baptismOptionChoices;
 
-            _rrm = new RegisterReportModel(){Logger = this};
+            _rrm = new RegisterReportModel()
+            {
+                Logger = this, 
+                DocFactory = new OoxDocFactory()
+            };
 
             LoadSettingsSets();
 
@@ -355,7 +360,7 @@ namespace Ged2Reg
         {
             try
             {
-                if (!RegisterReportModel.ValidateStylesDoc(_rrm.Settings.GetStylesStream()))
+                if (!RegisterReportModel.ValidateStylesDoc(_rrm.DocFactory, _rrm.Settings.GetStylesStream()))
                 {
                     MessageBox.Show(
                         "Footnotes/Endnotes in the style document may result in invalid output; using an empty file (styles only) is recommended.",
@@ -368,7 +373,7 @@ namespace Ged2Reg
                 lvStyles.Columns.Add("Style Type");
                 lvStyles.View = View.Details;
                 
-                foreach (string[] style in RegisterReportModel.ListAvailableStyles(_rrm.Settings.GetStylesStream()))
+                foreach (string[] style in RegisterReportModel.ListAvailableStyles(_rrm.DocFactory, _rrm.Settings.GetStylesStream()))
                 {
                     lvStyles.Items.Add(new ListViewItem(style));
                 }

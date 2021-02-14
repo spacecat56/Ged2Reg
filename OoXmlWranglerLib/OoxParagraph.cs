@@ -34,9 +34,9 @@ namespace WpdInterfaceLib
             return this;
         }
 
-        public void AppendField(IWpdFieldBase field)
+        public void AppendField(WpdFieldBase field)
         {
-            ((OoxFieldBase)field).Apply(this);
+            field.Apply(this);
         }
 
         public void Append(string text, bool unk, Formatting formatting)

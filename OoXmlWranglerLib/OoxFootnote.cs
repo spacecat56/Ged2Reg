@@ -3,48 +3,26 @@ using System.Collections.Generic;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
+using WpdInterfaceLib;
 
-namespace WpdInterfaceLib
+namespace OoXmlWranglerLib
 {
-    public class OoxFootnote 
+    public class OoxFootnote : WpdFootnoteBase
     {
 
         public static RunStyle FootnoteRefstyle { get; set; } = new RunStyle(){Val = "FootnoteReference" };
         public VerticalTextAlignment FootnoteRefFormat { get; set; } = new VerticalTextAlignment { Val = VerticalPositionValues.Superscript };
 
-        public enum WpdFragmentType
-        {
-            Text,
-            Noteref,
-            Hyperlink
-        }
-
-        public class WpdNoteFragment
-        {
-            public WpdFragmentType Type { get; set; }
-            public string Content { get; set; }
-            public object DataObject { get; set; }
-        }
 
         public static string BookmarkNamePattern = "_RefN{0}";
- 
-        public static string DefaultFootnoteStyle { get; set; }  = "FootnoteText";
-        public static string DefaultFootnoteRefStyle { get; set; } = "FootnoteReference";
 
-        public string NoteReferenceStyle { get; internal set; }
-        public string NoteTextStyle { get; internal set; }
         public string NoteReferenceNode { get; internal set; }
         public string NoteRefNode { get; internal set; }
         public string NoteNode { get; internal set; }
-        public bool IsApplied { get; internal set; }
-        public int? Id => IsApplied ? id : (int?) null;
-        public string BookmarkName { get; set; }
-        public int BookmarkId { get; set; }
+        public override int? Id => IsApplied ? id : (int?) null;
         public OoxFootnote ReferenceNote { get; set; }
-        internal List<WpdNoteFragment> Fragments { get; set; }
 
         internal OoxDoc doc;
-        internal string[] brackets;
         internal XElement noteElement;
         internal XElement noteRefElement;
 
@@ -90,33 +68,12 @@ namespace WpdInterfaceLib
             brackets = pBrackets;
         }
 
-        public OoxFootnote AppendText(string t)
-        {
-            (Fragments ??= new List<WpdNoteFragment>())
-                .Add(new WpdNoteFragment() { Type = WpdFragmentType.Text, Content = t });
-            return this;
-        }
-
-        public OoxFootnote AppendNoteRef(OoxFootnote other)
-        {
-            (Fragments ??= new List<WpdNoteFragment>())
-                .Add(new WpdNoteFragment() { Type = WpdFragmentType.Noteref, DataObject = other});
-            return this;
-        }
-
-        public OoxFootnote AppendHyperlink(string t)
-        {
-            (Fragments ??= new List<WpdNoteFragment>())
-                .Add(new WpdNoteFragment() { Type = WpdFragmentType.Hyperlink, Content = t });
-            return this;
-        }
-
         internal virtual void AssignNextId()
         {
             id = (doc.MaxFootnoteId() + 1);
         }
 
-        public void Apply(IWpdParagraph bodyParaI, bool bookmarked = false)
+        public override void Apply(IWpdParagraph bodyParaI, bool bookmarked = false)
         {
             if (IsApplied)
             {

@@ -1,17 +1,12 @@
 ﻿using System.Text;
 using System.Xml.Linq;
+using WpdInterfaceLib;
 
-namespace WpdInterfaceLib
+namespace OoXmlWranglerLib
 {
-
-    public class IndexEntry : OoxFieldBase
+    public class OoxIndexEntry : WpdIndexEntry
     {
-        public string IndexValue { get; set; }
-        public string IndexName { get; set; }
-        public string SeeInstead { get; set; }
-        public IWpdDocument Document { get; set; }
-
-        public IndexEntry(IWpdDocument document) : base(document) { }
+        public OoxIndexEntry(IWpdDocument document) : base(document) { }
 
         #region Overrides of AbstractField
 
@@ -29,6 +24,13 @@ namespace WpdInterfaceLib
             FieldText = fieldContents;
             return this;
         }
+
+        public override void Apply(IWpdParagraph p)
+        {
+            Build();
+            FieldHelper.ApplyField(p as OoxParagraph, this);
+        }
+
         #endregion
     }
 
@@ -39,14 +41,10 @@ namespace WpdInterfaceLib
     /// NB several of the less-common options may not have been tested
     /// 
     /// </summary>
-    public class IndexField : OoxFieldBase
+    public class OoxIndexField : WpdIndexField
     {
-        public static string UpdateFieldPrompt { get; set; } = "Right-click and Update (this) field to generate the index";
         public string Bookmark { get; set; }
-        public int Columns { get; set; }
         public string SequencePageSeparator { get; set; }
-        public string EntryPageSeparator { get; set; }
-        public string IndexName { get; set; }
         public string PageRangeSeparator { get; set; }
         public string LetterHeading { get; set; }
         public string XrefSeparator { get; set; }
@@ -59,7 +57,7 @@ namespace WpdInterfaceLib
 
 
 
-        public IndexField(OoxDoc document, XElement xml = null) : base(document) { }
+        public OoxIndexField(OoxDoc document, XElement xml = null) : base(document) { }
 
         #region Overrides of AbstractField
 
@@ -88,6 +86,12 @@ namespace WpdInterfaceLib
             FieldText = sb.ToString();
             ContentText = UpdateFieldPrompt;
             return this;
+        }
+
+        public override void Apply(IWpdParagraph p)
+        {
+            Build();
+            FieldHelper.ApplyField(p as OoxParagraph, this);
         }
 
         private void AppendNonEmpty(StringBuilder sb, string field, string fieldArg)

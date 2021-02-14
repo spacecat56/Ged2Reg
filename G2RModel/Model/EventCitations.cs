@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using OoXmlWranglerLib;
 using SimpleGedcomLib;
 using WpdInterfaceLib;
 
@@ -54,13 +55,19 @@ namespace Ged2Reg.Model
 
             if (settings.RepeatNoteRefInline && SelectedItem.IsEmitted && SelectedItem.FirstFootnote != null)
             {
-                NoteRefField nrf = new NoteRefField(doc, null)
-                {
-                    // CharStyle = "FootnoteReference",
-                    MarkName = SelectedItem.FirstFootnote.BookmarkName, 
-                    ContentText = settings.Brackets ? $"[{SelectedItem.FirstFootnote.Id}]" : $"{SelectedItem.FirstFootnote.Id}", 
-                    InsertHyperlink = true
-                };
+                WpdNoteRefField nrf = doc.BuildNoteRef();
+                nrf.MarkName = SelectedItem.FirstFootnote.BookmarkName;
+                nrf.ContentText = settings.Brackets
+                    ? $"[{SelectedItem.FirstFootnote.Id}]"
+                    : $"{SelectedItem.FirstFootnote.Id}";
+                nrf.InsertHyperlink = true;
+                //    new NoteRefField(doc, null)
+                //{
+                //    // CharStyle = "FootnoteReference",
+                //    MarkName = SelectedItem.FirstFootnote.BookmarkName, 
+                //    ContentText = settings.Brackets ? $"[{SelectedItem.FirstFootnote.Id}]" : $"{SelectedItem.FirstFootnote.Id}", 
+                //    InsertHyperlink = true
+                //};
                 p.AppendField(nrf.Build());
                 p.StyleName = ("FootnoteReference");
                 return true;
@@ -72,17 +79,23 @@ namespace Ged2Reg.Model
                 string noteText = ReportContext.Instance.Settings.DebuggingOutput
                     ? $"{cr.SourceId} {cr.Text}"
                     : cr.Text;
-                OoxFootnote laterNote = settings.AsEndnotes
-                    ? new OoxEndnote(doc, noteText, settings.BracketArray)
-                    : new OoxFootnote(doc, noteText, settings.BracketArray);
+                //OoxFootnote laterNote = settings.AsEndnotes
+                //    ? new OoxEndnote(doc, noteText, settings.BracketArray)
+                //    : new OoxFootnote(doc, noteText, settings.BracketArray);
+                WpdFootnoteBase laterNote = settings.AsEndnotes 
+                    ? doc.BuildEndNote(noteText, settings.BracketArray) 
+                    : doc.BuildFootNote(noteText, settings.BracketArray);
                 laterNote.AppendText("(see note ").AppendNoteRef(SelectedItem.FirstFootnote).AppendText(").");
                 laterNote.Apply(p);
                 return true;
             }
 
-            OoxFootnote f = settings.AsEndnotes
-                ? new OoxEndnote(doc, brackets: settings.BracketArray)
-                : new OoxFootnote(doc, brackets: settings.BracketArray);
+            //OoxFootnote f = settings.AsEndnotes
+            //    ? new OoxEndnote(doc, brackets: settings.BracketArray)
+            //    : new OoxFootnote(doc, brackets: settings.BracketArray);
+            WpdFootnoteBase f = settings.AsEndnotes
+                ? doc.BuildEndNote(brackets: settings.BracketArray)
+                : doc.BuildFootNote(brackets: settings.BracketArray);
             CitationResult c = BestCitation(settings.SummarizeAdditionalCitations, settings.CitationFormatter);
             if (ReportContext.Instance.Settings.DebuggingOutput)
             {
