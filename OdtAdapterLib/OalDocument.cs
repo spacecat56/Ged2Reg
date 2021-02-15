@@ -69,12 +69,12 @@ namespace OdtAdapterLib
 
         public WpdIndexField BuildIndexField()
         {
-            throw new NotImplementedException();
+            return new OalIndex(this);
         }
 
         public WpdIndexEntry BuildIndexEntryField(string indexName, string indexValue)
         {
-            throw new NotImplementedException();
+            return new OalIndexEntry(this){ContentText = indexValue};
         }
 
         public WpdFootnoteBase BuildFootNote(string noteText = null, string[] brackets = null)

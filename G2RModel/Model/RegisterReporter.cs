@@ -223,9 +223,10 @@ namespace Ged2Reg.Model
                 }
             }
 
-            bool didIx = ConditionallyEmitIndexField(doc, _c.Settings.NameIndexSettings);
-            didIx |= ConditionallyEmitIndexField(doc, _c.Settings.PlaceIndexSettings);
-            if (didIx && _c.Settings.AsEndnotes)
+            var didIx = ConditionallyEmitIndexField(doc, _c.Settings.NameIndexSettings);
+            if (!(didIx?.SingleIndexOnly??false))
+            didIx = ConditionallyEmitIndexField(doc, _c.Settings.PlaceIndexSettings) ?? didIx;
+            if (didIx != null && _c.Settings.AsEndnotes)
                 doc.InsertPageBreak();
 
             MyReportStats.EndTime = DateTime.Now;
@@ -248,16 +249,17 @@ namespace Ged2Reg.Model
             return sb.ToString();
         }
 
-        private static bool ConditionallyEmitIndexField(IWpdDocument doc, IndexSettings ixs)
+        private static WpdIndexField ConditionallyEmitIndexField(IWpdDocument doc, IndexSettings ixs)
         {
-            if (!ixs.Enabled) return false;
+            if (!ixs.Enabled) return null;
             doc.InsertPageBreak();
-            IWpdParagraph p = doc.InsertParagraph(ixs.IndexHeading);
-            p = doc.InsertParagraph();
-            var ixf = doc.BuildIndexField();
+            IWpdParagraph p = doc.InsertParagraph(); //ixs.IndexHeading);
+            //p = doc.InsertParagraph();
+            WpdIndexField ixf = doc.BuildIndexField();
             ixf.IndexName = ixs.IndexName;
             ixf.Columns = ixs.Columns;
             ixf.EntryPageSeparator = ixs.Separator;
+            ixf.Heading = ixs.IndexHeading;
             //var ixf = new OoxIndexField(doc)
             //{
             //    IndexName = ixs.IndexName,
@@ -265,7 +267,7 @@ namespace Ged2Reg.Model
             //    EntryPageSeparator = ixs.Separator
             //}; //.Build();
             p.AppendField(ixf.Build());
-            return true;
+            return ixf;
         }
 
         private void Emit(IWpdDocument doc, GedcomIndividual individual, int gen)

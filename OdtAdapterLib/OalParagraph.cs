@@ -17,7 +17,7 @@ namespace OdtAdapterLib
 
         public void AppendField(WpdFieldBase field)
         {
-            // todo; not implemented in library
+            field.Apply(this);
         }
 
         public void Append(string text, bool unk, Formatting formatting)
