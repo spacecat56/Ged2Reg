@@ -36,7 +36,7 @@ namespace OdtAdapterLib
             OdtDocument.LineStyle ls = ("single".Equals(lineType))
                 ? OdtDocument.LineStyle.Single
                 : OdtDocument.LineStyle.Double;
-            Paragraph.Document.AppendHorizontalLine(ls);
+            Paragraph.Document.AppendHorizontalLine(ls, position, Paragraph);
         }
 
         public string StyleName

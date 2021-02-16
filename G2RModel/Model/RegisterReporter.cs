@@ -307,13 +307,13 @@ namespace Ged2Reg.Model
                 if (string.IsNullOrEmpty(s)) continue;
                 p = doc.InsertParagraph();
                 p = doc.InsertParagraph();
+                p.StyleName = _styleMap[StyleSlots.BodyTextIndent].CharacterStyleName; // trick/quirk: line may change the style, this must be done first
                 if (!lastLineWasDivider && _c.Settings.NotesDividers)
                 {
                     //p.InsertHorizontalLine(HorizontalBorderPosition.top, BorderStyle.Tcbs_single);
                     p.InsertHorizontalLine(lineType:"single", position:"top");
                     dividersApplied = true;
                 }
-                p.StyleName = _styleMap[StyleSlots.BodyTextIndent].CharacterStyleName;
                 string intro = string.Format(_c.Settings.NoteIntro, indiNotes.NameForward);
                 p.Append(intro, false, introFormatting);
                 string[] paras = s.Split('\n');
