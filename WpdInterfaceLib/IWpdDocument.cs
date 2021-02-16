@@ -16,7 +16,7 @@ namespace WpdInterfaceLib
 
         // factory methods are required to participate
         IWpdParagraph InsertParagraph(string text = null);
-        WpdNoteRefField BuildNoteRef();
+        WpdNoteRefField BuildNoteRef(WpdFootnoteBase fn);
         WpdIndexField BuildIndexField();
         WpdIndexEntry BuildIndexEntryField(string indexName, string indexValue);
         WpdFootnoteBase BuildFootNote(string noteText = null, string[] brackets = null);

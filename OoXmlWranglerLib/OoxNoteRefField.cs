@@ -46,7 +46,7 @@ namespace DocxAdapterLib
 
         #endregion
 
-        public OoxNoteRefField(OoxDoc document, XElement xml = null) : base(document) { }
+        public OoxNoteRefField(OoxDoc document, XElement xml = null) : base(document, null) { }
     }
 
     internal class FieldHelper

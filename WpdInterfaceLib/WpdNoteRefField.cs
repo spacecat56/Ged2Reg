@@ -6,10 +6,13 @@
         public bool SameFormatting { get; set; }
         public bool InsertHyperlink { get; set; }
         public bool InsertRelativePosition { get; set; }
+        public WpdFootnoteBase Footnote { get; set; }
 
 
-
-        protected WpdNoteRefField(IWpdDocument document) : base(document) { }
+        protected WpdNoteRefField(IWpdDocument document, WpdFootnoteBase fn) : base(document)
+        {
+            Footnote = fn;
+        }
 
     }
 }

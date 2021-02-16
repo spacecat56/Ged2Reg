@@ -62,9 +62,9 @@ namespace OdtAdapterLib
             return new OalParagraph() {Paragraph = Document.AppendParagraph(text)};
         }
 
-        public WpdNoteRefField BuildNoteRef()
+        public WpdNoteRefField BuildNoteRef(WpdFootnoteBase fn)
         {
-            throw new NotImplementedException();
+            return new OalNoteRef(this, fn);
         }
 
         public WpdIndexField BuildIndexField()

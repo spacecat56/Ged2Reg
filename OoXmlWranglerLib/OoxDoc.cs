@@ -258,7 +258,7 @@ namespace DocxAdapterLib
             return _para.Append(text);
         }
 
-        public WpdNoteRefField BuildNoteRef()
+        public WpdNoteRefField BuildNoteRef(WpdFootnoteBase fn)
         {
             return new OoxNoteRefField(this);
         }
