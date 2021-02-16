@@ -11,7 +11,7 @@ using WpdInterfaceLib;
 
 namespace DocxAdapterLib
 {
-    public partial class OoxDoc : IWpdDocument
+    public class OoxDoc : IWpdDocument
     {
         private WordprocessingDocument _doc;
         private MainDocumentPart _mainPart;
@@ -249,6 +249,11 @@ namespace DocxAdapterLib
             Paragraph brk = new Paragraph();
             brk.ParagraphProperties = new ParagraphProperties(){SectionProperties = _sectionProperties.Clone() as SectionProperties};
             _body.Append(brk);
+        }
+
+        public void ConfigureFootnotes(bool asEndnotes, string[] brackets)
+        {
+            // no-op in this stack
         }
 
         public IWpdParagraph InsertParagraph(string text = null)

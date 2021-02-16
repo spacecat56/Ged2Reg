@@ -109,6 +109,8 @@ namespace Ged2Reg.Model
             // todo: this has to be factory-type-aware; or otherwise reconciled
             Doc.ApplyTemplateStyles(Settings.GetStylesStream(), true);
 
+            Doc.ConfigureFootnotes(Settings.AsEndnotes, Settings.BracketArray);
+
             // clear author and title - may be copied from template
             //if (Doc.OpenCoreProps())
             {

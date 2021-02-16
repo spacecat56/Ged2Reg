@@ -57,6 +57,11 @@ namespace OdtAdapterLib
             return new List<WpdStyleInfo>();
         }
 
+        public void ConfigureFootnotes(bool asEndnotes, string[] brackets)
+        {
+            Document.ConfigureNotes(asEndnotes, brackets);
+        }
+
         public IWpdParagraph InsertParagraph(string text = null)
         {
             return new OalParagraph() {Paragraph = Document.AppendParagraph(text)};
@@ -87,7 +92,7 @@ namespace OdtAdapterLib
 
         public WpdFootnoteBase BuildEndNote(string noteText = null, string[] brackets = null)
         {
-            throw new NotImplementedException();
+            return BuildFootNote(noteText);
         }
 
         public bool HasNonDefaultEndnotes()

@@ -12,6 +12,8 @@ namespace WpdInterfaceLib
         void Apply(WpdPageSettings ps);
         void InsertPageBreak();
          List<WpdStyleInfo> ListStyles();
+
+         void ConfigureFootnotes(bool asEndnotes, string[] brackets);
         //void Apply(FootnoteEndnoteType fe);
 
         // factory methods are required to participate
