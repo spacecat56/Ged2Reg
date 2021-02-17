@@ -65,7 +65,7 @@ namespace DocxAdapterLib
             if (pBrackets == null) return;
             if (pBrackets.Length != 2)
                 throw new ArgumentException("brackets parameter must be null or two elements");
-            brackets = pBrackets;
+            Brackets = pBrackets;
         }
 
         internal virtual void AssignNextId()
@@ -131,11 +131,11 @@ namespace DocxAdapterLib
             FootnoteEndnoteReferenceType footnoteReference = CreateNoteReference();
             VerticalTextAlignment footRefFormat = new VerticalTextAlignment { Val = VerticalPositionValues.Superscript };
             Run footnoteReferenceRun = new Run() { RunProperties = new RunProperties(footRefFormat) };
-            if (brackets != null)
-                footnoteReferenceRun.AppendChild(new Text(brackets[0]));
+            if (Brackets != null)
+                footnoteReferenceRun.AppendChild(new Text(Brackets[0]));
             footnoteReferenceRun.AppendChild(footnoteReference);
-            if (brackets != null)
-                footnoteReferenceRun.AppendChild(new Text(brackets[1]));
+            if (Brackets != null)
+                footnoteReferenceRun.AppendChild(new Text(Brackets[1]));
             if (bookmarked)
             {
                 BookmarkId = NextBookmarkId;

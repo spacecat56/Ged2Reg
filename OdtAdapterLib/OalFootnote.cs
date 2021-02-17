@@ -30,7 +30,7 @@ namespace OdtAdapterLib
         {
             OdtBodyElement el = (bodyParaI as OalParagraph)?.Paragraph;
             
-            Footnote = new OdtFootnote() { Document = Document};
+            Footnote = new OdtFootnote() { Document = Document, Brackets = Brackets};
             Footnote.Build();
             foreach (WpdNoteFragment fragment in this.Fragments)
             {

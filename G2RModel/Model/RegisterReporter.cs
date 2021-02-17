@@ -75,8 +75,6 @@ namespace Ged2Reg.Model
 
             int oldState = CitationCoordinator.Reset();
 
-            _c.Settings.BracketArray = _c.Settings.Brackets ? new[] {"[", "]"} : null;
-
             _treedPersons = new HashSet<string>();
 
             // the root is generation 0

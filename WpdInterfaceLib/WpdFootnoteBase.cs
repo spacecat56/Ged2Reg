@@ -5,7 +5,7 @@ namespace WpdInterfaceLib
 {
     public abstract class WpdFootnoteBase
     {
-        public string[] brackets;
+        public string[] Brackets;
         public static string DefaultFootnoteStyle { get; set; }  = "FootnoteText";
         public static string DefaultFootnoteRefStyle { get; set; } = "FootnoteReference";
         public string NoteReferenceStyle { get;  set; }

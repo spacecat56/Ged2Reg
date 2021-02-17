@@ -91,8 +91,8 @@ namespace Ged2Reg.Model
             }
 
             //OoxFootnote f = settings.AsEndnotes
-            //    ? new OoxEndnote(doc, brackets: settings.BracketArray)
-            //    : new OoxFootnote(doc, brackets: settings.BracketArray);
+            //    ? new OoxEndnote(doc, Brackets: settings.BracketArray)
+            //    : new OoxFootnote(doc, Brackets: settings.BracketArray);
             WpdFootnoteBase f = settings.AsEndnotes
                 ? doc.BuildEndNote(brackets: settings.BracketArray)
                 : doc.BuildFootNote(brackets: settings.BracketArray);

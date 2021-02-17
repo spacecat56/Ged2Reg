@@ -98,6 +98,7 @@ namespace Ged2Reg.Model
 
             Settings.LastPersonId = root.IndividualView.Id;
             Settings.LastPersonFile = Settings.GedcomFile;
+            Settings.BracketArray = Settings.Brackets ? new[] { "[", "]" } : null;
 
             ActionDelegates = aad;
 

@@ -84,15 +84,15 @@ namespace OdtAdapterLib
 
         public WpdFootnoteBase BuildFootNote(string noteText = null, string[] brackets = null)
         {
-            var f = new OdtFootnote(){Document = Document}; // todo: brackets???
-            var rv = new OalFootnote(noteText){Footnote = f, brackets = brackets, Document = Document};
+            var f = new OdtFootnote(){Document = Document, Brackets = brackets}; 
+            var rv = new OalFootnote(noteText){Footnote = f, Brackets = brackets, Document = Document};
             
             return rv;
         }
 
         public WpdFootnoteBase BuildEndNote(string noteText = null, string[] brackets = null)
         {
-            return BuildFootNote(noteText);
+            return BuildFootNote(noteText, brackets);
         }
 
         public bool HasNonDefaultEndnotes()
