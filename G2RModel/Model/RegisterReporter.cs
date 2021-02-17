@@ -247,10 +247,11 @@ namespace Ged2Reg.Model
             return sb.ToString();
         }
 
-        private static WpdIndexField ConditionallyEmitIndexField(IWpdDocument doc, IndexSettings ixs)
+        private WpdIndexField ConditionallyEmitIndexField(IWpdDocument doc, IndexSettings ixs)
         {
             if (!ixs.Enabled) return null;
-            doc.InsertPageBreak();
+            //if (!_c.Settings.AsEndnotes) 
+            doc.BreakForIndex();
             IWpdParagraph p = doc.InsertParagraph(); //ixs.IndexHeading);
             //p = doc.InsertParagraph();
             WpdIndexField ixf = doc.BuildIndexField();
@@ -282,7 +283,7 @@ namespace Ged2Reg.Model
             //p.Append($"{gen}", generationNumberFormatting);
             p.Append($"{gen}", false, generationNumberFormatting);
             p.Append($" {individual.SafeSurname}", false, _styleMap[StyleSlots.MainPerson]);
-            ConditionallyEmitNameIndex(doc, p, individual);
+            ConditionallyEmitNameIndexEntry(doc, p, individual);
             if (_c.Settings.DebuggingOutput)
             {
                 p.Append($" [{individual.IndividualView.Id}]");
@@ -370,7 +371,7 @@ namespace Ged2Reg.Model
                         if (!child.NotLiving)
                             MyReportStats.MaybeLiving++;
                     }
-                    ConditionallyEmitNameIndex(doc, p, child);
+                    ConditionallyEmitNameIndexEntry(doc, p, child);
                     if (_c.Settings.DebuggingOutput)
                     {
                         p.Append($" [{child.IndividualView.Id}]");
@@ -401,7 +402,7 @@ namespace Ged2Reg.Model
             return true;
         }
 
-        internal bool ConditionallyEmitNameIndex(IWpdDocument doc, IWpdParagraph p, GedcomIndividual indi)
+        internal bool ConditionallyEmitNameIndexEntry(IWpdDocument doc, IWpdParagraph p, GedcomIndividual indi)
         {
             if (!_c.Settings.NameIndexSettings.Enabled) return false;
             string ixn = _c.Settings.NameIndexSettings.IndexName;
@@ -411,7 +412,7 @@ namespace Ged2Reg.Model
             p.AppendField(ex);
             return true;
         }
-        internal bool ConditionallyEmitPlaceIndex(IWpdDocument doc, IWpdParagraph p, FormattedEvent fe)
+        internal bool ConditionallyEmitPlaceIndexEntry(IWpdDocument doc, IWpdParagraph p, FormattedEvent fe)
         {
             if (!_c.Settings.PlaceIndexSettings.Enabled || string.IsNullOrEmpty(fe?.PlaceIndexEntry)) return false;
             string ixn = _c.Settings.PlaceIndexSettings.IndexName;
@@ -526,7 +527,7 @@ namespace Ged2Reg.Model
                     }
                     //ec1?.EmitNote(_c.Model.Doc, p);
                 }
-                ConditionallyEmitPlaceIndex(_c.Model.Doc, p, p1_birt);
+                ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p1_birt);
             }
 
             if (p2_bapt != null)
@@ -545,7 +546,7 @@ namespace Ged2Reg.Model
                     //chosenCitations[TagCode.BAPM.ToString()]?.EmitNote(_c.Model.Doc, p);
                     //ec2?.EmitNote(_c.Model.Doc, p);
                 }
-                ConditionallyEmitPlaceIndex(_c.Model.Doc, p, p2_bapt);
+                ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p2_bapt);
             }
 
             if (!string.IsNullOrEmpty(p3_deat?.EventString))
@@ -564,7 +565,7 @@ namespace Ged2Reg.Model
                     //chosenCitations[TagCode.DEAT.ToString()]?.EmitNote(_c.Model.Doc, p);
                     //ec3?.EmitNote(_c.Model.Doc, p);
                 }
-                ConditionallyEmitPlaceIndex(_c.Model.Doc, p, p3_deat);
+                ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p3_deat);
             }
 
             if (p4_buri != null)
@@ -583,7 +584,7 @@ namespace Ged2Reg.Model
                     //chosenCitations[TagCode.BURI.ToString()]?.EmitNote(_c.Model.Doc, p);
                     //ec4?.EmitNote(_c.Model.Doc, p);
                 }
-                ConditionallyEmitPlaceIndex(_c.Model.Doc, p, p4_buri);
+                ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p4_buri);
             }
 
             if (reduced) return toDoNotes;
@@ -623,7 +624,7 @@ namespace Ged2Reg.Model
                         if (!indi.NotLiving)
                             MyReportStats.MaybeLiving++;
                     }
-                    ConditionallyEmitNameIndex(_c.Model.Doc, p, spouse);
+                    ConditionallyEmitNameIndexEntry(_c.Model.Doc, p, spouse);
                     if (_c.Settings.DebuggingOutput)
                     {
                         p.Append($" [{spouse.IndividualView.Id}]");
@@ -637,7 +638,7 @@ namespace Ged2Reg.Model
                 if (!string.IsNullOrEmpty(p5_marr?.EventString))
                 {
                     p.Append($"{p5_marr.EventString}");
-                    ConditionallyEmitPlaceIndex(_c.Model.Doc, p, p5_marr);
+                    ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p5_marr);
                 }
                 // todo: divorces (complicates the punctuation and citation placement)
                 p.Append(".");
@@ -719,7 +720,7 @@ namespace Ged2Reg.Model
                     MyReportStats.SpouseParents++;
                     if (!spousesChildhoodFamily.Husband.NotLiving)
                         MyReportStats.MaybeLiving++;
-                    ConditionallyEmitNameIndex(_c.Model.Doc, p, spousesChildhoodFamily.Husband);
+                    ConditionallyEmitNameIndexEntry(_c.Model.Doc, p, spousesChildhoodFamily.Husband);
                     if (_c.Settings.DebuggingOutput)
                     {
                         p.Append($" [{spousesChildhoodFamily.Husband.IndividualView.Id}]");
@@ -732,7 +733,7 @@ namespace Ged2Reg.Model
                     MyReportStats.SpouseParents++;
                     if (!spousesChildhoodFamily.Wife.NotLiving)
                         MyReportStats.MaybeLiving++;
-                    ConditionallyEmitNameIndex(_c.Model.Doc, p, spousesChildhoodFamily.Wife);
+                    ConditionallyEmitNameIndexEntry(_c.Model.Doc, p, spousesChildhoodFamily.Wife);
                     if (_c.Settings.DebuggingOutput)
                     {
                         p.Append($" [{spousesChildhoodFamily.Wife.IndividualView.Id}]");
@@ -757,7 +758,7 @@ namespace Ged2Reg.Model
                 }
 
                 p.Append($"{connector}{p1_birt?.EventString??p2_bapt?.EventString}{(hasDb?",":null)}");
-                ConditionallyEmitPlaceIndex(_c.Model.Doc, p, p1_birt??p2_bapt);
+                ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p1_birt??p2_bapt);
                 if (hasDb)
                 {
                     connector = $" and {spouse.Pronoun.ToLower()}";
@@ -784,7 +785,7 @@ namespace Ged2Reg.Model
             if (hasDb)
             {
                 p.Append($"{connector}{p3_deat?.EventString ?? p4_buri?.EventString}");
-                ConditionallyEmitPlaceIndex(_c.Model.Doc, p, p3_deat??p4_buri);
+                ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p3_deat??p4_buri);
                 p.Append(closer);
                 closer = null;
                 if (doCite)

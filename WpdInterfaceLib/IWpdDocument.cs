@@ -25,5 +25,6 @@ namespace WpdInterfaceLib
         WpdFootnoteBase BuildEndNote(string noteText = null, string[] brackets = null); // Endnote must be a subclass of Footnote
         bool HasNonDefaultEndnotes();
         bool HasNonDefaultFootnotes();
+        void BreakForIndex();
     }
 }

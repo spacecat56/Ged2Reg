@@ -339,6 +339,12 @@ namespace DocxAdapterLib
         {
             return _footnotesPart?.Footnotes.LongCount() > 2;
         }
+
+        public void BreakForIndex()
+        {
+            InsertPageBreak();
+        }
+
         public HyperlinkRelationship AddHyperlinkRelationship(Uri uri, bool external, OoxHyperlink.LinkLocation inFootnote)
         {
             switch (inFootnote)

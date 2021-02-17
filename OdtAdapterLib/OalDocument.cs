@@ -92,7 +92,10 @@ namespace OdtAdapterLib
 
         public WpdFootnoteBase BuildEndNote(string noteText = null, string[] brackets = null)
         {
-            return BuildFootNote(noteText, brackets);
+            var f = new OdtEndnote() { Document = Document, Brackets = brackets };
+            var rv = new OalFootnote(noteText) { Footnote = f, Brackets = brackets, Document = Document };
+
+            return rv;
         }
 
         public bool HasNonDefaultEndnotes()
@@ -103,6 +106,11 @@ namespace OdtAdapterLib
         public bool HasNonDefaultFootnotes()
         {// todo
             return false;
+        }
+
+        public void BreakForIndex()
+        {
+            //  no-op here
         }
 
         #endregion
