@@ -22,7 +22,7 @@ namespace OdtAdapterLib
 
         public void Append(string text, bool unk, Formatting formatting)
         { // todo: bold, italic as direct-applied stylings
-            Paragraph.Append(text, formatting.CharacterStyleName);
+            Paragraph.Append(text, formatting.CharacterStyleName, formatting.Bold, formatting.Italic);
         }
         /// <summary>
         /// There is a mismatch between docx and odt, in the way these "lines" are defined.
