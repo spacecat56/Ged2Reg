@@ -15,7 +15,7 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_14D4161337AC42E1999CC17472DBA28D"
+        "MsmKey" = "8:_4A20E7EC33E8447F914B58D38918222F"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -82,6 +82,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
             }
         }
     }
@@ -201,15 +209,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:GEDCOM to Register"
-        "ProductCode" = "8:{51587974-C0EF-4FD7-9904-7A9757333505}"
-        "PackageCode" = "8:{A83A2D06-B0B6-46B7-A879-CA2A5766B87A}"
+        "ProductCode" = "8:{26CEDE73-B9BE-49E8-9EEB-8ACB65072254}"
+        "PackageCode" = "8:{62D85C53-858B-4948-8D47-6AC59904E801}"
         "UpgradeCode" = "8:{66149C9B-4BEE-4441-BC71-7555612B9F39}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.15"
+        "ProductVersion" = "8:1.0.19"
         "Manufacturer" = "8:West Leitrim Software"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -322,7 +330,7 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_7D1C342147E445F28868D5309A9F5555"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_CE9B1C55AE0E49879A1DE10BCAA356C6"
             {
             "Name" = "8:GEDCOM to Register"
             "Arguments" = "8:"
@@ -330,7 +338,7 @@
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_14D4161337AC42E1999CC17472DBA28D"
+            "Target" = "8:_4A20E7EC33E8447F914B58D38918222F"
             "Folder" = "8:_C74E65BAE5E84C91873AB627B8D9E967"
             "WorkingFolder" = "8:_ACCB816607154A3E87548B09A36E6A75"
             "Icon" = "8:_54351EC491394971ACBA78EE868B87B0"
@@ -735,7 +743,7 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_14D4161337AC42E1999CC17472DBA28D"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_4A20E7EC33E8447F914B58D38918222F"
             {
             "SourcePath" = "8:..\\Ged2Reg\\obj\\Debug\\net5.0-windows\\apphost.exe"
             "TargetName" = "8:"

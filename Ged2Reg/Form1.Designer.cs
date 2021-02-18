@@ -1042,7 +1042,7 @@ namespace Ged2Reg
             this.cbSettingsSet.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cbSettingsSet.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbSettingsSet.FormattingEnabled = true;
-            this.cbSettingsSet.Location = new System.Drawing.Point(516, 582);
+            this.cbSettingsSet.Location = new System.Drawing.Point(496, 592);
             this.cbSettingsSet.Name = "cbSettingsSet";
             this.cbSettingsSet.Size = new System.Drawing.Size(233, 26);
             this.cbSettingsSet.TabIndex = 27;
@@ -2261,7 +2261,7 @@ namespace Ged2Reg
             this.label34.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label34.AutoSize = true;
             this.label34.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label34.Location = new System.Drawing.Point(29, 597);
+            this.label34.Location = new System.Drawing.Point(29, 606);
             this.label34.Name = "label34";
             this.label34.Size = new System.Drawing.Size(439, 15);
             this.label34.TabIndex = 34;
