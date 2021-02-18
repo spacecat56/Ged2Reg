@@ -9,6 +9,8 @@
     <RootNamespace>Ged2Reg</RootNamespace>
     <AssemblyName>Ged2Reg</AssemblyName>
     <ApplicationIcon>Custom-Icon-Design-Pretty-Office-5-Glossary.ico</ApplicationIcon>
+    <StartupObject>Ged2Reg.Program</StartupObject>
+    <PackageIcon>Custom-Icon-Design-Pretty-Office-5-Glossary.ico</PackageIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -35,6 +37,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="stylesFile.docx" />
+    <None Include="Resources\Custom-Icon-Design-Pretty-Office-5-Glossary.ico">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup><!--<EmbeddedResource Include="AboutBox1.resx">

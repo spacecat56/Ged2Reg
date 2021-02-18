@@ -7,15 +7,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ged2Reg", "Ged2Reg\Ged2Reg.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "G2RModel", "G2RModel\G2RModel.csproj", "{8847A6FA-CC58-493F-951F-19EA9EF9343A}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Ged2RegSetup", "Ged2RegSetup\Ged2RegSetup.vdproj", "{2FC30AF0-796A-4FD7-942C-B78564D7C2CC}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocxAdapterLib", "OoXmlWranglerLib\DocxAdapterLib.csproj", "{55E10FF2-ED06-4739-B830-4F19EAE92D90}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WpdInterfaceLib", "WpdInterfaceLib\WpdInterfaceLib.csproj", "{3088301D-F71A-411F-B0B5-3FEEF2737223}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SOL", "..\..\SOL\SOL\SOL.csproj", "{5BFF3126-C628-42FD-8AE9-7D6080AF3B45}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OdtAdapterLib", "OdtAdapterLib\OdtAdapterLib.csproj", "{D161B778-112D-4661-B66C-809BBCE8C582}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OdtAdapterLib", "OdtAdapterLib\OdtAdapterLib.csproj", "{D161B778-112D-4661-B66C-809BBCE8C582}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Ged2RegInstaller", "Ged2RegInstaller\Ged2RegInstaller.vdproj", "{3985B255-E07F-4882-87A9-33A29B718C70}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,16 +71,6 @@ Global
 		{8847A6FA-CC58-493F-951F-19EA9EF9343A}.Release|x64.Build.0 = Release|Any CPU
 		{8847A6FA-CC58-493F-951F-19EA9EF9343A}.Release|x86.ActiveCfg = Release|Any CPU
 		{8847A6FA-CC58-493F-951F-19EA9EF9343A}.Release|x86.Build.0 = Release|Any CPU
-		{2FC30AF0-796A-4FD7-942C-B78564D7C2CC}.Debug|Any CPU.ActiveCfg = Debug
-		{2FC30AF0-796A-4FD7-942C-B78564D7C2CC}.Debug|ARM.ActiveCfg = Debug
-		{2FC30AF0-796A-4FD7-942C-B78564D7C2CC}.Debug|ARM64.ActiveCfg = Debug
-		{2FC30AF0-796A-4FD7-942C-B78564D7C2CC}.Debug|x64.ActiveCfg = Debug
-		{2FC30AF0-796A-4FD7-942C-B78564D7C2CC}.Debug|x86.ActiveCfg = Debug
-		{2FC30AF0-796A-4FD7-942C-B78564D7C2CC}.Release|Any CPU.ActiveCfg = Release
-		{2FC30AF0-796A-4FD7-942C-B78564D7C2CC}.Release|ARM.ActiveCfg = Release
-		{2FC30AF0-796A-4FD7-942C-B78564D7C2CC}.Release|ARM64.ActiveCfg = Release
-		{2FC30AF0-796A-4FD7-942C-B78564D7C2CC}.Release|x64.ActiveCfg = Release
-		{2FC30AF0-796A-4FD7-942C-B78564D7C2CC}.Release|x86.ActiveCfg = Release
 		{55E10FF2-ED06-4739-B830-4F19EAE92D90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{55E10FF2-ED06-4739-B830-4F19EAE92D90}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55E10FF2-ED06-4739-B830-4F19EAE92D90}.Debug|ARM.ActiveCfg = Debug|Any CPU
@@ -161,6 +151,16 @@ Global
 		{D161B778-112D-4661-B66C-809BBCE8C582}.Release|x64.Build.0 = Release|Any CPU
 		{D161B778-112D-4661-B66C-809BBCE8C582}.Release|x86.ActiveCfg = Release|Any CPU
 		{D161B778-112D-4661-B66C-809BBCE8C582}.Release|x86.Build.0 = Release|Any CPU
+		{3985B255-E07F-4882-87A9-33A29B718C70}.Debug|Any CPU.ActiveCfg = Debug
+		{3985B255-E07F-4882-87A9-33A29B718C70}.Debug|ARM.ActiveCfg = Debug
+		{3985B255-E07F-4882-87A9-33A29B718C70}.Debug|ARM64.ActiveCfg = Debug
+		{3985B255-E07F-4882-87A9-33A29B718C70}.Debug|x64.ActiveCfg = Debug
+		{3985B255-E07F-4882-87A9-33A29B718C70}.Debug|x86.ActiveCfg = Debug
+		{3985B255-E07F-4882-87A9-33A29B718C70}.Release|Any CPU.ActiveCfg = Release
+		{3985B255-E07F-4882-87A9-33A29B718C70}.Release|ARM.ActiveCfg = Release
+		{3985B255-E07F-4882-87A9-33A29B718C70}.Release|ARM64.ActiveCfg = Release
+		{3985B255-E07F-4882-87A9-33A29B718C70}.Release|x64.ActiveCfg = Release
+		{3985B255-E07F-4882-87A9-33A29B718C70}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
