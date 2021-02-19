@@ -265,6 +265,10 @@ namespace Ged2Reg
                 Application.DoEvents();
                 PushReluctantBindings();
                 Application.DoEvents();
+
+                _rrm.Settings.ProgramName = AboutBox1.AssemblyTitle;
+                _rrm.Settings.ProgramVer = AboutBox1.AssemblyVersion;
+                
                 // clear instances based on editable collections so they will be recreated with current contents
                 _rrm.Settings.Reset(); 
                 object o = dgvStartPerson.SelectedRows[0]?.DataBoundItem;
@@ -286,6 +290,10 @@ namespace Ged2Reg
                 Log($"Report created ({_rrm.Settings.OutFile} in {elapsed:g})");
                 Log(_rrm.Reporter.GetStatsSummary(), false);
                 Log($"completed processing; see Log for details");
+                // do this here, hoping the property change events will propagate....
+                _rrm.Settings.LastRun = _rrm.Reporter.MyReportStats.EndTime = DateTime.Now;
+                _rrm.Settings.LastRunTimeSpan = _rrm.Reporter.MyReportStats.PrepTime.Add(_rrm.Reporter.MyReportStats.ReportTime);
+                _rrm.Settings.LastFileCreated = _rrm.Settings.OutFile;
             }
             catch (CanceledByUserException cbu)
             {

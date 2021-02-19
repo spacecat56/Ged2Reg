@@ -222,20 +222,30 @@ namespace Ged2Reg.Model
             }
 
             var didIx = ConditionallyEmitIndexField(doc, _c.Settings.NameIndexSettings);
-            if (!(didIx?.SingleIndexOnly??false))
-            didIx = ConditionallyEmitIndexField(doc, _c.Settings.PlaceIndexSettings) ?? didIx;
-            if (didIx != null && _c.Settings.AsEndnotes)
+            if (!(didIx?.SingleIndexOnly??false)) didIx = ConditionallyEmitIndexField(doc, _c.Settings.PlaceIndexSettings) ?? didIx;
+            if (_c.Settings.ReportSummary || (didIx != null && _c.Settings.AsEndnotes))
                 doc.InsertPageBreak();
 
-            MyReportStats.EndTime = DateTime.Now;
+            //_c.Settings.LastRun = MyReportStats.EndTime =  DateTime.Now;
+            //_c.Settings.LastRunTimeSpan = MyReportStats.PrepTime.Add(MyReportStats.ReportTime);
+            //_c.Settings.LastFileCreated = _c.Settings.OutFile;
+
+            if (!_c.Settings.ReportSummary) return;
+
+            var p = doc.InsertParagraph();
+            p.StyleName = "ReportInfo";
+            p.Append(_c.Settings.ReportKeySettings());
+            p = doc.InsertParagraph();
+            p.StyleName = "ReportInfo";
+            p.Append(GetStatsSummary().Replace("\t", ""));
         }
 
         public string GetStatsSummary()
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Summary of report processing");
-            sb.AppendLine($"\tPrep time..................{MyReportStats.PrepTime:h\\:mm\\:ss\\.fff}");
-            sb.AppendLine($"\tRun time...................{MyReportStats.ReportTime:h\\:mm\\:ss\\.fff}");
+            sb.AppendLine($"\tPrep time...................{MyReportStats.PrepTime:h\\:mm\\:ss\\.fff}");
+            sb.AppendLine($"\tRun time....................{MyReportStats.ReportTime:h\\:mm\\:ss\\.fff}");
             sb.AppendLine($"\tMain/continued persons.....{MyReportStats.MainPerson,8:N0}");
             sb.AppendLine($"\tNon-continued children.....{MyReportStats.NonContinuedPerson,8:N0}");
             sb.AppendLine($"\tMain spouses...............{MyReportStats.MainSpouse,8:N0}");

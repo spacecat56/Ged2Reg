@@ -287,11 +287,16 @@ namespace Ged2Reg.Model
         //private string _placeIndexName = "places";
 
         private IndexSettings _nameIndexSettings;
-
         private IndexSettings _placeIndexSettings;
-
         private DocumentType _documentType;
 
+        private bool _reportSummary;
+        private DateTime? _lastRun;
+        private TimeSpan? _lastRunSpan;
+        private string _lastFile;
+        private bool _otherEvents;
+        
+        
         [DataMember]
         public DocumentType DocumentType
         {
@@ -299,9 +304,7 @@ namespace Ged2Reg.Model
             set { _documentType = value; OnPropertyChanged(); }
         }
 
-
-
-        // todo: dersialization will not init (some of) these
+        // note: dersialization does not init (some of) these
         public void DefaultNameIndex()
         {
             NameIndexSettings = new IndexSettings()
@@ -325,6 +328,56 @@ namespace Ged2Reg.Model
                 Role = IndexRole.Places,
                 Separator = "\t"
             };
+        }
+
+        public void ClearLastFileInfo()
+        {
+            LastRunTimeSpan = null;
+            LastRun = null;
+            LastFileCreated = null;
+        }
+
+
+        #region transients 
+
+        [IgnoreDataMember] public string ProgramName { get; set; }
+        [IgnoreDataMember] public string ProgramVer { get; set; }
+
+        #endregion
+
+        [DataMember]
+        public bool IncludeOtherEvents
+        {
+            get { return _otherEvents; }
+            set { _otherEvents = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public DateTime? LastRun
+        {
+            get { return _lastRun; }
+            set { _lastRun = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public TimeSpan? LastRunTimeSpan
+        {
+            get { return _lastRunSpan; }
+            set { _lastRunSpan = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public string LastFileCreated
+        {
+            get { return _lastFile; }
+            set { _lastFile = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public bool ReportSummary
+        {
+            get { return _reportSummary; }
+            set { _reportSummary = value; OnPropertyChanged(); }
         }
 
         [DataMember]
@@ -563,6 +616,47 @@ namespace Ged2Reg.Model
         //        OnPropertyChanged();
         //    }
         //}
+
+        public string ReportKeySettings()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("Settings (selected)");
+            Append(sb, "Set name", this.SetName);
+            Append(sb, "Program name", this.ProgramName);
+            Append(sb, "Program version", this.ProgramVer);
+            Append(sb, "Generations", this.Generations);
+            Append(sb, "Obscure living", this.ObscureLiving);
+            Append(sb, "Reduce place names", this.ReducePlaceNames);
+            Append(sb, "Inject county", this.InjectCounty);
+            Append(sb, "Drop USA", this.DropUsa);
+            Append(sb, "Reformat unknowns", this.HandleUnknownNames);
+            Append(sb, "Unknown input", this.UnknownInSource);
+            Append(sb, "Unknown output", this.UnknownInReport);
+            Append(sb, "Citation strategy", this.CitationStrategy);
+            Append(sb, "Citation fill-in strategy", this.FillinCitationStrategy);
+            Append(sb, "As end notes", this.AsEndnotes);
+            Append(sb, "Summarize additional", this.SummarizeAdditionalCitations);
+            Append(sb, "Max in summary", this.NumberCitesToSumamrize);
+            Append(sb, "Use 'see note'", this.UseSeeNote);
+            Append(sb, "Repeat ref inline", this.RepeatNoteRefInline);
+            Append(sb, "Brackets", this.Brackets);
+            Append(sb, "Omit on continued", this.OmitCitesOnContinued);
+            Append(sb, "Notes / main persons", this.MainPersonNotes);
+            Append(sb, "Notes / spouses", this.SpousesNotes);
+            Append(sb, "Convert dividers", this.ConvertDividers);
+            Append(sb, "Name index", this.NameIndexSettings?.Enabled??false);
+            Append(sb, "Place index", this.PlaceIndexSettings?.Enabled ?? false);
+            Append(sb, "Input file", Path.GetFileName(GedcomFile));
+            Append(sb, "Output file", Path.GetFileName(OutFile));
+
+            return sb.ToString();
+        }
+
+        private void Append(StringBuilder sb, string caption, object content, int width = 30)
+        {
+            sb.AppendLine($"{caption.PadRight(width, '.')}{content}");
+        }
 
         public void Reset()
         {

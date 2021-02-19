@@ -33,7 +33,7 @@ namespace Ged2Reg
 
         #region Assembly Attribute Accessors
 
-        public string AssemblyTitle
+        public static string AssemblyTitle
         {
             get
             {
@@ -50,7 +50,7 @@ namespace Ged2Reg
             }
         }
 
-        public string AssemblyVersion
+        public static string AssemblyVersion
         {
             get
             {
