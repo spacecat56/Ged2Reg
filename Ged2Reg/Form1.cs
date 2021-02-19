@@ -291,9 +291,12 @@ namespace Ged2Reg
                 Log(_rrm.Reporter.GetStatsSummary(), false);
                 Log($"completed processing; see Log for details");
                 // do this here, hoping the property change events will propagate....
-                _rrm.Settings.LastRun = _rrm.Reporter.MyReportStats.EndTime = DateTime.Now;
-                _rrm.Settings.LastRunTimeSpan = _rrm.Reporter.MyReportStats.PrepTime.Add(_rrm.Reporter.MyReportStats.ReportTime);
-                _rrm.Settings.LastFileCreated = _rrm.Settings.OutFile;
+                // but that results in inaccurate reports
+                //_rrm.Settings.LastRun = _rrm.Reporter.MyReportStats.EndTime = DateTime.Now;
+                //_rrm.Settings.LastRunTimeSpan = _rrm.Reporter.MyReportStats.PrepTime.Add(_rrm.Reporter.MyReportStats.ReportTime);
+                //_rrm.Settings.LastFileCreated = _rrm.Settings.OutFile;
+                // so, let's jiggle the handle instead
+                bsG2RSettings.ResetBindings(false);
             }
             catch (CanceledByUserException cbu)
             {

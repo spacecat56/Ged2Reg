@@ -226,9 +226,12 @@ namespace Ged2Reg.Model
             if (_c.Settings.ReportSummary || (didIx != null && _c.Settings.AsEndnotes))
                 doc.InsertPageBreak();
 
-            //_c.Settings.LastRun = MyReportStats.EndTime =  DateTime.Now;
-            //_c.Settings.LastRunTimeSpan = MyReportStats.PrepTime.Add(MyReportStats.ReportTime);
-            //_c.Settings.LastFileCreated = _c.Settings.OutFile;
+            // this has to be done now to accurate reporting
+            // side effect: the ui does not update correctly, it 
+            // appears that the binding events are ignored (wrong thread?)
+            _c.Settings.LastRun = MyReportStats.EndTime = DateTime.Now;
+            _c.Settings.LastRunTimeSpan = MyReportStats.PrepTime.Add(MyReportStats.ReportTime);
+            _c.Settings.LastFileCreated = _c.Settings.OutFile;
 
             if (!_c.Settings.ReportSummary) return;
 
@@ -244,8 +247,6 @@ namespace Ged2Reg.Model
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Summary of report processing");
-            sb.AppendLine($"\tPrep time...................{MyReportStats.PrepTime:h\\:mm\\:ss\\.fff}");
-            sb.AppendLine($"\tRun time....................{MyReportStats.ReportTime:h\\:mm\\:ss\\.fff}");
             sb.AppendLine($"\tMain/continued persons.....{MyReportStats.MainPerson,8:N0}");
             sb.AppendLine($"\tNon-continued children.....{MyReportStats.NonContinuedPerson,8:N0}");
             sb.AppendLine($"\tMain spouses...............{MyReportStats.MainSpouse,8:N0}");
@@ -253,7 +254,11 @@ namespace Ged2Reg.Model
             sb.AppendLine($"\tParents of spouses.........{MyReportStats.SpouseParents,8:N0}");
             sb.AppendLine($"\tPersons possibly living....{MyReportStats.MaybeLiving,8:N0}");
             sb.AppendLine($"\tCitations..................{MyReportStats.Citations,8:N0}");
-            sb.Append($"\tDistinct citations.........{MyReportStats.DistinctCitations,8:N0}");
+            sb.AppendLine($"\tDistinct citations.........{MyReportStats.DistinctCitations,8:N0}");
+            sb.AppendLine($"\tPrep time...................{MyReportStats.PrepTime:h\\:mm\\:ss\\.fff}");
+            sb.AppendLine($"\tRun time....................{MyReportStats.ReportTime:h\\:mm\\:ss\\.fff}");
+            sb.AppendLine($"\tTotal execution time........{MyReportStats.ReportTime.Add(MyReportStats.PrepTime):h\\:mm\\:ss\\.fff}");
+            sb.Append($"\tDate/time completed.........{MyReportStats.EndTime}");
             return sb.ToString();
         }
 

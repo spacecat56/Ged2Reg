@@ -1,0 +1,8 @@
+﻿Ged2Reg Toto List
+
+
+Bugs - Open
+
+1. In docx, inline repeated references are not superscipts.
+2. In odt, repeated runs with the same file name accumulate content instead of replacing it.
+

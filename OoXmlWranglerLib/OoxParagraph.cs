@@ -1,6 +1,10 @@
 ﻿using DocumentFormat.OpenXml.Wordprocessing;
 using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
 using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using WpdInterfaceLib;
 
 namespace DocxAdapterLib
@@ -31,7 +35,7 @@ namespace DocxAdapterLib
         {
             if (text == null)
                 return this;
-            MyParagraph.AppendChild(new Run(new Text(text) { Space = SpaceProcessingModeValues.Preserve }));
+            MyParagraph.AppendChild(new Run(Prepare(text)));
             return this;
         }
 
@@ -44,7 +48,58 @@ namespace DocxAdapterLib
         {
             if (text == null)
                 return ;
-            MyParagraph.AppendChild(new Run(new Text(text){ Space = SpaceProcessingModeValues.Preserve }){RunProperties = OoxBuilders.BuildRunProperties(formatting)});
+            MyParagraph.AppendChild(new Run(Prepare(text)){RunProperties = OoxBuilders.BuildRunProperties(formatting)});
+        }
+
+        internal OpenXmlElement[] Prepare(string s)
+        {
+            void AppendNonEmptyText(StringBuilder stringBuilder, List<OpenXmlElement> list)
+            {
+                if (stringBuilder.Length > 0)
+                {
+                    list.Add(new Text(stringBuilder.ToString()) {Space = SpaceProcessingModeValues.Preserve});
+                    stringBuilder.Clear();
+                }
+            }
+
+            List<OpenXmlElement> rvl = new List<OpenXmlElement>();
+            //string[] texts = Regex.Split(s, @"(?<=[\t\n])");
+            //string[] texts = s.Split(new[] {'\t', '\n'}, StringSplitOptions.None);
+            //foreach (string text in texts)
+            //{
+            //    switch (text)
+            //    {
+            //        case "\t":
+            //            rvl.Add(new TabChar());
+            //            break;
+            //        case "\n":
+            //            rvl.Add(new Break());
+            //            break;
+            //        default:
+            //            rvl.Add(new Text(text) { Space = SpaceProcessingModeValues.Preserve });
+            //            break;
+            //    }
+            //}
+            StringBuilder sb = new StringBuilder();
+            foreach (char c in s.ToCharArray())
+            {
+                switch (c)
+                {
+                    case '\t':
+                        AppendNonEmptyText(sb, rvl);
+                        rvl.Add(new TabChar());
+                        break;
+                    case '\n':
+                        AppendNonEmptyText(sb, rvl);
+                        rvl.Add(new Break());
+                        break;
+                    default:
+                        sb.Append(c);
+                        break;
+                }
+            }
+            AppendNonEmptyText(sb, rvl);
+            return rvl.ToArray();
         }
 
         public void InsertHorizontalLine(string lineType, string position = "bottom")
