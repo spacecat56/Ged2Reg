@@ -8,11 +8,20 @@
 
     <RootNamespace>G2RModel</RootNamespace>
     <AssemblyName>G2RModel</AssemblyName>
+    <Deterministic>false</Deterministic>
+    <Company>West Leitrim Software</Company>
+    <Copyright>Copyright © 2021</Copyright>
+    <AssemblyVersion>0.5.*</AssemblyVersion>
+    <FileVersion>0.5.0.0</FileVersion>
+    <Version>0.5.0.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <Optimize>false</Optimize>
   </PropertyGroup>
+
+  <!--<PropertyGroup>
+  </PropertyGroup>-->
 
   <ItemGroup>
     <None Remove="Resources\stylesFile.docx" />

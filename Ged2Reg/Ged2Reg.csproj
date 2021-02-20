@@ -13,9 +13,25 @@
     <PackageIcon>Custom-Icon-Design-Pretty-Office-5-Glossary.ico</PackageIcon>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Deterministic>false</Deterministic>
+    <!--<Company>West Leitrim Software</Company>
+    <Product>Ged2Reg</Product>
+    <Title>Ged2Reg</Title>
+    <Description>Create a register-format document file starting with a selected person in a gedcom file.  Output uses styles recommended by NEHGS (default), or of your own choosing (advanced users).</Description>
+    <Copyright>Copyright © 2021</Copyright>
+    <AssemblyVersion>0.5.*</AssemblyVersion>
+    <FileVersion>0.5.0.0</FileVersion>
+    <Version>0.5.0.1</Version>-->
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <Optimize>false</Optimize>
   </PropertyGroup>
+
+  <!--<ItemGroup>
+    <Compile Remove="Properties\AssemblyInfo.cs" />
+  </ItemGroup>-->
 
   <ItemGroup>
     <None Include="Properties\Settings.settings">
