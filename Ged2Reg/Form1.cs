@@ -427,7 +427,7 @@ namespace Ged2Reg
         {
             try
             {
-                _rrm.Settings.DefaultNameIndex();
+                _rrm.Settings.InitNameIndexSettings();
                 bsNameIndexSettings.DataSource = _rrm.Settings.NameIndexSettings;
             }
             catch (Exception ex)
@@ -441,7 +441,7 @@ namespace Ged2Reg
         {
             try
             {
-                _rrm.Settings.DefaultPlaceIndex();
+                _rrm.Settings.InitPlaceIndexSettings();
                 bsPlaceIndexSettings.DataSource = _rrm.Settings.PlaceIndexSettings;
             }
             catch (Exception ex)

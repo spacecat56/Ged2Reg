@@ -6,155 +6,53 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Microsoft.Win32;
 
-//using System.Windows.Forms;
 
 namespace Ged2Reg.Model
 {
-
-    public enum StyleSlots
-    {
-        Normal,
-        MainPerson,
-        MainPersonText,
-        BodyTextIndent, 
-        KidsIntro,
-        Kids,
-        ChildName,
-        KidMoreText,
-        Grandkids,
-        GrandkidName,
-        GenerationNumber,
-    }
-
+    #region enums
     public enum DocumentType
     {
         DocX,
         Odt
     }
 
-    public class StyleAssignment  : AbstractBindableModel
+    public enum PatternRole
     {
-        private StyleSlots _slot;
-        private string _styleName;
-
-        public StyleAssignment() { }
-
-
-        public StyleAssignment(StyleSlots slot)
-        {
-            _slot = slot;
-            _styleName = slot.ToString();
-        }
-
-        public StyleSlots Style
-        {
-            get { return _slot; }
-            set { _slot = value; OnPropertyChanged(); }
-        }
-
-        public string StyleName
-        {
-            get { return _styleName; }
-            set { _styleName = value; OnPropertyChanged(); }
-        }
-
+        Unknown,
+        DateBetween,
+        DateAboutBeforeAfter,
+        DateBefore,
+        DateAbout,
+        DateAfter,
+        Date,
+        PlaceUSA,
+        Place3or4,
+        Place1or2,
     }
 
-    public class ListOfStyleAssignments : SortableBindingList<StyleAssignment> { }
-
-    //[DataContract]
-    public class ListOfSettingsSets : List<G2RSettings>
+    public enum CitationPartName
     {
-        public const string DefaultSetName = "DefaultSettings";
-        public ListOfSettingsSets Save(string path = null)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                path = GetPath();
-            }
-
-            if (!Directory.Exists(Path.GetDirectoryName(path)))
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
-            SimpleSerializer<ListOfSettingsSets> ser = new SimpleSerializer<ListOfSettingsSets>();
-            ser.Persist(path, this);
-            return this;
-        }
-        public static ListOfSettingsSets Load(string path = null)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                path = GetPath();
-            }
-
-            if (!File.Exists(path))
-            {
-                ListOfSettingsSets rv0 = new ListOfSettingsSets();
-                try
-                {
-                    G2RSettings rvi = G2RSettings.Load();
-                    rvi.SetName = DefaultSetName;
-                    rv0.Add(rvi);
-                }
-                catch (FileNotFoundException)
-                {
-                    G2RSettings rvi = new G2RSettings() { SetName = DefaultSetName }.Init(); ;
-                    rv0.Add(rvi);
-                }
-
-                rv0.Save();
-                return rv0;
-            }
-            SimpleSerializer<ListOfSettingsSets> ser = new SimpleSerializer<ListOfSettingsSets>();
-            ListOfSettingsSets rv = ser.Load(path);
-            return rv;
-        }
-
-        public G2RSettings GetSettings(string name = DefaultSetName, G2RSettings cloneFrom = null)
-        {
-            G2RSettings rv = Find(s => name.Equals(s.SetName));
-            if (rv != null) return rv.InitInternals();
-            rv = new G2RSettings(){SetName = name}.Init();
-            if (cloneFrom != null)
-            {
-                // todo: clone settings
-            }
-            Add(rv);
-            return rv;
-        }
-
-        private static string GetPath()
-        {
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"West Leitrim Software\Ged2Reg\Ged2RegSettingsSets.xml");
-        }
-
-        public void Update(G2RSettings settings)
-        {
-            G2RSettings victim = Find(s => settings.SetName.Equals(s.SetName));
-            if (victim != null)
-                Remove(victim);
-            Add(settings);
-        }
+        None,
+        Source_AUTH,
+        Source_TITL,
+        Source_PUBL,
+        Source_REPO,
+        Source_NOTE,
+        Source_TEXT,
+        Source_ABBR,
+        Citation_PAGE,
+        Citation_DATA_TEXT,
+        Citation_DATA_DATE,
+        Citation_URL,
+        LiteralOnly
     }
+    #endregion
 
     [DataContract]
     public class G2RSettings : AbstractBindableModel
     {
-
-
-        public G2RSettings Save(string path = null)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                path = GetPath();
-            }
-            SimpleSerializer<G2RSettings> ser = new SimpleSerializer<G2RSettings>();
-            ser.Persist(path, this);
-            return this;
-        }
+        #region persistence and constructor
         public static G2RSettings Load(string path = null)
         {
             if (string.IsNullOrEmpty(path))
@@ -169,11 +67,33 @@ namespace Ged2Reg.Model
             return rv;
         }
         
+        public G2RSettings Save(string path = null)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                path = GetPath();
+            }
+            SimpleSerializer<G2RSettings> ser = new SimpleSerializer<G2RSettings>();
+            ser.Persist(path, this);
+            return this;
+        }
+        
         private static string GetPath()
         {
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"West Leitrim Software\Ged2Reg\Ged2RegSettings.xml");
         }
 
+        public G2RSettings()
+        {
+            // initialize to push the calculated value to boundary year
+            LivingFence = 99;
+            InitInternals();
+            InitNameIndexSettings();
+            InitPlaceIndexSettings();
+        }
+        #endregion
+        
+        #region testing
         public G2RSettings TestInit()
         {
             Init();
@@ -220,12 +140,14 @@ namespace Ged2Reg.Model
             };
             return this;
         }
+        #endregion
 
+        #region private/backing fields
         private string _stylesFile;
         private string _outfile;
         private string _gedcomFile;
         private ListOfStyleAssignments _styleMap;
-        private bool _appendGrandkids = false;
+        private bool _appendGrandkids;
         
         private bool _obscureLiving = true;
         private int _livingFence = 99;
@@ -279,13 +201,6 @@ namespace Ged2Reg.Model
 
         private bool _debug;
 
-        //private string _nameIndexHeading = "Index of Names";
-        //private string _placeIndexHeading = "Index of Places";
-        //private bool _nameIndex = true;
-        //private bool _placeIndex;
-        //private string _nameIndexName = "names";
-        //private string _placeIndexName = "places";
-
         private IndexSettings _nameIndexSettings;
         private IndexSettings _placeIndexSettings;
         private DocumentType _documentType;
@@ -295,17 +210,17 @@ namespace Ged2Reg.Model
         private TimeSpan? _lastRunSpan;
         private string _lastFile;
         private bool _otherEvents;
-        
-        
-        [DataMember]
-        public DocumentType DocumentType
-        {
-            get { return _documentType; }
-            set { _documentType = value; OnPropertyChanged(); }
-        }
 
-        // note: dersialization does not init (some of) these
-        public void DefaultNameIndex()
+        private string _author;
+        private string _title;
+
+        private TextCleaner _cleaner;
+
+        #endregion
+
+        #region initializations
+        // note: deserialization does not init (some of) these
+        public void InitNameIndexSettings()
         {
             NameIndexSettings = new IndexSettings()
             {
@@ -317,7 +232,7 @@ namespace Ged2Reg.Model
                 Separator = "\t"
             };
         }
-        public void DefaultPlaceIndex()
+        public void InitPlaceIndexSettings()
         {
             PlaceIndexSettings = new IndexSettings()
             {
@@ -329,7 +244,6 @@ namespace Ged2Reg.Model
                 Separator = "\t"
             };
         }
-
         public void ClearLastFileInfo()
         {
             LastRunTimeSpan = null;
@@ -337,13 +251,156 @@ namespace Ged2Reg.Model
             LastFileCreated = null;
         }
 
+        public void Reset()
+        {
+            _citeShortFormatter = _citeFormatter = null;
+        }
+        public G2RSettings Init()
+        {
+            // For clarity, this list only includes the suggested styles 
+            // that are actually used in the report
+            // NB any mods to the reporter that use additional styles
+            // will require un-commenting the corresponding slots
+            // here and in the value list!
 
-        #region transients 
+            StyleMap = new ListOfStyleAssignments()
+            {
+                // DO NOT DELETE the commented values here, they may be used later
+                new StyleAssignment(StyleSlots.ChildName),
+                //new StyleAssignment(StyleSlots.GrandkidName),
+                //new StyleAssignment(StyleSlots.Grandkids),
+                //new StyleAssignment(StyleSlots.KidMoreText),
+                new StyleAssignment(StyleSlots.Kids),
+                new StyleAssignment(StyleSlots.KidsIntro),
+                new StyleAssignment(StyleSlots.MainPerson),
+                // // new StyleAssignment(StyleSlots.Normal),
+                new StyleAssignment(StyleSlots.MainPersonText),
+                new StyleAssignment(StyleSlots.BodyTextIndent),
+                new StyleAssignment(StyleSlots.GenerationNumber),
+            };
+            //StyleMap.Add(_saMainText  = new StyleAssignment(StyleSlots.MainPersonText){StyleName = MainPersonTextStyle});
 
+            // default regexes for dates - based on FTM data 
+            DateRules = new List<ContentReformatter>()
+            {
+                new ContentReformatter(){Role = PatternRole.DateAboutBeforeAfter, RecognizerPattern = @"\A((?<about>ABT)|(?<after>AFT)|(?<before>BEF))\s+(?<date>.+)\z", Emitter = @"{0} {1}"},
+                //new ContentReformatter(){Role = PatternRole.DateAfter, RecognizerPattern = @"AFT\s+(?<year>\d{4})\s+AND\s+(?<year2>\d{4})", Emitter = @"after {0}"},
+                //new ContentReformatter(){Role = PatternRole.DateBefore, RecognizerPattern = @"BEF\s+(?<year>\d{4})\s+AND\s+(?<year2>\d{4})", Emitter = @"before {0}"},
+                //new ContentReformatter(){Role = PatternRole.DateAbout, RecognizerPattern = @"\AABT\s+(?<date>.+)\z", Emitter = @"about {0}"},
+                new ContentReformatter(){Role = PatternRole.DateBetween, RecognizerPattern = @"BET\s+(?<year>\d{4})\s+AND\s+(?<year2>\d{4})", Emitter = @"between ${year} and ${year2}"},
+                new ContentReformatter(){Role = PatternRole.Date, RecognizerPattern = @"\A((?<day>\d{1,2})\s+)?((?<month>[A-Z]{3})\s+)?(?<year>\d{4}(/\d{1,2})?)?\z", Emitter = @"${day} {0} ${year}"},
+                new ContentReformatter(){Role = PatternRole.PlaceUSA, RecognizerPattern = @"\A(?<PLACE>.*?), (USA|(United States of America))\z", Emitter = @""},
+                new ContentReformatter(){Role = PatternRole.Place3or4, RecognizerPattern = @"\A((?<locale>.+, ))?((?<city>.+)(, ))((?<county>.+)(, ))((?<state>.+))\z", Emitter = @"${locale}${city}, ${county}, ${state}", ShortEmitter = @"${locale}${city}"},
+                new ContentReformatter(){Role = PatternRole.Place1or2, RecognizerPattern = @"\A((?<city>.+, ))?((?<state>.+))\z", Emitter = @"${city}${state}"},
+
+                new ContentReformatter(){Role = PatternRole.Unknown, RecognizerPattern = @"", Emitter = @""},
+
+            };
+
+            return this;
+        }
+
+        public G2RSettings InitInternals()
+        {
+            InitStyleSlotChoices();
+            InitTextCleanerChoices();
+            InitPageMetrics();
+            return this;
+        }
+
+        public void InitPageMetrics()
+        {
+            PageH = 11f;
+            PageW = 8.5f;
+            MarginB = 1.2f;
+            MarginL = 1.5f;
+            MarginR = 1.5f;
+            MarginT = 1.3f;
+        }
+
+        public List<NamedValue<TextCleanerContext>> TextCleanerChoices;
+        //    = new List<NamedValue<TextCleanerContext>>()
+        //{
+        //    new NamedValue<TextCleanerContext>() {Name = "Nowhere", Value = TextCleanerContext.Nowhere},
+        //    new NamedValue<TextCleanerContext>() {Name = "Everywhere", Value = TextCleanerContext.Everywhere},
+        //    new NamedValue<TextCleanerContext>() {Name = "Full Citation", Value = TextCleanerContext.FullCitation},
+        //    new NamedValue<TextCleanerContext>() {Name = "See Note", Value = TextCleanerContext.SeeNote},
+        //    new NamedValue<TextCleanerContext>() {Name = "Others List", Value = TextCleanerContext.OthersList},
+        //};
+
+        public void InitTextCleanerChoices()
+        {
+            TextCleanerChoices = new List<NamedValue<TextCleanerContext>>()
+            {
+                new NamedValue<TextCleanerContext>() {Name = "Nowhere", Value = TextCleanerContext.Nowhere},
+                new NamedValue<TextCleanerContext>() {Name = "Everywhere", Value = TextCleanerContext.Everywhere},
+                new NamedValue<TextCleanerContext>() {Name = "Full Citation", Value = TextCleanerContext.FullCitation},
+                new NamedValue<TextCleanerContext>() {Name = "See Note", Value = TextCleanerContext.SeeNote},
+                new NamedValue<TextCleanerContext>() {Name = "Others List", Value = TextCleanerContext.OthersList},
+            };
+        }
+
+        public void InitStyleSlotChoices()
+        {
+
+            StyleSlotChoices = new List<NamedValue<StyleSlots>>()
+            {
+                // DO NOT DELETE the commented values here, they may be used later
+                //new NamedValue<StyleSlots>(){Name = "Additional main person text", Value = StyleSlots.BodyTextIndent},
+                new NamedValue<StyleSlots>() {Name = "Child name", Value = StyleSlots.ChildName},
+                new NamedValue<StyleSlots>() {Name = "Children intro", Value = StyleSlots.KidsIntro},
+                //new NamedValue<StyleSlots>(){Name = "Child additional text", Value = StyleSlots.KidMoreText},
+                new NamedValue<StyleSlots>() {Name = "Children", Value = StyleSlots.Kids},
+                new NamedValue<StyleSlots>() {Name = "Generation number", Value = StyleSlots.GenerationNumber},
+                //new NamedValue<StyleSlots>(){Name = "Grandchild name", Value = StyleSlots.GrandkidName},
+                //new NamedValue<StyleSlots>(){Name = "Grandchildren", Value = StyleSlots.Grandkids},
+                new NamedValue<StyleSlots>() {Name = "Main person name (char)", Value = StyleSlots.MainPerson},
+                new NamedValue<StyleSlots>() {Name = "Main person text (para)", Value = StyleSlots.MainPersonText},
+                new NamedValue<StyleSlots>() {Name = "Main Notes", Value = StyleSlots.BodyTextIndent},
+            };
+        }
+        private List<NamedValue<CitationPartName>> BuildCitePartChoices()
+        {
+            return new List<NamedValue<CitationPartName>>()
+            {
+                new NamedValue<CitationPartName>() {Name = "Source ABBR", Value = CitationPartName.Source_ABBR},
+                new NamedValue<CitationPartName>() {Name = "Source AUTH", Value = CitationPartName.Source_AUTH},
+                new NamedValue<CitationPartName>() {Name = "Source NOTE", Value = CitationPartName.Source_NOTE},
+                new NamedValue<CitationPartName>() {Name = "Source PUBL", Value = CitationPartName.Source_PUBL},
+                new NamedValue<CitationPartName>() {Name = "Source REPO", Value = CitationPartName.Source_REPO},
+                new NamedValue<CitationPartName>() {Name = "Source TEXT", Value = CitationPartName.Source_TEXT},
+                new NamedValue<CitationPartName>() {Name = "Source TITL", Value = CitationPartName.Source_TITL},
+                new NamedValue<CitationPartName>() {Name = "Citation  DATA.DATE", Value = CitationPartName.Citation_DATA_DATE},
+                new NamedValue<CitationPartName>() {Name = "Citation  DATA.TEXT", Value = CitationPartName.Citation_DATA_TEXT},
+                new NamedValue<CitationPartName>() {Name = "Citation  PAGE", Value = CitationPartName.Citation_PAGE},
+                new NamedValue<CitationPartName>() {Name = "Citation  URL (_LINK)", Value = CitationPartName.Citation_URL},
+                new NamedValue<CitationPartName>() {Name = "Literal", Value = CitationPartName.LiteralOnly},
+                new NamedValue<CitationPartName>() {Name = "None", Value = CitationPartName.None},
+            };
+        }
+        #endregion
+        
+        #region transients
         [IgnoreDataMember] public string ProgramName { get; set; }
         [IgnoreDataMember] public string ProgramVer { get; set; }
 
+        // this does not de/serialize readily because of parent back-ref; it will rebuild from the list on use
+        [IgnoreDataMember] 
+        public TextCleaner CitationTitleCleaner
+        {
+            get { return _cleaner ?? (_cleaner = new TextCleaner(TextCleaners)); }
+            set { _cleaner = value; }
+        }
+
         #endregion
+
+        #region persistent/bindable properties
+        [DataMember]
+        public DocumentType DocumentType
+        {
+            get { return _documentType; }
+            set { _documentType = value; OnPropertyChanged(); }
+        }
 
         [DataMember]
         public bool IncludeOtherEvents
@@ -422,32 +479,11 @@ namespace Ged2Reg.Model
             set { _marginB = value; OnPropertyChanged(); }
         }
 
-
-
-        public G2RSettings()
-        {
-            // initialize to push the calculated value to boundary year
-            LivingFence = 99;
-            InitInternals();
-            DefaultNameIndex();
-            DefaultPlaceIndex();
-        }
-
         [DataMember]
         public string SetName { get; set; }
 
         [DataMember]
         public ListOfTextCleanerEntry TextCleaners { get; set; }
-
-        private TextCleaner _cleaner;
-
-        // this does not de/serialize readily because of parent back-ref; it will rebuild from the list on use
-        [IgnoreDataMember] 
-        public TextCleaner CitationTitleCleaner
-        {
-            get { return _cleaner ?? (_cleaner = new TextCleaner(TextCleaners)); }
-            set { _cleaner = value; }
-        }
 
         [DataMember]
         public bool DebuggingOutput
@@ -456,20 +492,9 @@ namespace Ged2Reg.Model
             set { _debug = value; OnPropertyChanged(); }
         }
 
-
         [DataMember]
         public List<ContentReformatter> DateRules { get; set; }
 
-        public Stream GetStylesStream()
-        {
-            if (!string.IsNullOrEmpty(StylesFile) && File.Exists(StylesFile))
-            {
-                return File.Open(StylesFile, FileMode.Open);
-            }
-            string[] resNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-            string rn = resNames.FirstOrDefault(s => s.Contains("stylesFile.docx"));
-            return Assembly.GetExecutingAssembly().GetManifestResourceStream(rn);
-        }
         [DataMember]
         public bool HandleUnknownNames
         {
@@ -524,8 +549,6 @@ namespace Ged2Reg.Model
                 OnPropertyChanged();
             }
         }
-
-        public bool Citations => CitationStrategy != CitationStrategy.None;
 
         [DataMember]
         public bool MainPersonNotes
@@ -604,96 +627,6 @@ namespace Ged2Reg.Model
             }
         }
 
-
-        //private string _citationStructure = $"";
-
-        //public string CitationStructure
-        //{
-        //    get { return _citationStructure; }
-        //    set
-        //    {
-        //        _citationStructure = value;
-        //        OnPropertyChanged();
-        //    }
-        //}
-
-        public string ReportKeySettings()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine("Settings (selected)");
-            Append(sb, "Set name", this.SetName);
-            Append(sb, "Program name", this.ProgramName);
-            Append(sb, "Program version", this.ProgramVer);
-            Append(sb, "Generations", this.Generations);
-            Append(sb, "Obscure living", this.ObscureLiving);
-            Append(sb, "Reduce place names", this.ReducePlaceNames);
-            Append(sb, "Inject county", this.InjectCounty);
-            Append(sb, "Drop USA", this.DropUsa);
-            Append(sb, "Reformat unknowns", this.HandleUnknownNames);
-            Append(sb, "Unknown input", this.UnknownInSource);
-            Append(sb, "Unknown output", this.UnknownInReport);
-            Append(sb, "Citation strategy", this.CitationStrategy);
-            Append(sb, "Citation fill-in strategy", this.FillinCitationStrategy);
-            Append(sb, "As end notes", this.AsEndnotes);
-            Append(sb, "Summarize additional", this.SummarizeAdditionalCitations);
-            Append(sb, "Max in summary", this.NumberCitesToSumamrize);
-            Append(sb, "Use 'see note'", this.UseSeeNote);
-            Append(sb, "Repeat ref inline", this.RepeatNoteRefInline);
-            Append(sb, "Brackets", this.Brackets);
-            Append(sb, "Omit on continued", this.OmitCitesOnContinued);
-            Append(sb, "Notes / main persons", this.MainPersonNotes);
-            Append(sb, "Notes / spouses", this.SpousesNotes);
-            Append(sb, "Convert dividers", this.ConvertDividers);
-            Append(sb, "Name index", this.NameIndexSettings?.Enabled??false);
-            Append(sb, "Place index", this.PlaceIndexSettings?.Enabled ?? false);
-            Append(sb, "Input file", Path.GetFileName(GedcomFile));
-            Append(sb, "Output file", Path.GetFileName(OutFile));
-
-            return sb.ToString();
-        }
-
-        private void Append(StringBuilder sb, string caption, object content, int width = 30)
-        {
-            sb.AppendLine($"{caption.PadRight(width, '.')}{content}");
-        }
-
-        public void Reset()
-        {
-            _citeShortFormatter = _citeFormatter = null;
-        }
-
-        private CitationFormatter _citeShortFormatter;
-        private CitationFormatter _citeFormatter;
-
-        public CitationFormatter CitationShortFormatter => _citeShortFormatter
-               ?? (_citeShortFormatter = new CitationFormatter() 
-                   { Parts = new List<CitationPart>(CitationPartsSeeNote), OperationContext = TextCleanerContext.SeeNote});
-
-        public CitationFormatter CitationFormatter => _citeFormatter
-               ?? (_citeFormatter = new CitationFormatter() 
-                   { Parts = new List<CitationPart>(CitationPartsFull), OperationContext = TextCleanerContext.FullCitation});
-
-        //private ListOfCitationParts _citationPartsFull = new ListOfCitationParts()
-        //{
-        //    new CitationPart() {Name = CitationPartName.Source_AUTH, FormatString = "{0}, "},
-        //    new CitationPart() {Name = CitationPartName.Source_TITL, FormatString = "{0}: "},
-        //    new CitationPart() {Name = CitationPartName.Citation_PAGE, FormatString = "{0}, "},
-        //    new CitationPart() {Name = CitationPartName.Citation_DATA_TEXT, FormatString = "{0}.", NullValue = "."},
-        //    new CitationPart() {Name = CitationPartName.Citation_URL, FormatString = " [Online (may require membership) at: {0}.]", IsActive = true},
-        //}.AutoSequence();
-
-        private ListOfCitationParts _citationPartsFull = new ListOfCitationParts()
-        {
-            new CitationPart() {Name = CitationPartName.Source_AUTH, FormatString = "{0}", TrailingSeparator = ", "},
-            new CitationPart() {Name = CitationPartName.Source_TITL, FormatString = "{0}", TrailingSeparator = ": "},
-            new CitationPart() {Name = CitationPartName.Citation_PAGE, FormatString = "{0}", TrailingSeparator = ", "},
-            new CitationPart() {Name = CitationPartName.Citation_DATA_TEXT, FormatString = "{0}"},
-            new CitationPart() {Name = CitationPartName.LiteralOnly, FormatString = "."},
-            new CitationPart() {Name = CitationPartName.Citation_URL, FormatString = " [Online (may require membership) at: {0}.]", IsActive = true},
-        }.AutoSequence();
-
-
         [DataMember]
         public ListOfCitationParts CitationPartsFull
         {
@@ -705,17 +638,6 @@ namespace Ged2Reg.Model
             }
         }
 
-        private ListOfCitationParts _citationPartsSeeNote = new ListOfCitationParts()
-        {
-            //new CitationPart() {Name = CitationPartName.Source_AUTH, FormatString = "{0}, "},
-            new CitationPart() {Name = CitationPartName.Source_TITL, FormatString = "{0} ", Sequence = 1},
-            //new CitationPart() {Name = CitationPartName.Citation_PAGE, FormatString = "{0}, "},
-            //new CitationPart() {Name = CitationPartName.Citation_DATA_TEXT, FormatString = "{0}.", NullValue = "."},
-            //new CitationPart() {Name = CitationPartName.Citation_URL, FormatString = ""},
-        };
-
-        private string _author;
-
         [DataMember]
         public string Author
         {
@@ -726,7 +648,6 @@ namespace Ged2Reg.Model
                 OnPropertyChanged();
             }
         }
-        private string _title;
 
         [DataMember]
         public string Title
@@ -738,7 +659,6 @@ namespace Ged2Reg.Model
                 OnPropertyChanged();
             }
         }
-
 
         [DataMember]
         public ListOfCitationParts CitationPartsSeeNote
@@ -803,7 +723,6 @@ namespace Ged2Reg.Model
             set { _repeatInline = value; OnPropertyChanged(); }
         }
 
-        public bool BookMarkNotes => UseSeeNote || RepeatNoteRefInline;
 
         [DataMember]
         public bool OmitCitesOnContinued
@@ -887,8 +806,6 @@ namespace Ged2Reg.Model
             }
         }
 
-        public int PresumedLivingBoundaryYear { get; private set; }
-
         [DataMember]
         public bool IncludeBurial
         {
@@ -909,9 +826,6 @@ namespace Ged2Reg.Model
             get { return _baptismOption; }
             set { _baptismOption = value; OnPropertyChanged(); }
         }
-
-        public bool IncludeBaptism => BaptismOption == BaptismOptions.Always;
-        public bool BaptIfNoBirt => BaptismOption == BaptismOptions.WhenNoBirth;
 
         [DataMember]
         public bool IncludeFactDescriptions
@@ -976,43 +890,6 @@ namespace Ged2Reg.Model
             set { _lastPersonFile = value; OnPropertyChanged(); }
         }
 
-
-        //public string NameIndexHeading
-        //{
-        //    get { return _nameIndexHeading; }
-        //    set { _nameIndexHeading = value; OnPropertyChanged(); }
-        //}
-
-        //public string NameIndexName
-        //{
-        //    get { return _nameIndexName; }
-        //    set { _nameIndexName = value; OnPropertyChanged(); }
-        //}
-
-        //public string PlaceIndexHeading
-        //{
-        //    get { return _placeIndexHeading; }
-        //    set { _placeIndexHeading = value; OnPropertyChanged(); }
-        //}
-
-        //public string PlaceIndexName
-        //{
-        //    get { return _placeIndexName; }
-        //    set { _placeIndexName = value; OnPropertyChanged(); }
-        //}
-
-        //public bool NameIndex
-        //{
-        //    get { return _nameIndex; }
-        //    set { _nameIndex = value; OnPropertyChanged(); }
-        //}
-
-        //public bool PlaceIndex
-        //{
-        //    get { return _placeIndex; }
-        //    set { _placeIndex = value; OnPropertyChanged(); }
-        //}
-
         [DataMember]
         public IndexSettings NameIndexSettings
         {
@@ -1026,93 +903,113 @@ namespace Ged2Reg.Model
             get => _placeIndexSettings;
             set => _placeIndexSettings = value;
         }
+        #endregion
 
-        public G2RSettings Init()
+        #region public convenience functions
+        public string ReportKeySettings()
         {
-            // For clarity, this list only includes the suggested styles 
-            // that are actually used in the report
-            // NB any mods to the reporter that use additional styles
-            // will require un-commenting the corresponding slots
-            // here and in the value list!
+            StringBuilder sb = new StringBuilder();
 
-            StyleMap = new ListOfStyleAssignments()
+            sb.AppendLine("Settings (selected)");
+            Append(sb, "Set name", this.SetName);
+            Append(sb, "Program name", this.ProgramName);
+            Append(sb, "Program version", this.ProgramVer);
+            Append(sb, "Generations", this.Generations);
+            Append(sb, "Obscure living", this.ObscureLiving);
+            Append(sb, "Reduce place names", this.ReducePlaceNames);
+            Append(sb, "Inject county", this.InjectCounty);
+            Append(sb, "Drop USA", this.DropUsa);
+            Append(sb, "Reformat unknowns", this.HandleUnknownNames);
+            Append(sb, "Unknown input", this.UnknownInSource);
+            Append(sb, "Unknown output", this.UnknownInReport);
+            Append(sb, "Citation strategy", this.CitationStrategy);
+            Append(sb, "Citation fill-in strategy", this.FillinCitationStrategy);
+            Append(sb, "As end notes", this.AsEndnotes);
+            Append(sb, "Summarize additional", this.SummarizeAdditionalCitations);
+            Append(sb, "Max in summary", this.NumberCitesToSumamrize);
+            Append(sb, "Use 'see note'", this.UseSeeNote);
+            Append(sb, "Repeat ref inline", this.RepeatNoteRefInline);
+            Append(sb, "Brackets", this.Brackets);
+            Append(sb, "Omit on continued", this.OmitCitesOnContinued);
+            Append(sb, "Notes / main persons", this.MainPersonNotes);
+            Append(sb, "Notes / spouses", this.SpousesNotes);
+            Append(sb, "Convert dividers", this.ConvertDividers);
+            Append(sb, "Name index", this.NameIndexSettings?.Enabled??false);
+            Append(sb, "Place index", this.PlaceIndexSettings?.Enabled ?? false);
+            Append(sb, "Input file", Path.GetFileName(GedcomFile));
+            Append(sb, "Output file", Path.GetFileName(OutFile));
+
+            return sb.ToString();
+        }
+
+        private void Append(StringBuilder sb, string caption, object content, int width = 30)
+        {
+            sb.AppendLine($"{caption.PadRight(width, '.')}{content}");
+        }
+
+        public Stream GetStylesStream()
+        {
+            if (!string.IsNullOrEmpty(StylesFile) && File.Exists(StylesFile))
             {
-                // DO NOT DELETE the commented values here, they may be used later
-                new StyleAssignment(StyleSlots.ChildName),
-                //new StyleAssignment(StyleSlots.GrandkidName),
-                //new StyleAssignment(StyleSlots.Grandkids),
-                //new StyleAssignment(StyleSlots.KidMoreText),
-                new StyleAssignment(StyleSlots.Kids),
-                new StyleAssignment(StyleSlots.KidsIntro),
-                new StyleAssignment(StyleSlots.MainPerson),
-                // // new StyleAssignment(StyleSlots.Normal),
-                new StyleAssignment(StyleSlots.MainPersonText),
-                new StyleAssignment(StyleSlots.BodyTextIndent),
-                new StyleAssignment(StyleSlots.GenerationNumber),
-            };
-            //StyleMap.Add(_saMainText  = new StyleAssignment(StyleSlots.MainPersonText){StyleName = MainPersonTextStyle});
-
-            // default regexes for dates - based on FTM data 
-            DateRules = new List<ContentReformatter>()
-            {
-                new ContentReformatter(){Role = PatternRole.DateAboutBeforeAfter, RecognizerPattern = @"\A((?<about>ABT)|(?<after>AFT)|(?<before>BEF))\s+(?<date>.+)\z", Emitter = @"{0} {1}"},
-                //new ContentReformatter(){Role = PatternRole.DateAfter, RecognizerPattern = @"AFT\s+(?<year>\d{4})\s+AND\s+(?<year2>\d{4})", Emitter = @"after {0}"},
-                //new ContentReformatter(){Role = PatternRole.DateBefore, RecognizerPattern = @"BEF\s+(?<year>\d{4})\s+AND\s+(?<year2>\d{4})", Emitter = @"before {0}"},
-                //new ContentReformatter(){Role = PatternRole.DateAbout, RecognizerPattern = @"\AABT\s+(?<date>.+)\z", Emitter = @"about {0}"},
-                new ContentReformatter(){Role = PatternRole.DateBetween, RecognizerPattern = @"BET\s+(?<year>\d{4})\s+AND\s+(?<year2>\d{4})", Emitter = @"between ${year} and ${year2}"},
-                new ContentReformatter(){Role = PatternRole.Date, RecognizerPattern = @"\A((?<day>\d{1,2})\s+)?((?<month>[A-Z]{3})\s+)?(?<year>\d{4}(/\d{1,2})?)?\z", Emitter = @"${day} {0} ${year}"},
-                new ContentReformatter(){Role = PatternRole.PlaceUSA, RecognizerPattern = @"\A(?<PLACE>.*?), (USA|(United States of America))\z", Emitter = @""},
-                new ContentReformatter(){Role = PatternRole.Place3or4, RecognizerPattern = @"\A((?<locale>.+, ))?((?<city>.+)(, ))((?<county>.+)(, ))((?<state>.+))\z", Emitter = @"${locale}${city}, ${county}, ${state}", ShortEmitter = @"${locale}${city}"},
-                new ContentReformatter(){Role = PatternRole.Place1or2, RecognizerPattern = @"\A((?<city>.+, ))?((?<state>.+))\z", Emitter = @"${city}${state}"},
-
-                new ContentReformatter(){Role = PatternRole.Unknown, RecognizerPattern = @"", Emitter = @""},
-
-            };
-
-            return this;
+                return File.Open(StylesFile, FileMode.Open);
+            }
+            string[] resNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+            string rn = resNames.FirstOrDefault(s => s.Contains("stylesFile.docx"));
+            return Assembly.GetExecutingAssembly().GetManifestResourceStream(rn);
         }
+        #endregion
 
+        #region citation formatting
+        private CitationFormatter _citeShortFormatter;
+        private CitationFormatter _citeFormatter;
 
-        public G2RSettings InitInternals()
-        {
-            InitStyleSlotChoices();
-            InitTextCleanerChoices();
-            InitPageMetrics();
-            return this;
-        }
+        public CitationFormatter CitationShortFormatter => _citeShortFormatter
+               ?? (_citeShortFormatter = new CitationFormatter() 
+                   { Parts = new List<CitationPart>(CitationPartsSeeNote), OperationContext = TextCleanerContext.SeeNote});
 
-        public void InitPageMetrics()
-        {
-            PageH = 11f;
-            PageW = 8.5f;
-            MarginB = 1.2f;
-            MarginL = 1.5f;
-            MarginR = 1.5f;
-            MarginT = 1.3f;
-        }
+        public CitationFormatter CitationFormatter => _citeFormatter
+               ?? (_citeFormatter = new CitationFormatter() 
+                   { Parts = new List<CitationPart>(CitationPartsFull), OperationContext = TextCleanerContext.FullCitation});
 
-        public List<NamedValue<TextCleanerContext>> TextCleanerChoices;
-        //    = new List<NamedValue<TextCleanerContext>>()
+        //private ListOfCitationParts _citationPartsFull = new ListOfCitationParts()
         //{
-        //    new NamedValue<TextCleanerContext>() {Name = "Nowhere", Value = TextCleanerContext.Nowhere},
-        //    new NamedValue<TextCleanerContext>() {Name = "Everywhere", Value = TextCleanerContext.Everywhere},
-        //    new NamedValue<TextCleanerContext>() {Name = "Full Citation", Value = TextCleanerContext.FullCitation},
-        //    new NamedValue<TextCleanerContext>() {Name = "See Note", Value = TextCleanerContext.SeeNote},
-        //    new NamedValue<TextCleanerContext>() {Name = "Others List", Value = TextCleanerContext.OthersList},
-        //};
+        //    new CitationPart() {Name = CitationPartName.Source_AUTH, FormatString = "{0}, "},
+        //    new CitationPart() {Name = CitationPartName.Source_TITL, FormatString = "{0}: "},
+        //    new CitationPart() {Name = CitationPartName.Citation_PAGE, FormatString = "{0}, "},
+        //    new CitationPart() {Name = CitationPartName.Citation_DATA_TEXT, FormatString = "{0}.", NullValue = "."},
+        //    new CitationPart() {Name = CitationPartName.Citation_URL, FormatString = " [Online (may require membership) at: {0}.]", IsActive = true},
+        //}.AutoSequence();
 
-        public void InitTextCleanerChoices()
+        private ListOfCitationParts _citationPartsFull = new ListOfCitationParts()
         {
-            TextCleanerChoices = new List<NamedValue<TextCleanerContext>>()
-            {
-                new NamedValue<TextCleanerContext>() {Name = "Nowhere", Value = TextCleanerContext.Nowhere},
-                new NamedValue<TextCleanerContext>() {Name = "Everywhere", Value = TextCleanerContext.Everywhere},
-                new NamedValue<TextCleanerContext>() {Name = "Full Citation", Value = TextCleanerContext.FullCitation},
-                new NamedValue<TextCleanerContext>() {Name = "See Note", Value = TextCleanerContext.SeeNote},
-                new NamedValue<TextCleanerContext>() {Name = "Others List", Value = TextCleanerContext.OthersList},
-            };
-        }
+            new CitationPart() {Name = CitationPartName.Source_AUTH, FormatString = "{0}", TrailingSeparator = ", "},
+            new CitationPart() {Name = CitationPartName.Source_TITL, FormatString = "{0}", TrailingSeparator = ": "},
+            new CitationPart() {Name = CitationPartName.Citation_PAGE, FormatString = "{0}", TrailingSeparator = ", "},
+            new CitationPart() {Name = CitationPartName.Citation_DATA_TEXT, FormatString = "{0}"},
+            new CitationPart() {Name = CitationPartName.LiteralOnly, FormatString = "."},
+            new CitationPart() {Name = CitationPartName.Citation_URL, FormatString = " [Online (may require membership) at: {0}.]", IsActive = true},
+        }.AutoSequence();
 
+
+        private ListOfCitationParts _citationPartsSeeNote = new ListOfCitationParts()
+        {
+            //new CitationPart() {Name = CitationPartName.Source_AUTH, FormatString = "{0}, "},
+            new CitationPart() {Name = CitationPartName.Source_TITL, FormatString = "{0} ", Sequence = 1},
+            //new CitationPart() {Name = CitationPartName.Citation_PAGE, FormatString = "{0}, "},
+            //new CitationPart() {Name = CitationPartName.Citation_DATA_TEXT, FormatString = "{0}.", NullValue = "."},
+            //new CitationPart() {Name = CitationPartName.Citation_URL, FormatString = ""},
+        };
+        #endregion
+
+        #region computed properties
+        public bool Citations => CitationStrategy != CitationStrategy.None;
+        public bool IncludeBaptism => BaptismOption == BaptismOptions.Always;
+        public bool BaptIfNoBirt => BaptismOption == BaptismOptions.WhenNoBirth;
+        public bool BookMarkNotes => UseSeeNote || RepeatNoteRefInline;
+        public int PresumedLivingBoundaryYear { get; private set; }
+        #endregion
+
+        #region styles
         public List<NamedValue<StyleSlots>> StyleSlotChoices; 
         //    new List<NamedValue<StyleSlots>>()
         //{
@@ -1129,151 +1026,9 @@ namespace Ged2Reg.Model
         //    new NamedValue<StyleSlots>(){Name = "Main person text (para)", Value = StyleSlots.MainPersonText},
         //};
 
-        public void InitStyleSlotChoices()
-        {
-
-            StyleSlotChoices = new List<NamedValue<StyleSlots>>()
-            {
-                // DO NOT DELETE the commented values here, they may be used later
-                //new NamedValue<StyleSlots>(){Name = "Additional main person text", Value = StyleSlots.BodyTextIndent},
-                new NamedValue<StyleSlots>() {Name = "Child name", Value = StyleSlots.ChildName},
-                new NamedValue<StyleSlots>() {Name = "Children intro", Value = StyleSlots.KidsIntro},
-                //new NamedValue<StyleSlots>(){Name = "Child additional text", Value = StyleSlots.KidMoreText},
-                new NamedValue<StyleSlots>() {Name = "Children", Value = StyleSlots.Kids},
-                new NamedValue<StyleSlots>() {Name = "Generation number", Value = StyleSlots.GenerationNumber},
-                //new NamedValue<StyleSlots>(){Name = "Grandchild name", Value = StyleSlots.GrandkidName},
-                //new NamedValue<StyleSlots>(){Name = "Grandchildren", Value = StyleSlots.Grandkids},
-                new NamedValue<StyleSlots>() {Name = "Main person name (char)", Value = StyleSlots.MainPerson},
-                new NamedValue<StyleSlots>() {Name = "Main person text (para)", Value = StyleSlots.MainPersonText},
-                new NamedValue<StyleSlots>() {Name = "Main Notes", Value = StyleSlots.BodyTextIndent},
-            };
-        }
-
         private List<NamedValue<CitationPartName>> _cpcs;
         public List<NamedValue<CitationPartName>> CitationPartChoices => _cpcs ?? (_cpcs = BuildCitePartChoices());
-
-        private List<NamedValue<CitationPartName>> BuildCitePartChoices()
-        {
-            return new List<NamedValue<CitationPartName>>()
-            {
-                new NamedValue<CitationPartName>() {Name = "Source ABBR", Value = CitationPartName.Source_ABBR},
-                new NamedValue<CitationPartName>() {Name = "Source AUTH", Value = CitationPartName.Source_AUTH},
-                new NamedValue<CitationPartName>() {Name = "Source NOTE", Value = CitationPartName.Source_NOTE},
-                new NamedValue<CitationPartName>() {Name = "Source PUBL", Value = CitationPartName.Source_PUBL},
-                new NamedValue<CitationPartName>() {Name = "Source REPO", Value = CitationPartName.Source_REPO},
-                new NamedValue<CitationPartName>() {Name = "Source TEXT", Value = CitationPartName.Source_TEXT},
-                new NamedValue<CitationPartName>() {Name = "Source TITL", Value = CitationPartName.Source_TITL},
-                new NamedValue<CitationPartName>() {Name = "Citation  DATA.DATE", Value = CitationPartName.Citation_DATA_DATE},
-                new NamedValue<CitationPartName>() {Name = "Citation  DATA.TEXT", Value = CitationPartName.Citation_DATA_TEXT},
-                new NamedValue<CitationPartName>() {Name = "Citation  PAGE", Value = CitationPartName.Citation_PAGE},
-                new NamedValue<CitationPartName>() {Name = "Citation  URL (_LINK)", Value = CitationPartName.Citation_URL},
-                new NamedValue<CitationPartName>() {Name = "Literal", Value = CitationPartName.LiteralOnly},
-                new NamedValue<CitationPartName>() {Name = "None", Value = CitationPartName.None},
-            };
-        }
+        #endregion
     }
 
-    public enum PatternRole
-    {
-        Unknown,
-        DateBetween,
-        DateAboutBeforeAfter,
-        DateBefore,
-        DateAbout,
-        DateAfter,
-        Date,
-        PlaceUSA,
-        Place3or4,
-        Place1or2,
-    }
-
-    public enum CitationPartName
-    {
-        None,
-        Source_AUTH,
-        Source_TITL,
-        Source_PUBL,
-        Source_REPO,
-        Source_NOTE,
-        Source_TEXT,
-        Source_ABBR,
-        Citation_PAGE,
-        Citation_DATA_TEXT,
-        Citation_DATA_DATE,
-        Citation_URL,
-        LiteralOnly
-    }
-
-
-
-
-    public class ContentReformatter
-    {
-        public PatternRole Role { get; set; }
-        public string RecognizerPattern { get; set; }
-        public string Emitter { get; set; }
-        public string ShortEmitter { get; set; }
-
-        private Regex _extractor;
-        public Regex Extractor => _extractor ?? (_extractor = new Regex(RecognizerPattern));
-
-    }
-
-    public enum IndexRole
-    {
-        Names,
-        Places
-    }
-    public class IndexSettings : AbstractBindableModel
-    {
-        private string _indexName = "names";
-        private string _indexHeading = "Index of Names";
-        private bool _enabled = true;
-        private int _columns = 2;
-        private string _sep = "\t";
-
-        private IndexRole _role;
-
-        public IndexRole Role
-        {
-            get => _role;
-            set { _role = value; OnPropertyChanged();}
-        }
-
-        // looks good this way:
-        // \e "	" \c "2" \z "1033"
-
-
-        public string Separator
-        {
-            get { return _sep; }
-            set { _sep = value; }
-        }
-
-        public int Columns
-        {
-            get { return _columns; }
-            set { _columns = value; }
-        }
-
-        public string IndexHeading
-        {
-            get { return _indexHeading; }
-            set { _indexHeading = value; OnPropertyChanged(); }
-        }
-
-        //private string x = "\\e \"\t\" \\c \"2\" \\z \"1033\"";
-
-        public string IndexName
-        {
-            get { return _indexName; }
-            set { _indexName = value; OnPropertyChanged(); }
-        }
-
-        public bool Enabled
-        {
-            get { return _enabled; }
-            set { _enabled = value; OnPropertyChanged(); }
-        }
-    }
 }

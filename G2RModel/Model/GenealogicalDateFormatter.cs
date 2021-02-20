@@ -1,13 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Ged2Reg.Model
 {
+
+    public class ContentReformatter
+    {
+        public PatternRole Role { get; set; }
+        public string RecognizerPattern { get; set; }
+        public string Emitter { get; set; }
+        public string ShortEmitter { get; set; }
+
+        private Regex _extractor;
+        public Regex Extractor => _extractor ?? (_extractor = new Regex(RecognizerPattern));
+
+    }
+
     public class GenealogicalDateFormatter
     {
         public static int ParseYear(string y, int defalt = 9999)
@@ -19,9 +29,6 @@ namespace Ged2Reg.Model
             return rv;
         }
 
-        //private ContentReformatter _crfBefore;
-        //private ContentReformatter _crfAfter;
-        //private ContentReformatter _crfAbout;
         private ContentReformatter _crfAboutBeforeAfter;
         private ContentReformatter _crfBetween;
         private ContentReformatter _crfDate;
@@ -43,9 +50,6 @@ namespace Ged2Reg.Model
 
         public GenealogicalDateFormatter()
         {
-            //_crfBefore = ReportContext.Instance.Settings.DateRules.Find(i => i.Role == PatternRole.DateBefore);
-            //_crfAfter = ReportContext.Instance.Settings.DateRules.Find(i => i.Role == PatternRole.DateAfter);
-            //_crfAbout = ReportContext.Instance.Settings.DateRules.Find(i => i.Role == PatternRole.DateAbout);
             _crfAboutBeforeAfter = ReportContext.Instance.Settings.DateRules.Find(i => i.Role == PatternRole.DateAboutBeforeAfter);
             _crfBetween = ReportContext.Instance.Settings.DateRules.Find(i => i.Role == PatternRole.DateBetween);
             _crfDate = ReportContext.Instance.Settings.DateRules.Find(i => i.Role == PatternRole.Date);
@@ -77,7 +81,6 @@ namespace Ged2Reg.Model
             }
 
             return ReformatDate(d);
-
         }
 
         private string ReformatDate(string d, bool applyPreposistion = true)
@@ -86,7 +89,7 @@ namespace Ged2Reg.Model
             Match m = _crfDate?.Extractor?.Match(d);
             if (!(m?.Success ?? false)) return "";
 
-            string prep = applyPreposistion ? (string.IsNullOrEmpty(m.Groups["day"]?.Value) ? "in " : "on ") : null;
+            string prep = applyPreposistion ? (string.IsNullOrEmpty(m.Groups["day"].Value) ? "in " : "on ") : null;
 
             string op = m.Result(_crfDate.Emitter);
             string mon = m.Groups["month"].Value;

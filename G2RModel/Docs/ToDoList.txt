@@ -1,5 +1,37 @@
 ﻿Ged2Reg Toto List
 
+Major features
+
+1. Option to list other events
+	table or bullet list
+	choose which ones
+	set-level choosers: "most common", "LDS Ordinances"
+	choice to emit multiple: on by default only for CENS, RESI
+	sorting and grouping options (ugh) date order (not all have dates!); keep resi grouped; 
+		groups: residences, dated events, undated facts, none, user (numbered)
+2. Ancestor report option
+3. Outline report option
+
+Medium features
+
+1. Divorces and separation events should be included wherever marriages are listed.
+2. It would be nice to be able to copy complicated options, e.g. title rewriters, between settins sets.
+
+
+Small features
+
+1. open to open file after creating it (?: dubious portability / availablility in .net5)
+2. add name of settings set to status line as reminder when on other settings tabs
+3. warn user if a name was typed on Manage Settings, but nothing was done with it
+4. remember which settings set was last used.
+
+
+Quirks
+
+1. Docx, end notes: 
+	appear after indexes instead of before
+	use roman numerals except in inline repeats
+
 
 Bugs - Open
 
