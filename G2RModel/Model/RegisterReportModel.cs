@@ -236,5 +236,16 @@ namespace Ged2Reg.Model
 
             return rvf;
         }
+
+        public void Activate(G2RSettings settings)
+        {
+            Settings = settings.InitInternals();
+            foreach (G2RSettings settingsSet in SettingsSets)
+            {
+                settingsSet.LastActive = false;
+            }
+
+            Settings.LastActive = true;
+        }
     }
 }

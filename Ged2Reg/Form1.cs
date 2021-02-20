@@ -48,7 +48,7 @@ namespace Ged2Reg
                 DocFactory = new OoxDocFactory()
             };
 
-            LoadSettingsSets();
+            LoadSettingsSets(true);
 
             _aad.CancelEnable = ena => { pbCancel.Enabled = ena; };
             _aad.PostStatusReport = (txt) => { Log(txt); };
@@ -56,14 +56,15 @@ namespace Ged2Reg
             teLog.Height = panel1.Height - (teLog.Top + 10);
         }
 
-        private void LoadSettingsSets()
+        private void LoadSettingsSets(bool preferLastActive = false)
         {
             // load the list of settings sets and start with the default set
             _rrm.SettingsSets = ListOfSettingsSets.Load();
-            _rrm.Settings = _rrm.SettingsSets.GetSettings();
+            _rrm.Settings = _rrm.SettingsSets.GetSettings(preferLastActive: preferLastActive);
             teSettingsSet.Text = _rrm.Settings.SetName;
             BindUiToSettings();
-            Log("Settings loaded; DefaultSettings set selected");
+            cbSettingsSet.SelectedValue = _rrm.Settings;
+            Log($"Settings loaded; {_rrm.Settings.SetName} set selected");
         }
 
         private void BindUiToSettings()
@@ -566,13 +567,15 @@ namespace Ged2Reg
 
         private void ApplySettingSetChoice(G2RSettings sel)
         {
-            _rrm.Settings = sel.InitInternals();
+            //_rrm.Settings = sel.InitInternals();
+            _rrm.Activate(sel);
             BindUiToSettings();
             bsIndi.DataSource = new ListOfGedcomIndividuals();
             bsIndi.ResetBindings(false);
             pbGo.Enabled = false;
             Log($"Settings set {_rrm.Settings.SetName} is active");
             cbSettingsSet.SelectedValue = sel;
+            //_rrm.SettingsSets.LastActiveSet = _rrm.Settings.SetName;
         }
 
         #endregion

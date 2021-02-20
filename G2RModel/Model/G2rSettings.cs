@@ -395,6 +395,16 @@ namespace Ged2Reg.Model
         #endregion
 
         #region persistent/bindable properties
+
+        private bool _lastActive;
+
+        [DataMember]
+        public bool LastActive
+        {
+            get { return _lastActive; }
+            set { _lastActive = value; } // not intended for binding to UI
+        }
+
         [DataMember]
         public DocumentType DocumentType
         {
