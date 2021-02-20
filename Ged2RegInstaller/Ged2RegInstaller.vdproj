@@ -25,6 +25,12 @@
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
+        "Entry"
+        {
+        "MsmKey" = "8:_FF7D03CCE6104130B5A968E52A91EF9C"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
     }
     "Configurations"
     {
@@ -142,6 +148,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_FF7D03CCE6104130B5A968E52A91EF9C"
+            {
+            "SourcePath" = "8:EnableLaunchApplication.js"
+            "TargetName" = "8:EnableLaunchApplication.js"
+            "Tag" = "8:"
+            "Folder" = "8:_ACCB816607154A3E87548B09A36E6A75"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
         }
         "FileType"
         {
@@ -209,15 +235,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:GEDCOM to Register"
-        "ProductCode" = "8:{BF1BC4DC-8372-4A93-A27A-54FBA94F9226}"
-        "PackageCode" = "8:{881904C7-12D3-4434-A53F-61297A9A219F}"
-        "UpgradeCode" = "8:{66149C9B-4BEE-4441-BC71-7555612B9F39}"
+        "ProductCode" = "8:{1A18D0C8-1E09-4CCB-A47A-04629005BD41}"
+        "PackageCode" = "8:{C158B562-7F38-49A8-AE4E-CBE6A05E4861}"
+        "UpgradeCode" = "8:{28A52D5A-15AB-45CE-8736-E915BBEC0606}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
-        "DetectNewerInstalledVersion" = "11:TRUE"
+        "DetectNewerInstalledVersion" = "11:FALSE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:0.5.3"
+        "ProductVersion" = "8:0.5.16"
         "Manufacturer" = "8:West Leitrim Software"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"

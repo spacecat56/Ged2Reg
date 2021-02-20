@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OdtAdapterLib", "OdtAdapter
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Ged2RegInstaller", "Ged2RegInstaller\Ged2RegInstaller.vdproj", "{3985B255-E07F-4882-87A9-33A29B718C70}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Ged2RegSetup", "Ged2RegSetup\Ged2RegSetup.vdproj", "{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -161,6 +163,26 @@ Global
 		{3985B255-E07F-4882-87A9-33A29B718C70}.Release|ARM64.ActiveCfg = Release
 		{3985B255-E07F-4882-87A9-33A29B718C70}.Release|x64.ActiveCfg = Release
 		{3985B255-E07F-4882-87A9-33A29B718C70}.Release|x86.ActiveCfg = Release
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Debug|Any CPU.ActiveCfg = Debug
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Debug|Any CPU.Build.0 = Debug
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Debug|ARM.ActiveCfg = Debug
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Debug|ARM.Build.0 = Debug
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Debug|ARM64.ActiveCfg = Debug
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Debug|ARM64.Build.0 = Debug
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Debug|x64.ActiveCfg = Debug
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Debug|x64.Build.0 = Debug
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Debug|x86.ActiveCfg = Debug
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Debug|x86.Build.0 = Debug
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Release|Any CPU.ActiveCfg = Release
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Release|Any CPU.Build.0 = Release
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Release|ARM.ActiveCfg = Release
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Release|ARM.Build.0 = Release
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Release|ARM64.ActiveCfg = Release
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Release|ARM64.Build.0 = Release
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Release|x64.ActiveCfg = Release
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Release|x64.Build.0 = Release
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Release|x86.ActiveCfg = Release
+		{AB128D94-FE0A-41F7-A6D8-4865FA141CF7}.Release|x86.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
