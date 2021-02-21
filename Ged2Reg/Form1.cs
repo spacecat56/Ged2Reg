@@ -185,6 +185,21 @@ namespace Ged2Reg
                 MessageBox.Show($"Exception:{ex}");
             }
         }
+
+        private void cbSettingsSet_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                var sel = (cbSettingsSet.SelectedItem as NamedValue<G2RSettings>)?.Value;
+                if (sel == null || sel == _rrm.Settings)
+                    return;
+                ApplySettingSetChoice(sel);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception:{ex}");
+            }
+        }
         #endregion
 
 
@@ -260,6 +275,17 @@ namespace Ged2Reg
         {
             try
             {
+                if (File.Exists(_rrm.Settings.OutFile))
+                {
+                    if (MessageBox.Show("Output file exists: delete/replace it?", "Ged2Reg Warning", MessageBoxButtons.OKCancel,
+                        MessageBoxIcon.Warning) == DialogResult.Cancel)
+                    {
+                        Log($"Action canceled (output file already exists).");
+                        return;
+                    }
+                    File.Delete(_rrm.Settings.OutFile);
+                    Log($"Deleted prior version of output file {_rrm.Settings.OutFile}.");
+                }
                 _aad.CancelRequested = false;
                 ToggleUiEnable(false);
                 pbCancel.Focus();
@@ -466,7 +492,6 @@ namespace Ged2Reg
         }
         #endregion
 
-
         #region menuActions
         private void saveSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -579,7 +604,6 @@ namespace Ged2Reg
         }
 
         #endregion
- 
 
         #region Implementation of ILocalLogger
 
@@ -659,7 +683,6 @@ namespace Ged2Reg
 
         #endregion
 
-    
         #region privateMethods
         private void LoadGedData()
         {
@@ -727,20 +750,5 @@ namespace Ged2Reg
             }
         }
         #endregion
-
-        private void cbSettingsSet_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                var sel = (cbSettingsSet.SelectedItem as NamedValue<G2RSettings>)?.Value;
-                if (sel == null || sel == _rrm.Settings)
-                    return;
-                ApplySettingSetChoice(sel);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Exception:{ex}");
-            }
-        }
     }
 }
