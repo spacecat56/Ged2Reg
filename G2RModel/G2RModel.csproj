@@ -34,7 +34,7 @@
   <ItemGroup>
     <PackageReference Include="CommonClassesLib" Version="1.0.0.4-beta" />
     <PackageReference Include="DocumentFormat.OpenXml" Version="2.12.1" />
-    <PackageReference Include="SimpleGedcomLib" Version="1.0.0.2-beta" />
+    <PackageReference Include="SimpleGedcomLib" Version="1.0.0.6-beta" />
   </ItemGroup>
 
   <ItemGroup>

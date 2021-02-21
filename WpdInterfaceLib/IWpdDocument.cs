@@ -6,6 +6,7 @@ namespace WpdInterfaceLib
 {
     public interface IWpdDocument : IDisposable
     {
+        IWpdDocument Init();
         void Save();
         void ApplyTemplateStyles(Stream stream, bool fonts);
         bool SetCoreProperty(string propertyName, string propertyValue);

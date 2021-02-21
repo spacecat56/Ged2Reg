@@ -32,6 +32,10 @@ namespace DocxAdapterLib
 
 
         internal OoxDoc() { }
+        public IWpdDocument Init()
+        {
+            return this;
+        }
 
         private OoxDoc Init(string path)
         {

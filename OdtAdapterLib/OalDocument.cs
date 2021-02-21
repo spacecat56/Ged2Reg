@@ -26,6 +26,11 @@ namespace OdtAdapterLib
 
         #region Implementation of IWpdDocument
 
+        public IWpdDocument Init()
+        {
+            return this;
+        }
+
         public void Save()
         {
             Document.Save(FileName);

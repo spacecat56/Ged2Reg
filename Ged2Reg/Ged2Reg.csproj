@@ -81,7 +81,6 @@
 
   <ItemGroup>
     <PackageReference Include="CommonClassesLib" Version="1.0.0.4-beta" />
-    <PackageReference Include="SimpleGedcomLib" Version="1.0.0.2-beta" />
   </ItemGroup>
 
   <ItemGroup>
