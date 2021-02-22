@@ -15,16 +15,15 @@ Major features
 Medium features
 
 1. Divorces and separation events should be included wherever marriages are listed.
-2. It would be nice to be able to copy complicated options, e.g. title rewriters, between settins sets.
+2. It would be nice to be able to copy complicated options, e.g. title rewriters, between settings sets.
 
 
 Small features
 
-1. open to open file after creating it (?: dubious portability / availablility in .net5)
+1. option to open file after creating it (?: dubious portability / availablility in .net5)
 2. add name of settings set to status line as reminder when on other settings tabs
 3. warn user if a name was typed on Manage Settings, but nothing was done with it
-4. remember which settings set was last used.
-
+6.
 
 Quirks
 
@@ -36,5 +35,16 @@ Quirks
 Bugs - Open
 
 1. In docx, inline repeated references are not superscipts.
-2. In odt, repeated runs with the same file name accumulate content instead of replacing it.
+3. 
 
+Completed Items
+
+
+Small features
+02/20/21 4. remember which settings set was last used.
+02/22/21 5. Support for gedcoms from Roots Magic 
+	a. Links on citations are found at _WEBTAG / URL 
+	b. Provides inline <i></i> tags on many source titles (expressed in odt; deleted in docx)
+
+Bugs
+02/21/21  2. In odt, repeated runs with the same file name accumulate content instead of replacing it.

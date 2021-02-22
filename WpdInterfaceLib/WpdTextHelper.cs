@@ -17,6 +17,26 @@ namespace WpdInterfaceLib
     public class WpdTextHelper
     {
         public static Regex TextTagRegex = new Regex(@"(?i)([<][/]?[bi][>])");
+
+        /// <summary>
+        /// An adapter that does not know how to apply inline tags for bold and italic
+        /// can use this function to get them removed from its text stream
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static string RemoveTags(string t)
+        {
+            if (string.IsNullOrEmpty(t))
+                return t;
+
+            return TextTagRegex.IsMatch(t) ? TextTagRegex.Replace(t, "") : t;
+        }
+
+        /// <summary>
+        /// An adapter that knows how to apply inline tags for bold and italic
+        /// can use this function to find them and break up the text accordingly
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
         public static List<TaggedText> Split(string t)
         {
             List<TaggedText> rvl = new List<TaggedText>();

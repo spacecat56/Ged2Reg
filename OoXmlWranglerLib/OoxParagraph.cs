@@ -2,9 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.RegularExpressions;
 using DocumentFormat.OpenXml;
-using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using WpdInterfaceLib;
 
 namespace DocxAdapterLib
@@ -35,6 +33,7 @@ namespace DocxAdapterLib
         {
             if (text == null)
                 return this;
+            // NB without the call to Prepare() here, we can get a mysterious object disposed exception in the xml layer
             MyParagraph.AppendChild(new Run(Prepare(text)));
             return this;
         }
@@ -81,7 +80,9 @@ namespace DocxAdapterLib
             //    }
             //}
             StringBuilder sb = new StringBuilder();
-            foreach (char c in s.ToCharArray())
+            // todo: this adapter does not currently support inline bold and italic tags
+            string ss = WpdTextHelper.RemoveTags(s);
+            foreach (char c in ss.ToCharArray())
             {
                 switch (c)
                 {

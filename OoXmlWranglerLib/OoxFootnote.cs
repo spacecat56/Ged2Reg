@@ -98,7 +98,7 @@ namespace DocxAdapterLib
                 switch (fragment.Type)
                 {
                     case WpdFragmentType.Text:
-                        footPara.Append(new Run(new Text(space+fragment.Content) { Space = SpaceProcessingModeValues.Preserve }));
+                        footPara.Append(new Run(new Text(space+WpdTextHelper.RemoveTags(fragment.Content)) { Space = SpaceProcessingModeValues.Preserve }));
                         space = "";
                         break;
                     case WpdFragmentType.Noteref:
