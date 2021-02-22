@@ -69,8 +69,14 @@ namespace Ged2Reg.Model
         public string PlaceBaptized { get; set; }
         public string BaptizedDescription { get; set; }
 
-        public int AssignedMainNumber { get; set; }
+        public long AssignedMainNumber { get; set; }
         public int AssignedChildNumber { get; set; }
+
+        // these are used to control output positioning 
+        // on the Ancestors report
+        public bool SuppressSpouseInfo { get; set; }
+        public bool EmitChildrenAfter { get; set; }
+
         public AncestryNameList Ancestry { get; set; }
         public string Pronoun => "M".Equals(Gender) ? "He" : "She";
         public string AntiPronoun => "M".Equals(Gender) ? "She" : "He";
@@ -88,6 +94,8 @@ namespace Ged2Reg.Model
         private string _reportableSpan;
         public int NumberOfChildren => _numberOfChildren ?? (_numberOfChildren = CountChildren()) ?? 0;
         public bool HasDescendants => NumberOfChildren > 0;
+        public bool HasParents => ChildhoodFamily?.Husband != null || ChildhoodFamily?.Wife != null;
+
         public string ReportableSpan => _reportableSpan ?? (_reportableSpan = BuildReportableSpan());
 
         private List<GedcomFamily> _families;
@@ -113,6 +121,8 @@ namespace Ged2Reg.Model
         public GedcomFamily ChildhoodFamily { get; set; }
 
         public CitablePersonEvents CitableEvents { get; set; }
+
+
 
         private const string NullSpan = "0000 - 0000";
 
@@ -295,7 +305,15 @@ namespace Ged2Reg.Model
             SortFamilies(); // this works now because we are doing depth-first
         }
 
-        public void FindFamilies(bool doParents)
+        public void Ascend(bool oneStep = true)
+        {
+            ChildhoodFamily = ReportContext.Instance.Model.FindAsChildInFamily(this);
+            if (oneStep) return;
+            ChildhoodFamily?.Husband?.Ascend(oneStep);
+            ChildhoodFamily?.Wife?.Ascend(oneStep);
+        }
+
+        public void FindFamilies(bool doParents, bool ascend = false)
         {
             Families = new List<GedcomFamily>();
             Spouses = new List<GedcomIndividual>();
@@ -321,8 +339,8 @@ namespace Ged2Reg.Model
             ChildhoodFamily = ReportContext.Instance.Model.FindAsChildInFamily(this);
             if (doParents && ChildhoodFamily != null)
             {
-                ChildhoodFamily.Husband?.FindFamilies(false);
-                ChildhoodFamily.Wife?.FindFamilies(false);
+                ChildhoodFamily.Husband?.FindFamilies(ascend);
+                ChildhoodFamily.Wife?.FindFamilies(ascend);
             }
         }
 

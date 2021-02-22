@@ -22,6 +22,8 @@ namespace Ged2Reg.Model
 
         private GedcomIndividual _root;
         private ReportContext _c;
+        private bool _ancestryReport;
+        private bool _suppressGenNumbers;
 
         //public ListOfGedcomIndividuals MainIndividuals { get; set; }
 
@@ -60,6 +62,8 @@ namespace Ged2Reg.Model
             _reduceChild = _c.Settings.ReduceContinuedChildren;
             _listBapt = _c.Settings.IncludeBaptism;
             _listBuri = _c.Settings.IncludeBurial;
+            _ancestryReport = _c.Settings.AncestorsReport;
+            _suppressGenNumbers = _c.Settings.SuppressGenNbrs; 
 
             _root = root;
             _root.AssignedMainNumber = 1;
@@ -90,7 +94,10 @@ namespace Ged2Reg.Model
 
             _nonContinued = new List<GedcomIndividual>();
 
-            Process(0);
+            if (_ancestryReport)
+                ApplyAncestryNumbering();
+            else
+                ApplyDescendantNumbering(0);
 
             if (Model.CheckCancel()) throw new CanceledByUserException();
             Model.PostProgress("Analyzing source citations for main persons");
@@ -125,7 +132,66 @@ namespace Ged2Reg.Model
             }
         }
 
-        private void Process(int generation)
+        private void ApplyAncestryNumbering()
+        {
+            int generation = 0;
+
+            NumberChildren(Generations[0][0].Families?[0]);
+            Generations[0][0].EmitChildrenAfter = true;
+            while (++generation < Generations.Length)
+            {
+                ListOfGedcomIndividuals ip = Generations[generation-1];
+                if (ip.Count == 0)
+                    return;
+
+                // advance to the next generation, starting with an empty list of 'main' persons
+                ListOfGedcomIndividuals op = Generations[generation] = new ListOfGedcomIndividuals();
+
+                foreach (GedcomIndividual mainIndividual in ip)
+                {
+                    if (mainIndividual.ChildhoodFamily == null)
+                        continue;
+
+                    // add the parents, if known
+                    GedcomIndividual dad = mainIndividual.ChildhoodFamily.Husband;
+                    GedcomIndividual mom = mainIndividual.ChildhoodFamily.Wife;
+                    if (dad != null)
+                    {
+                        dad.AssignedMainNumber = mainIndividual.AssignedMainNumber * 2;
+                        dad.FindFamilies(true);
+                        dad.EmitChildrenAfter = true;
+                        op.Add(dad);
+                    }
+                    if (mom != null)
+                    {
+                        mom.AssignedMainNumber = mainIndividual.AssignedMainNumber * 2 + 1;
+                        mom.FindFamilies(true);
+                        mom.EmitChildrenAfter = true;
+                        if (dad!=null) dad.EmitChildrenAfter = false; // mom steals them, if she is known
+                        mom.SuppressSpouseInfo = dad != null;
+                        op.Add(mom);
+                    }
+
+                    // number the sibs within the family
+                    NumberChildren(mainIndividual.ChildhoodFamily);
+                }
+            }
+        }
+
+        private void NumberChildren(GedcomFamily cf)
+        {
+            int greatestChildSeq = 0;
+            foreach (GedcomIndividual child in cf?.Children)
+            {
+                if (child.AssignedChildNumber != 0) continue;
+                child.AssignedChildNumber = ++greatestChildSeq;
+                if (child.AssignedMainNumber != 0)
+                    _nonContinued.Add(child);
+                child.Expand(); // pick up extra info for the ancestors report
+            }
+        }
+
+        private void ApplyDescendantNumbering(int generation)
         {
             ListOfGedcomIndividuals ip = Generations[generation];
             if (ip.Count == 0)
@@ -157,7 +223,7 @@ namespace Ged2Reg.Model
 
             //bool hasAnotherGeneration = nextGen < Generations.Length - 1;
 
-            int greatestId = ip[ip.Count - 1].AssignedMainNumber;
+            long greatestId = ip[^1].AssignedMainNumber;
 
             foreach (GedcomIndividual mainIndividual in ip)
             {
@@ -185,7 +251,7 @@ namespace Ged2Reg.Model
                     }
                 }
             }
-            Process(nextGen);
+            ApplyDescendantNumbering(nextGen);
         }
 
         public void Exec(IWpdDocument doc)
@@ -217,7 +283,7 @@ namespace Ged2Reg.Model
                 Model.PostProgress($"processing generation {_currentGeneration}");
                 foreach (GedcomIndividual individual in generation)
                 {
-                    Emit(doc, individual, _currentGeneration);
+                    EmitMainPerson(doc, individual, _currentGeneration);
                 }
             }
 
@@ -284,10 +350,11 @@ namespace Ged2Reg.Model
             return ixf;
         }
 
-        private void Emit(IWpdDocument doc, GedcomIndividual individual, int gen)
+        private void EmitMainPerson(IWpdDocument doc, GedcomIndividual individual, int gen)
         {
             //Formatting superFormatting = new Formatting() { Script = Script.superscript };
             Formatting generationNumberFormatting = new Formatting() { CharacterStyleName = _styleMap[StyleSlots.GenerationNumber].CharacterStyleName }; //  switched this to the style
+            int genNbrIncr = _ancestryReport ? -1 : 1;
             Formatting introFormatting = new Formatting(){Bold = _c.Settings.IntroBold, Italic = _c.Settings.IntroItalic};
             // begin main person content
             IWpdParagraph p = doc.InsertParagraph();
@@ -308,7 +375,8 @@ namespace Ged2Reg.Model
             if (!individual.NotLiving)
                 MyReportStats.MaybeLiving++;
             
-            individual.Ancestry?.Emit(p, _styleMap[StyleSlots.MainPersonText], _styleMap[StyleSlots.GenerationNumber]);
+            if (!_ancestryReport)
+                individual.Ancestry?.Emit(p, _styleMap[StyleSlots.MainPersonText], _styleMap[StyleSlots.GenerationNumber]);
 
             List<GedcomIndividual> noteworthy = AppendPersonDetails(p, individual);
 
@@ -355,6 +423,9 @@ namespace Ged2Reg.Model
             // so... here at the LPM we will try to get them sorted
             individual.SortFamilies();
 
+            if (_ancestryReport && !individual.EmitChildrenAfter)
+                return;
+
             // list the children
             foreach (GedcomFamily family in individual.SafeFamilies)
             {
@@ -378,7 +449,10 @@ namespace Ged2Reg.Model
                         : $"\t{child.ChildNumberRoman}.\t";
                     p.Append(kidNbr);
                     p.Append(child.SafeGivenName);
-                    p.Append($"{gen+1}", false, generationNumberFormatting);
+                    int g = gen+genNbrIncr;
+                    bool dropNbr = _suppressGenNumbers || g < 1 || (_ancestryReport && child.AssignedMainNumber < 1);
+                    if (!dropNbr)
+                        p.Append($"{g}", false, generationNumberFormatting);
                     p.Append($" {child.SafeSurname}");
                     if (child.AssignedMainNumber == 0)
                     {
@@ -452,6 +526,29 @@ namespace Ged2Reg.Model
 
             bool reduced = isChild && _reduceChild && indi.HasDescendants && _currentGeneration < _c.Settings.Generations;
             bool doNotCite = isChild && _c.Settings.OmitCitesOnContinued && indi.HasDescendants && _currentGeneration < _c.Settings.Generations;
+            
+            // override these decisions in the case of ancestry report; a bit of "jiggle the handle" approach, eh?
+            reduced &= !_ancestryReport || indi.AssignedMainNumber > 0;
+            doNotCite &= !_ancestryReport || indi.AssignedMainNumber > 0;
+
+            if (!isChild && _ancestryReport && indi.HasParents)
+            {
+                p.Append(", ").Append(indi.NounAsChild.ToLower()).Append(" of ");
+                string conjunction = " ";
+                if (indi.ChildhoodFamily.Husband != null)
+                {
+                    p.Append(indi.ChildhoodFamily.Husband.NameForward);
+                    conjunction = " and ";
+                }
+
+                if (indi.ChildhoodFamily.Wife != null)
+                {
+                    p.Append(conjunction);
+                    p.Append(indi.ChildhoodFamily.Wife.NameForward);
+                }
+
+                p.Append(",");
+            }
 
             // to position footnote superscripts in the running text correctly (especially,
             // in relation to punctuation), we need to know IN ADVANCE all of the pieces that 
@@ -606,12 +703,21 @@ namespace Ged2Reg.Model
 
             if (_c.Settings.MainPersonNotes)
                 toDoNotes.Add(indi);
+            
+            if (!indi.SuppressSpouseInfo)
+                AppendMarriagesSentences(p, indi, isChild, toDoNotes, reduced, doCite, chosenCitations);
 
+            return toDoNotes;
+        }
+
+        private void AppendMarriagesSentences(IWpdParagraph p, GedcomIndividual indi, bool isChild, List<GedcomIndividual> toDoNotes,
+            bool reduced, bool doCite, CitationProposals chosenCitations)
+        {
             bool storyAppended = false;
             for (int mnbr = 0; mnbr < indi.SafeFamilies.Count; mnbr++)
             {
-                string mid = (indi.SafeFamilies.Count > 1) 
-                    ? (mnbr + 1 < _wordsForNumbers.Length) ? $" {_wordsForNumbers[mnbr + 1]}" : (mnbr + 1).ToString() 
+                string mid = (indi.SafeFamilies.Count > 1)
+                    ? (mnbr + 1 < _wordsForNumbers.Length) ? $" {_wordsForNumbers[mnbr + 1]}" : (mnbr + 1).ToString()
                     : null;
                 if (mid != null && !indi.FamiliesAreSorted)
                     mid += "[?]";
@@ -620,10 +726,11 @@ namespace Ged2Reg.Model
                 if (_c.Settings.SpousesNotes)
                     toDoNotes.Add(spouse);
                 p.Append($" {(storyAppended ? indi.SafeNameForward : indi.Pronoun)} married{mid} ");
-                 if (_c.Settings.DebuggingOutput)
+                if (_c.Settings.DebuggingOutput)
                 {
                     p.Append($"[{family.FamilyView.Id}] ");
                 }
+
                 if (spouse != null)
                 {
                     p.Append(spouse.SafeNameForward);
@@ -639,6 +746,7 @@ namespace Ged2Reg.Model
                         if (!indi.NotLiving)
                             MyReportStats.MaybeLiving++;
                     }
+
                     ConditionallyEmitNameIndexEntry(_c.Model.Doc, p, spouse);
                     if (_c.Settings.DebuggingOutput)
                     {
@@ -649,12 +757,15 @@ namespace Ged2Reg.Model
                 {
                     p.Append("(unknown)");
                 }
-                FormattedEvent p5_marr = ConditionalEvent("", family.DateMarried, family.PlaceMarried, reduced ? null : family.MarriageDescription);
+
+                FormattedEvent p5_marr = ConditionalEvent("", family.DateMarried, family.PlaceMarried,
+                    reduced ? null : family.MarriageDescription);
                 if (!string.IsNullOrEmpty(p5_marr?.EventString))
                 {
                     p.Append($"{p5_marr.EventString}");
                     ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p5_marr);
                 }
+
                 // todo: divorces (complicates the punctuation and citation placement)
                 p.Append(".");
                 if (doCite)
@@ -667,19 +778,25 @@ namespace Ged2Reg.Model
                             MyReportStats.DistinctCitations++;
                         ec.EmitNote(_c.Model.Doc, p);
                     }
+
                     //chosenCitations[TagCode.MARR.ToString()+family.FamilyView.Id]?.EmitNote(_c.Model.Doc, p);
                     //EventCitations ec = family.CitableEvents?.Find(family.EventTag(TagCode.MARR));
                     //ec?.EmitNote(_c.Model.Doc, p);
                 }
-                storyAppended = AppendSpouseSentence2(p, spouse);
+
+                storyAppended = !indi.SuppressSpouseInfo && AppendSpouseSentence2(p, spouse);
                 //...
             }
-
-            return toDoNotes;
         }
 
         private bool AppendSpouseSentence2(IWpdParagraph p, GedcomIndividual spouse)
         {
+            // emit details of spouse:
+            //      if we know them (descendants report)
+            //      iff the person is not assigned a main number (ancestry report)
+            if (spouse == null || (_ancestryReport && spouse.AssignedMainNumber > 0))
+                return false;
+
             GedcomFamily spousesChildhoodFamily = ReportContext.Instance.Model.FindAsChildInFamily(spouse);
             if (spousesChildhoodFamily == null) return false;
 

@@ -103,6 +103,8 @@ namespace Ged2Reg
             this.pbOutputFile = new System.Windows.Forms.Button();
             this.pbCancel = new System.Windows.Forms.Button();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.kbAncestorsReport = new System.Windows.Forms.CheckBox();
+            this.label65 = new System.Windows.Forms.Label();
             this.teLastRunOutput = new System.Windows.Forms.TextBox();
             this.label64 = new System.Windows.Forms.Label();
             this.teLastRunElapsed = new System.Windows.Forms.TextBox();
@@ -1144,6 +1146,8 @@ namespace Ged2Reg
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.kbAncestorsReport);
+            this.tabPage2.Controls.Add(this.label65);
             this.tabPage2.Controls.Add(this.teLastRunOutput);
             this.tabPage2.Controls.Add(this.label64);
             this.tabPage2.Controls.Add(this.teLastRunElapsed);
@@ -1203,6 +1207,29 @@ namespace Ged2Reg
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Content Options";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // kbAncestorsReport
+            // 
+            this.kbAncestorsReport.AutoSize = true;
+            this.kbAncestorsReport.Checked = true;
+            this.kbAncestorsReport.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.kbAncestorsReport.DataBindings.Add(new System.Windows.Forms.Binding("Checked", this.bsG2RSettings, "AncestorsReport", true));
+            this.kbAncestorsReport.Location = new System.Drawing.Point(700, 377);
+            this.kbAncestorsReport.Margin = new System.Windows.Forms.Padding(2);
+            this.kbAncestorsReport.Name = "kbAncestorsReport";
+            this.kbAncestorsReport.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.kbAncestorsReport.Size = new System.Drawing.Size(22, 21);
+            this.kbAncestorsReport.TabIndex = 90;
+            this.kbAncestorsReport.UseVisualStyleBackColor = true;
+            // 
+            // label65
+            // 
+            this.label65.AutoSize = true;
+            this.label65.Location = new System.Drawing.Point(436, 374);
+            this.label65.Name = "label65";
+            this.label65.Size = new System.Drawing.Size(180, 26);
+            this.label65.TabIndex = 91;
+            this.label65.Text = "Ancestors Report";
             // 
             // teLastRunOutput
             // 
@@ -3032,6 +3059,8 @@ namespace Ged2Reg
         private System.Windows.Forms.Label label63;
         private System.Windows.Forms.Label label64;
         private System.Windows.Forms.TextBox teLastRunOutput;
+        private System.Windows.Forms.CheckBox kbAncestorsReport;
+        private System.Windows.Forms.Label label65;
         //private LabeledInputPanel.LabeledInputPanel labeledInputPanel1;
     }
 }

@@ -156,10 +156,24 @@ namespace Ged2Reg.Model
 
             // build the tree from the root person
             if (CheckCancel()) throw new CanceledByUserException();
-            PostProgress("building descendants tree");
-            root.Expand();
-            if (!root.HasDescendants)
-                throw new ArgumentException("Must select a person with some descendant(s)");
+            if (Settings.AncestorsReport)
+            {
+                PostProgress("building ancestors tree");
+                //root.Ascend(false);
+                // this seems not really to work
+                // root.FindFamilies(true, true);
+                // so just do one step, and go stepwise in the numbering
+                root.FindFamilies(true);
+                if (root.ChildhoodFamily == null)
+                    throw new ArgumentException("Must select a person with some ancestor(s)");
+            }
+            else
+            {
+                PostProgress("building descendants tree");
+                root.Expand();
+                if (!root.HasDescendants)
+                    throw new ArgumentException("Must select a person with some descendant(s)");
+            }
 
             // process all spouses, especially to evaluate whether they and their parents are maybe living
             //BuildFamiliesList();
@@ -169,12 +183,11 @@ namespace Ged2Reg.Model
                 if (individual.Spouses == null) continue;
                 allSpouses.AddRange(individual.Spouses);
             }
-
             foreach (GedcomIndividual spouse in allSpouses)
             {
                 spouse.FindFamilies(true);
             }
-
+            
             if (CheckCancel()) throw new CanceledByUserException();
             if (Settings.ObscureLiving)
                 PostProgress($"obscure names of (possibly) living persons");

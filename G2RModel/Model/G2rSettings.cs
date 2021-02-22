@@ -215,6 +215,8 @@ namespace Ged2Reg.Model
         private string _title;
 
         private TextCleaner _cleaner;
+        private bool _lastActive;
+        private bool _ancestorsReport;
 
         #endregion
 
@@ -396,7 +398,20 @@ namespace Ged2Reg.Model
 
         #region persistent/bindable properties
 
-        private bool _lastActive;
+        [DataMember]
+        public bool AncestorsReport
+        {
+            get { return _ancestorsReport; }
+            set { _ancestorsReport = value; OnPropertyChanged(); }
+        }
+        private bool _suppressGenNbrs;
+
+        [DataMember]
+        public bool SuppressGenNbrs
+        {
+            get { return _suppressGenNbrs; }
+            set { _suppressGenNbrs = value; OnPropertyChanged(); }
+        }
 
         [DataMember]
         public bool LastActive
@@ -925,6 +940,7 @@ namespace Ged2Reg.Model
             Append(sb, "Program name", this.ProgramName);
             Append(sb, "Program version", this.ProgramVer);
             Append(sb, "Generations", this.Generations);
+            Append(sb, $"Report type", AncestorsReport?"Ancestors" : "Descendants");
             Append(sb, "Obscure living", this.ObscureLiving);
             Append(sb, "Reduce place names", this.ReducePlaceNames);
             Append(sb, "Inject county", this.InjectCounty);
