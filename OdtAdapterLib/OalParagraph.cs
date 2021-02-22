@@ -1,4 +1,5 @@
-﻿using SOL;
+﻿using System.Collections.Generic;
+using SOL;
 using WpdInterfaceLib;
 
 namespace OdtAdapterLib
@@ -7,11 +8,12 @@ namespace OdtAdapterLib
     {
         public OdtParagraph Paragraph { get; internal set; }
 
+        private static Formatting _emptyFormatting = new Formatting();
         #region Implementation of IWpdParagraph
 
         public IWpdParagraph Append(string text)
         {
-            Paragraph.Append(text);
+            Append(text, false, _emptyFormatting);
             return this;
         }
 
@@ -22,7 +24,15 @@ namespace OdtAdapterLib
 
         public void Append(string text, bool unk, Formatting formatting)
         { // todo: bold, italic as direct-applied stylings
-            Paragraph.Append(text, formatting.CharacterStyleName, formatting.Bold, formatting.Italic);
+            List<TaggedText> runs = WpdTextHelper.Split(text);
+
+            foreach (TaggedText run in runs)
+            {
+                Paragraph.Append(run.Text, formatting.CharacterStyleName,
+                    (formatting.Bold??false)||run.IsBold, (formatting.Italic??false)||run.IsItalic);
+            }
+
+            //Paragraph.Append(text, formatting.CharacterStyleName, formatting.Bold, formatting.Italic);
         }
         /// <summary>
         /// There is a mismatch between docx and odt, in the way these "lines" are defined.

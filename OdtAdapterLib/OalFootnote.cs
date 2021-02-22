@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SOL;
 using WpdInterfaceLib;
 
@@ -38,7 +35,28 @@ namespace OdtAdapterLib
                 switch (fragment.Type)
                 {
                     case WpdFragmentType.Text:
-                        Footnote.Append(new OdtSpan(){Text = fragment.Content}.Build());
+                        List<TaggedText> runs = WpdTextHelper.Split(fragment.Content);
+                        // todo: this gets pretty deep into the internals of the 
+                        // library "below" and SB handled down there
+                        foreach (TaggedText run in runs)
+                        {
+                            if (run.IsPlain)
+                            {
+                                Footnote.Append(new OdtSpan() { Text = run.Text }.Build());
+                                continue;
+                            }
+                            StyleConfiguration sc = new StyleConfiguration()
+                            {
+                                //BasedOn = style,
+                                Bold = run.IsBold,
+                                Italic = run.IsItalic
+                            };
+                            string style = StylesManager.Instance.GetStyle(sc);
+                            //Footnote.Append(run.Text, formatting.CharacterStyleName,
+                            //    (formatting.Bold ?? false) || run.IsBold, (formatting.Italic ?? false) || run.IsItalic);
+                            Footnote.Append(new OdtSpan() { Text = run.Text, Style = style, Document = Document}.Build());
+                        }
+                        //Footnote.Append(new OdtSpan() { Text = fragment.Content }.Build());
                         break;
                     case WpdFragmentType.Noteref:
                         var frref = (fragment.DataObject as OalFootnote)?.Footnote?.GetNoteRef;
