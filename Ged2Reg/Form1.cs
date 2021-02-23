@@ -6,9 +6,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CommonClassesLib;
+using DocxAdapterLib;
 using G2RModel.Model;
 using Ged2Reg.Model;
-using DocxAdapterLib;
 using OdtAdapterLib;
 
 namespace Ged2Reg
@@ -22,6 +22,92 @@ namespace Ged2Reg
         private AsyncActionDelegates _aad = new AsyncActionDelegates();
         private frmSettingsSets.ListOfNamedSettingSets _settingsSetsBound = new frmSettingsSets.ListOfNamedSettingSets();
 
+        #region WinformsDesigner Fails - Workaround 
+
+        // the dotnet core / dotnet5 winforms desginer is unusable
+        // so we are stuck.  here we fight with it to add the needed content at 
+        // runtime
+
+        // new bound bools in settings:
+        // AncestorsReport
+        // SuppressGenNbrs
+        // AllFamilies
+        // GenerationPrefix
+        // GenerationHeadings
+
+        TabPage tpAncestry;
+        Label lbAncestry;
+        private int rowStep = 24;
+        private int yPos = 32;
+        private int lbColPos = 40;
+        private int kbColPos = 320;
+        private void AdjustForm ()
+        {
+            tabControl1.TabPages.Remove(tabPage4);
+            tpAncestry = new TabPage("Ancestry report");
+            tpAncestry.SuspendLayout();
+
+            //tabControl1.TabPages.Add(tpAncestry);
+            // the next line is the "secret" workaround to the 
+            // utterly bullshit, 15-year-old defect in 
+            // TabPageCollection.Insert whereby it just plain has 
+            // never worked.  force creation of the handle:
+            IntPtr h = tabControl1.Handle;
+            // ONLY THEN does Insert() actually work.  WTF, Microsoft?
+            tabControl1.TabPages.Insert(2, tpAncestry);
+
+            AddBoundCheckBox(tpAncestry, "Output Ancestors Report", nameof(G2RSettings.AncestorsReport));
+            AddBoundCheckBox(tpAncestry, "Suppress generation superscripts", nameof(G2RSettings.SuppressGenNbrs));
+            AddBoundCheckBox(tpAncestry, "All families of ancestors", nameof(G2RSettings.AllFamilies));
+            AddBoundCheckBox(tpAncestry, "Generation prefix numbers", nameof(G2RSettings.GenerationPrefix));
+            AddBoundCheckBox(tpAncestry, "Generation headings", nameof(G2RSettings.GenerationHeadings));
+
+            tpAncestry.Location = new Point(4, 35);
+            tpAncestry.Margin = new Padding(2);
+            tpAncestry.Name = "tpAncestry";
+            tpAncestry.Padding = new Padding(2);
+            tpAncestry.Size = new Size(759, 623);
+            // the following line throws from tab control, invalid index, some bullshit 
+            //tpAncestry.Text = "Ancestry report";
+            tpAncestry.UseVisualStyleBackColor = true;
+
+            tpAncestry.PerformLayout();
+            tpAncestry.ResumeLayout(false);
+        }
+
+        private void AddBoundCheckBox(TabPage tp, string lbl, string boundSetting)
+        {
+            tp.Controls.Add(new Label
+            {
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
+                AutoSize = true,
+                Font = new Font("Microsoft Sans Serif", 11F, FontStyle.Regular, GraphicsUnit.Point),
+                Location = new Point(lbColPos, yPos-3),
+                Name = $"lbl{lbl.Replace(" ", "")}",
+                Text = lbl,
+                Visible = true
+            });
+
+            CheckBox kb = new CheckBox()
+            {
+                AutoSize = true,
+                Checked = true,
+                CheckState = CheckState.Checked,
+                Location = new Point(kbColPos, yPos),
+                Margin = new Padding(2),
+                Name = $"kb{lbl.Replace(" ", "")}",
+                RightToLeft = RightToLeft.Yes,
+                Size = new Size(22, 21),
+                TabIndex = 83,
+                UseVisualStyleBackColor = true,
+            };
+            kb.DataBindings.Add(new Binding("Checked", this.bsG2RSettings, boundSetting, true));
+            tp.Controls.Add(kb);
+
+            yPos += rowStep;
+        }
+
+        #endregion
 
         #region formMechanics
         public Form1()
@@ -30,6 +116,7 @@ namespace Ged2Reg
             //tpStyles.Visible = false; // does not work...
             //tabControl1.TabPages.Remove(tpStyles);
             InitLogDelegates();
+            AdjustForm();
             Application.DoEvents();
 
             bsSettingsSets.DataSource = _settingsSetsBound;
@@ -43,7 +130,7 @@ namespace Ged2Reg
             citationStrategyChoicesBindingSource1.DataSource = _csssFill;
             baptismOptionChoicesBindingSource.DataSource = _baptismOptionChoices;
 
-            _rrm = new RegisterReportModel()
+            _rrm = new RegisterReportModel
             {
                 Logger = this, 
                 DocFactory = new OoxDocFactory()
@@ -52,7 +139,7 @@ namespace Ged2Reg
             LoadSettingsSets(true);
 
             _aad.CancelEnable = ena => { pbCancel.Enabled = ena; };
-            _aad.PostStatusReport = (txt) => { Log(txt); };
+            _aad.PostStatusReport = txt => { Log(txt); };
 
             teLog.Height = panel1.Height - (teLog.Top + 10);
         }
@@ -139,7 +226,7 @@ namespace Ged2Reg
             pbCancel.Enabled = !ena;
         }
 
-        private char? _seeked = null;
+        private char? _seeked;
         private void dgvStartPerson_KeyPress(object sender, KeyPressEventArgs e)
         {
             char c = e.KeyChar;
@@ -219,7 +306,7 @@ namespace Ged2Reg
                     MessageBox.Show("GEDCOM file does not exist");
                     return;
                 }
-                this.Cursor = Cursors.WaitCursor;
+                Cursor = Cursors.WaitCursor;
                 Application.DoEvents();
 
                 LoadGedData();
@@ -231,7 +318,7 @@ namespace Ged2Reg
             }
             finally
             {
-                this.Cursor = Cursors.Default;
+                Cursor = Cursors.Default;
             }
         }
 
@@ -240,10 +327,10 @@ namespace Ged2Reg
             try
             {
                 //UseWaitCursor = true;
-                this.Cursor = Cursors.WaitCursor;
+                Cursor = Cursors.WaitCursor;
                 Application.DoEvents();
 
-                OpenFileDialog ofd = new OpenFileDialog()
+                OpenFileDialog ofd = new OpenFileDialog
                 {
                     Title = "Select Gedcom File",
                     Multiselect = false,
@@ -267,7 +354,7 @@ namespace Ged2Reg
             finally
             {
                 //UseWaitCursor = false;
-                this.Cursor = Cursors.Default;
+                Cursor = Cursors.Default;
             }
         }
 
@@ -281,7 +368,7 @@ namespace Ged2Reg
                     if (MessageBox.Show("Output file exists: delete/replace it?", "Ged2Reg Warning", MessageBoxButtons.OKCancel,
                         MessageBoxIcon.Warning) == DialogResult.Cancel)
                     {
-                        Log($"Action canceled (output file already exists).");
+                        Log("Action canceled (output file already exists).");
                         return;
                     }
                     File.Delete(_rrm.Settings.OutFile);
@@ -317,7 +404,7 @@ namespace Ged2Reg
                 TimeSpan elapsed = DateTime.Now.Subtract(start);
                 Log($"Report created ({_rrm.Settings.OutFile} in {elapsed:g})");
                 Log(_rrm.Reporter.GetStatsSummary(), false);
-                Log($"completed processing; see Log for details");
+                Log("completed processing; see Log for details");
                 // do this here, hoping the property change events will propagate....
                 // but that results in inaccurate reports
                 //_rrm.Settings.LastRun = _rrm.Reporter.MyReportStats.EndTime = DateTime.Now;
@@ -328,7 +415,7 @@ namespace Ged2Reg
             }
             catch (CanceledByUserException cbu)
             {
-                MessageBox.Show($"Canceled");
+                MessageBox.Show("Canceled");
                 Log("Canceled");
             }
             catch (Exception ex)
@@ -350,7 +437,7 @@ namespace Ged2Reg
         {
             try
             {
-                OpenFileDialog ofd = new OpenFileDialog()
+                OpenFileDialog ofd = new OpenFileDialog
                 {
                     Title = "Select Gedcom File",
                     Multiselect = false,
@@ -375,7 +462,7 @@ namespace Ged2Reg
         {
             try
             {
-                SaveFileDialog sfd = new SaveFileDialog()
+                SaveFileDialog sfd = new SaveFileDialog
                 {
                     Title = "Select Output File",
                     //CheckFileExists = true,
@@ -410,9 +497,6 @@ namespace Ged2Reg
                     break;
                 case ".odt":
                     _rrm.DocFactory = new OalDocFactory();
-                    break;
-                default:
-                    // todo: complain?
                     break;
             }
         }
@@ -533,9 +617,9 @@ namespace Ged2Reg
                     return;
                 bool keepTitleRewrites = (DialogResult.Yes == dr);
                 if (keepTitleRewrites)
-                    _rrm.Settings = new G2RSettings() { SetName = _rrm.Settings.SetName, GedcomFile = teGedcom.Text, OutFile = teOutFile.Text, TextCleaners = _rrm.Settings.TextCleaners }.Init();
+                    _rrm.Settings = new G2RSettings { SetName = _rrm.Settings.SetName, GedcomFile = teGedcom.Text, OutFile = teOutFile.Text, TextCleaners = _rrm.Settings.TextCleaners }.Init();
                 else
-                    _rrm.Settings = new G2RSettings() { SetName = _rrm.Settings.SetName, GedcomFile = teGedcom.Text, OutFile = teOutFile.Text }.Init();
+                    _rrm.Settings = new G2RSettings { SetName = _rrm.Settings.SetName, GedcomFile = teGedcom.Text, OutFile = teOutFile.Text }.Init();
                 BindUiToSettings();
                 _rrm.SettingsSets.Update(_rrm.Settings);
                 Log($"Settings set {_rrm.Settings.SetName} reset to default values");
@@ -578,7 +662,7 @@ namespace Ged2Reg
             {
                 ListOfSettingsSets tempListOfSettingsSets = new ListOfSettingsSets();
                 tempListOfSettingsSets.AddRange(_rrm.SettingsSets);
-                frmSettingsSets fss = new frmSettingsSets(){SettingSets = tempListOfSettingsSets, SelectedSet = _rrm.Settings}.Init();
+                frmSettingsSets fss = new frmSettingsSets {SettingSets = tempListOfSettingsSets, SelectedSet = _rrm.Settings}.Init();
                 if (fss.ShowDialog(this) != DialogResult.OK)
                     return;
                 _rrm.SettingsSets = tempListOfSettingsSets;
@@ -617,8 +701,8 @@ namespace Ged2Reg
         public LogOneLineDelegate LogOneLine{ get; set; }
 
         private List<string> _logLines = new List<string>();
-        private int _logMax = 0;
-        private bool _logPaused = false;
+        private int _logMax;
+        private bool _logPaused;
 
         private void InitLogDelegates()
         {
@@ -716,7 +800,7 @@ namespace Ged2Reg
         #endregion
 
         #region FormDataErrorHandlers
-        private int _dataerrortries = 0;
+        private int _dataerrortries;
         private void dgTitleCleaners_DataError(object sender, DataGridViewDataErrorEventArgs e)
         {
             if (e.ColumnIndex == 0)
