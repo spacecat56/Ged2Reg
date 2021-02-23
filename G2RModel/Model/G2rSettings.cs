@@ -397,21 +397,48 @@ namespace Ged2Reg.Model
         #endregion
 
         #region persistent/bindable properties
+        private bool _allFamilies = true;
+        private bool _suppressGenNbrs;
+        private bool _gernerationPrefix;
 
+        #region AncestorReportOptions
         [DataMember]
         public bool AncestorsReport
         {
             get { return _ancestorsReport; }
             set { _ancestorsReport = value; OnPropertyChanged(); }
         }
-        private bool _suppressGenNbrs;
-
         [DataMember]
         public bool SuppressGenNbrs
         {
             get { return _suppressGenNbrs; }
             set { _suppressGenNbrs = value; OnPropertyChanged(); }
         }
+        [DataMember]
+         public bool AllFamilies
+        {
+            get { return _allFamilies; }
+            set { _allFamilies = value; OnPropertyChanged(); }
+        }
+         [DataMember]
+        public bool GenerationPrefix
+        {
+            get { return _gernerationPrefix; }
+            set { _gernerationPrefix = value; OnPropertyChanged(); }
+        }
+        private bool _generationHeadings;
+
+        [DataMember]
+        public bool GenerationHeadings
+        {
+            get { return _generationHeadings; }
+            set { _generationHeadings = value; OnPropertyChanged(); }
+        }
+
+
+        #endregion
+
+
 
         [DataMember]
         public bool LastActive

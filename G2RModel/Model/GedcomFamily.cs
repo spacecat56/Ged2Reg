@@ -102,6 +102,11 @@ namespace Ged2Reg.Model
             return this;
         }
 
+        public void Reset()
+        {
+            IsIncluded = false;
+        }
+
         public class MarriageDateComparer : IComparer<GedcomFamily>
         {
             #region Implementation of IComparer<in GedcomFamily>
@@ -126,6 +131,11 @@ namespace Ged2Reg.Model
         public GedcomCitationSet Citations { get; set; } // todo: is this unused?
 
         public CitableMarriageEvents CitableEvents { get; set; }
+
+        /// <summary>
+        /// Set to indicate the family is chosen to list in ancestry report
+        /// </summary>
+        public bool IsIncluded { get; set; }
 
         public GedcomIndividual SpouseOf(GedcomIndividual indi)
         {

@@ -130,6 +130,11 @@ namespace Ged2Reg.Model
 
         public void Reset()
         {
+            foreach (GedcomFamily family in SafeFamilies)
+            {
+                family.Reset();
+            }
+
             Families = null;
             Spouses = null;
             AssignedChildNumber = 0;

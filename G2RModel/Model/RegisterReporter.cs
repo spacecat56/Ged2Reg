@@ -22,8 +22,6 @@ namespace Ged2Reg.Model
 
         private GedcomIndividual _root;
         private ReportContext _c;
-        private bool _ancestryReport;
-        private bool _suppressGenNumbers;
 
         //public ListOfGedcomIndividuals MainIndividuals { get; set; }
 
@@ -49,6 +47,11 @@ namespace Ged2Reg.Model
         private bool _listBapt;
         private bool _listBuri;
 
+        private bool _ancestryReport;
+        private bool _suppressGenNumbers;
+        private bool _includeGenerationNumbers;
+        private bool _allFamilies;
+
         public RegisterReportModel Model { get; set; }
 
         private HashSet<string> _treedPersons;
@@ -63,7 +66,8 @@ namespace Ged2Reg.Model
             _listBapt = _c.Settings.IncludeBaptism;
             _listBuri = _c.Settings.IncludeBurial;
             _ancestryReport = _c.Settings.AncestorsReport;
-            _suppressGenNumbers = _c.Settings.SuppressGenNbrs; 
+            _suppressGenNumbers = _c.Settings.SuppressGenNbrs;
+            _allFamilies = !_c.Settings.AncestorsReport || _c.Settings.AllFamilies;
 
             _root = root;
             _root.AssignedMainNumber = 1;
@@ -152,6 +156,8 @@ namespace Ged2Reg.Model
                     if (mainIndividual.ChildhoodFamily == null)
                         continue;
 
+                    mainIndividual.ChildhoodFamily.IsIncluded = true;
+
                     // add the parents, if known
                     GedcomIndividual dad = mainIndividual.ChildhoodFamily.Husband;
                     GedcomIndividual mom = mainIndividual.ChildhoodFamily.Wife;
@@ -174,6 +180,16 @@ namespace Ged2Reg.Model
 
                     // number the sibs within the family
                     NumberChildren(mainIndividual.ChildhoodFamily);
+                    if (_allFamilies)
+                    {
+                        foreach (GedcomFamily family in mainIndividual.Families)
+                        {
+                            if (family == mainIndividual.ChildhoodFamily)
+                                continue;
+                            family.IsIncluded = true;
+                            NumberChildren(family);
+                        }
+                    }
                 }
             }
         }
@@ -185,8 +201,9 @@ namespace Ged2Reg.Model
             {
                 if (child.AssignedChildNumber != 0) continue;
                 child.AssignedChildNumber = ++greatestChildSeq;
-                if (child.AssignedMainNumber != 0)
+                if (child.AssignedMainNumber == 0)
                     _nonContinued.Add(child);
+                child.LocateCitations(_cm);
                 child.Expand(); // pick up extra info for the ancestors report
             }
         }
@@ -430,6 +447,9 @@ namespace Ged2Reg.Model
             foreach (GedcomFamily family in individual.SafeFamilies)
             {
                 if ((family.Children?.Count??0) == 0)
+                    continue;
+
+                if (!_allFamilies && !family.IsIncluded)
                     continue;
 
                 p = doc.InsertParagraph(); // NB insert empty "" para with a styleid DOES NOT WORK

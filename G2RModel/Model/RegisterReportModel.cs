@@ -145,10 +145,7 @@ namespace Ged2Reg.Model
             // reset state
             GedcomFamily.AllFamilies.Clear();
 
-            foreach (GedcomIndividual individual in Individuals)
-            {
-                individual.Reset();
-            }
+            ResetGedcom();
 
             // trigger rebuild of title cleaner, and place it where it will be used
             Settings.CitationTitleCleaner = null;
@@ -220,6 +217,14 @@ namespace Ged2Reg.Model
             //PostProgress(Reporter.GetStatsSummary());
 
             return true;
+        }
+
+        internal void ResetGedcom()
+        {
+            foreach (GedcomIndividual individual in Individuals)
+            {
+                individual.Reset();
+            }
         }
 
         public void OpenGedcom(string fn)

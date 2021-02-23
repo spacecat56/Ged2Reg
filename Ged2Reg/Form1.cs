@@ -15,11 +15,10 @@ namespace Ged2Reg
 {
     public partial class Form1 : Form, ILocalLogger
     {
- 
         private RegisterReportModel _rrm;
         private CitationStrategyChoices _csss = new CitationStrategyChoices();
         private CitationStrategyChoices _csssFill = new CitationStrategyChoices();
-        private BaptismOptionChoices _baptismOptionChoices  = new BaptismOptionChoices();
+        private BaptismOptionChoices _baptismOptionChoices = new BaptismOptionChoices();
         private AsyncActionDelegates _aad = new AsyncActionDelegates();
         private frmSettingsSets.ListOfNamedSettingSets _settingsSetsBound = new frmSettingsSets.ListOfNamedSettingSets();
 
@@ -28,6 +27,8 @@ namespace Ged2Reg
         public Form1()
         {
             InitializeComponent();
+            //tpStyles.Visible = false; // does not work...
+            //tabControl1.TabPages.Remove(tpStyles);
             InitLogDelegates();
             Application.DoEvents();
 
@@ -750,5 +751,10 @@ namespace Ged2Reg
             }
         }
         #endregion
+
+        private void tpAncestry_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
