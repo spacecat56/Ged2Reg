@@ -314,11 +314,18 @@ namespace Ged2Reg.Model
 
         public void ApplyVersionUpdates()
         {
-            var ka = (from s in StyleMap where s.Style == StyleSlots.KidsAlt select s).FirstOrDefault();
-            if (ka == null)
+            void AddIfMissing(StyleSlots styleSlots)
             {
-                StyleMap.Add(new StyleAssignment(StyleSlots.KidsAlt));
+                var ka = (from s in StyleMap where s.Style == styleSlots select s).FirstOrDefault();
+                if (ka == null)
+                {
+                    StyleMap.Add(new StyleAssignment(styleSlots));
+                }
             }
+            if (StyleMap == null) return; // some odd circumstance
+            AddIfMissing(StyleSlots.KidsAlt);
+            AddIfMissing(StyleSlots.GenerationDivider);
+            AddIfMissing(StyleSlots.GenerationDivider3Plus);
         }
 
         public void InitPageMetrics()
@@ -366,6 +373,8 @@ namespace Ged2Reg.Model
                 new NamedValue<StyleSlots>() {Name = "Children", Value = StyleSlots.Kids},
                 new NamedValue<StyleSlots>() {Name = "Children (alt)", Value = StyleSlots.KidsAlt},
                 new NamedValue<StyleSlots>() {Name = "Generation number", Value = StyleSlots.GenerationNumber},
+                new NamedValue<StyleSlots>() {Name = "Generation divider", Value = StyleSlots.GenerationDivider},
+                new NamedValue<StyleSlots>() {Name = "Generation divider (3+)", Value = StyleSlots.GenerationDivider3Plus},
                 //new NamedValue<StyleSlots>(){Name = "Grandchild name", Value = StyleSlots.GrandkidName},
                 //new NamedValue<StyleSlots>(){Name = "Grandchildren", Value = StyleSlots.Grandkids},
                 new NamedValue<StyleSlots>() {Name = "Main person name (char)", Value = StyleSlots.MainPerson},

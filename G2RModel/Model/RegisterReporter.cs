@@ -291,6 +291,9 @@ namespace Ged2Reg.Model
                 _styleMap.Add(s.Style, new Formatting(){CharacterStyleName = s.StyleName});
             }
 
+            _styleMap.TryGetValue(StyleSlots.GenerationDivider, out Formatting genDivider);
+            _styleMap.TryGetValue(StyleSlots.GenerationDivider3Plus, out Formatting genDivider3Plus);
+
             _dateFormatter = new GenealogicalDateFormatter();
             _placeFormatter = new GenealogicalPlaceFormatter()
             {
@@ -310,6 +313,22 @@ namespace Ged2Reg.Model
                 if ((generation?.Count??0)==0)
                     continue;
                 Model.PostProgress($"processing generation {_currentGeneration}");
+
+                IWpdParagraph para;
+                switch (_currentGeneration)
+                {
+                    case 0:
+                    case 1:
+                        break;
+                    case 2:
+                        para = doc.InsertParagraph($"Generation {_currentGeneration}");
+                        para.StyleName = genDivider?.CharacterStyleName;
+                        break;
+                    default:
+                        para = doc.InsertParagraph($"Generation {_currentGeneration}");
+                        para.StyleName = genDivider3Plus?.CharacterStyleName;
+                        break;
+                }
                 foreach (GedcomIndividual individual in generation)
                 {
                     EmitMainPerson(doc, individual, _currentGeneration);
