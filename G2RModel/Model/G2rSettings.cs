@@ -273,6 +273,7 @@ namespace Ged2Reg.Model
                 //new StyleAssignment(StyleSlots.Grandkids),
                 //new StyleAssignment(StyleSlots.KidMoreText),
                 new StyleAssignment(StyleSlots.Kids),
+                new StyleAssignment(StyleSlots.KidsAlt),
                 new StyleAssignment(StyleSlots.KidsIntro),
                 new StyleAssignment(StyleSlots.MainPerson),
                 // // new StyleAssignment(StyleSlots.Normal),
@@ -307,7 +308,17 @@ namespace Ged2Reg.Model
             InitStyleSlotChoices();
             InitTextCleanerChoices();
             InitPageMetrics();
+            ApplyVersionUpdates();
             return this;
+        }
+
+        public void ApplyVersionUpdates()
+        {
+            var ka = (from s in StyleMap where s.Style == StyleSlots.KidsAlt select s).FirstOrDefault();
+            if (ka == null)
+            {
+                StyleMap.Add(new StyleAssignment(StyleSlots.KidsAlt));
+            }
         }
 
         public void InitPageMetrics()
@@ -353,6 +364,7 @@ namespace Ged2Reg.Model
                 new NamedValue<StyleSlots>() {Name = "Children intro", Value = StyleSlots.KidsIntro},
                 //new NamedValue<StyleSlots>(){Name = "Child additional text", Value = StyleSlots.KidMoreText},
                 new NamedValue<StyleSlots>() {Name = "Children", Value = StyleSlots.Kids},
+                new NamedValue<StyleSlots>() {Name = "Children (alt)", Value = StyleSlots.KidsAlt},
                 new NamedValue<StyleSlots>() {Name = "Generation number", Value = StyleSlots.GenerationNumber},
                 //new NamedValue<StyleSlots>(){Name = "Grandchild name", Value = StyleSlots.GrandkidName},
                 //new NamedValue<StyleSlots>(){Name = "Grandchildren", Value = StyleSlots.Grandkids},

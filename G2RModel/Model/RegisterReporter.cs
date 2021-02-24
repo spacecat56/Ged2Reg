@@ -476,9 +476,10 @@ namespace Ged2Reg.Model
                         continue;
                     child.ChildEntryEmitted = true;
                     p = doc.InsertParagraph();
-                    p.StyleName = _styleMap[StyleSlots.Kids].CharacterStyleName;
+                    p.StyleName = _styleMap[_ancestryReport ? StyleSlots.KidsAlt : StyleSlots.Kids].CharacterStyleName;
+                    char sp = child.AssignedMainNumber > 9999999 ? ' ' : '\t';
                     string kidNbr = child.AssignedMainNumber > 0
-                        ? $"{child.GetNumber(_includeGenerationNumbers)}.\t{child.ChildNumberRoman}.\t"
+                        ? $"{child.GetNumber(_includeGenerationNumbers)}.\t{child.ChildNumberRoman}.{sp}"
                         : $"\t{child.ChildNumberRoman}.\t";
                     p.Append(kidNbr);
                     p.Append(child.SafeGivenName);

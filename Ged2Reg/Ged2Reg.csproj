@@ -49,9 +49,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <EmbeddedResource Include="Resources\Custom-Icon-Design-Pretty-Office-5-Glossary.ico" />
-    <EmbeddedResource Include="Resources\stylesFile.docx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
     <EmbeddedResource Include="stylesFile.docx" />
     <None Include="Resources\Custom-Icon-Design-Pretty-Office-5-Glossary.ico">
       <Pack>True</Pack>

@@ -69,7 +69,8 @@ namespace Ged2Reg.Model
                 //    InsertHyperlink = true
                 //};
                 p.AppendField(nrf.Build());
-                p.StyleName = ("FootnoteReference");
+                // this damages the containing paragraph (not a para style):
+                //p.StyleName = ("FootnoteReference");
                 return true;
             }
 

@@ -16,6 +16,7 @@ namespace Ged2Reg.Model
         Grandkids,
         GrandkidName,
         GenerationNumber,
+        KidsAlt
     }
     public class ListOfStyleAssignments : SortableBindingList<StyleAssignment> { }
 
