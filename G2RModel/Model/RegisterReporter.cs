@@ -67,6 +67,7 @@ namespace Ged2Reg.Model
             _listBuri = _c.Settings.IncludeBurial;
             _ancestryReport = _c.Settings.AncestorsReport;
             _suppressGenNumbers = _c.Settings.SuppressGenNbrs;
+            _includeGenerationNumbers = _c.Settings.GenerationPrefix;
             _allFamilies = !_c.Settings.AncestorsReport || _c.Settings.AllFamilies;
 
             _root = root;
@@ -153,10 +154,33 @@ namespace Ged2Reg.Model
 
                 foreach (GedcomIndividual mainIndividual in ip)
                 {
+                    mainIndividual.GenerationInCurrentReport = generation;
+                    mainIndividual.FindFamilies(true);
+
+                    // number the sibs within descendant families
+                    if (_allFamilies)
+                    {
+                        foreach (GedcomFamily family in mainIndividual.SafeFamilies)
+                        {
+                            //if (family == mainIndividual.ChildhoodFamily)
+                            //    continue;
+                            family.IsIncluded = true;
+                            NumberChildren(family);
+                        }
+                        foreach (GedcomFamily family in mainIndividual.MyParentsFamilies())
+                        {
+                            if (family.IsIncluded) continue;
+                            family.IsIncluded = true;
+                            NumberChildren(family);
+                        }
+                    }
+
                     if (mainIndividual.ChildhoodFamily == null)
                         continue;
 
                     mainIndividual.ChildhoodFamily.IsIncluded = true;
+                    NumberChildren(mainIndividual.ChildhoodFamily);
+
 
                     // add the parents, if known
                     GedcomIndividual dad = mainIndividual.ChildhoodFamily.Husband;
@@ -178,18 +202,6 @@ namespace Ged2Reg.Model
                         op.Add(mom);
                     }
 
-                    // number the sibs within the family
-                    NumberChildren(mainIndividual.ChildhoodFamily);
-                    if (_allFamilies)
-                    {
-                        foreach (GedcomFamily family in mainIndividual.Families)
-                        {
-                            if (family == mainIndividual.ChildhoodFamily)
-                                continue;
-                            family.IsIncluded = true;
-                            NumberChildren(family);
-                        }
-                    }
                 }
             }
         }
@@ -376,11 +388,12 @@ namespace Ged2Reg.Model
             // begin main person content
             IWpdParagraph p = doc.InsertParagraph();
             p.StyleName = _styleMap[StyleSlots.MainPersonText].CharacterStyleName;
-            p.Append($"{individual.AssignedMainNumber}. ");
+            p.Append($"{individual.GetNumber(_includeGenerationNumbers)}. ");
             p.Append(individual.SafeGivenName, false, _styleMap[StyleSlots.MainPerson]);
             //p.Append($"{gen}", _styleMap[StyleSlots.GenerationNumber]);
             //p.Append($"{gen}", generationNumberFormatting);
-            p.Append($"{gen}", false, generationNumberFormatting);
+            if (!_suppressGenNumbers)
+                p.Append($"{gen}", false, generationNumberFormatting);
             p.Append($" {individual.SafeSurname}", false, _styleMap[StyleSlots.MainPerson]);
             ConditionallyEmitNameIndexEntry(doc, p, individual);
             if (_c.Settings.DebuggingOutput)
@@ -465,7 +478,7 @@ namespace Ged2Reg.Model
                     p = doc.InsertParagraph();
                     p.StyleName = _styleMap[StyleSlots.Kids].CharacterStyleName;
                     string kidNbr = child.AssignedMainNumber > 0
-                        ? $"{child.AssignedMainNumber}.\t{child.ChildNumberRoman}.\t"
+                        ? $"{child.GetNumber(_includeGenerationNumbers)}.\t{child.ChildNumberRoman}.\t"
                         : $"\t{child.ChildNumberRoman}.\t";
                     p.Append(kidNbr);
                     p.Append(child.SafeGivenName);

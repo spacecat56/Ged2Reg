@@ -122,7 +122,11 @@ namespace Ged2Reg.Model
 
         public CitablePersonEvents CitableEvents { get; set; }
 
+        public int GenerationInCurrentReport { get; set; }
 
+        public string GetNumber(bool withGeneration) => withGeneration 
+            ? $"{GenerationInCurrentReport:00}-{AssignedMainNumber}" 
+            : $"{AssignedMainNumber}";
 
         private const string NullSpan = "0000 - 0000";
 
@@ -134,11 +138,12 @@ namespace Ged2Reg.Model
             {
                 family.Reset();
             }
-
+            
             Families = null;
             Spouses = null;
             AssignedChildNumber = 0;
             AssignedMainNumber = 0;
+            GenerationInCurrentReport = 0;
             ChildEntryEmitted = false;
             SortFamilies();
         }
@@ -422,5 +427,12 @@ namespace Ged2Reg.Model
             #endregion
         }
 
+        public IEnumerable<GedcomFamily> MyParentsFamilies()
+        {
+            List<GedcomFamily> rvl = new List<GedcomFamily>();
+            rvl.AddRange(ChildhoodFamily?.Husband?.Families ?? SafeEmptyFamilies);
+            rvl.AddRange(ChildhoodFamily?.Wife?.Families ?? SafeEmptyFamilies);
+            return rvl;
+        }
     }
 }
