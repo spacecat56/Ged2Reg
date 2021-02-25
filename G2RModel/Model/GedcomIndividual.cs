@@ -70,15 +70,24 @@ namespace Ged2Reg.Model
         public string PlaceBaptized { get; set; }
         public string BaptizedDescription { get; set; }
 
+        #region transients
         public BigInteger AssignedMainNumber { get; set; }
         public int AssignedChildNumber { get; set; }
+        public AncestryNameList Ancestry { get; set; }
 
         // these are used to control output positioning 
         // on the Ancestors report
         public bool SuppressSpouseInfo { get; set; }
         public bool EmitChildrenAfter { get; set; }
 
-        public AncestryNameList Ancestry { get; set; }
+        // this is used on ancestry report to implement
+        // options and repositioning of list(s) of children
+        public List<GedcomFamily> FamiliesToReport { get; set; }
+        // this is used where we stop exploding to avoid repetition /
+        // recursion, to reference the number of the repeated ancestor
+        public List<GedcomIndividual> ContinuesWith { get; set; }
+        #endregion
+
         public string Pronoun => "M".Equals(Gender) ? "He" : "She";
         public string AntiPronoun => "M".Equals(Gender) ? "She" : "He";
 
@@ -139,7 +148,9 @@ namespace Ged2Reg.Model
             {
                 family.Reset();
             }
-            
+
+            ContinuesWith = null;
+            FamiliesToReport = null;
             Families = null;
             Spouses = null;
             AssignedChildNumber = 0;
@@ -335,10 +346,11 @@ namespace Ged2Reg.Model
                 select view).ToList();
             foreach (FamilyView view in fs)
             {
-                GedcomFamily fam = GedcomFamily.AllFamilies.Find(f => f.FamilyView == view);
+                //GedcomFamily fam = GedcomFamily.AllFamilies.Find(f => f.FamilyView == view);
+                GedcomFamily.GetFamMap().TryGetValue(view, out GedcomFamily fam);
                 if (fam == null)
                 {
-                    GedcomFamily.AllFamilies.Add(fam = new GedcomFamily(view));
+                    GedcomFamily.Add(fam = new GedcomFamily(view));
                 }
                 Families.Add(fam);
                 GedcomIndividual spouse = fam.SpouseOf(this);
@@ -434,6 +446,29 @@ namespace Ged2Reg.Model
             rvl.AddRange(ChildhoodFamily?.Husband?.Families ?? SafeEmptyFamilies);
             rvl.AddRange(ChildhoodFamily?.Wife?.Families ?? SafeEmptyFamilies);
             return rvl;
+        }
+
+        public void SetContinuation(GedcomIndividual indi)
+        {
+            (ContinuesWith ??= new List<GedcomIndividual>()).Add(indi);
+        }
+
+        public string GetContinuation(bool withGeneration)
+        {
+            if ((ContinuesWith?.Count ?? 0) == 0) return null;
+
+            StringBuilder sb = new StringBuilder();
+            string sep = " ";
+            sb.Append("(Continues with");
+            foreach (GedcomIndividual indi in ContinuesWith)
+            {
+                sb.Append(sep).Append(indi.GetNumber(withGeneration));
+                sep = ", ";
+            }
+
+            sb.Append(".)");
+
+            return sb.ToString();
         }
     }
 }

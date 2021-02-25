@@ -22,6 +22,14 @@ namespace Ged2Reg.Model
 
         public ListOfGedcomIndividuals Individuals { get; set; }
 
+        // these two finders get VERY expensive 
+        // when we are using them we will make maps 
+        // NB be sure to delete the maps on re-init!
+        private Dictionary<IndividualView, GedcomIndividual> _ivgiMap;
+        // can't do this because the list is dynamic
+        //private Dictionary<FamilyView, GedcomFamily> _fvgiMap;
+
+
         public IWpdFactory DocFactory { get; set; }
 
         //public List<GedcomFamily> AllFamilies { get; set; }
@@ -44,6 +52,9 @@ namespace Ged2Reg.Model
                 OpenGedcom(Settings.GedcomFile);
 
             ReportContext.Init(Settings).Model = this;
+
+            _ivgiMap = null;
+            //_fvgiMap = null;
 
             return rv;
         }
@@ -143,8 +154,9 @@ namespace Ged2Reg.Model
             Doc.Apply(ps);
 
             // reset state
-            GedcomFamily.AllFamilies.Clear();
-
+            GedcomFamily.ClearFamilies(); // .AllFamilies.Clear();
+            _ivgiMap = null;
+            //_fvgiMap = null;
             ResetGedcom();
 
             // trigger rebuild of title cleaner, and place it where it will be used
@@ -236,21 +248,46 @@ namespace Ged2Reg.Model
 
         }
 
+        private Dictionary<IndividualView, GedcomIndividual> GetIndiMap()
+        {
+            if (_ivgiMap != null) return _ivgiMap;
+
+            _ivgiMap = Individuals.ToDictionary(i => i.IndividualView, i => i);
+
+            return _ivgiMap;
+        }
+
+        //private Dictionary<FamilyView, GedcomFamily> GetFamMap()
+        //{
+        //    if (_fvgiMap != null) return _fvgiMap;
+
+        //    _fvgiMap = GedcomFamily.AllFamilies.ToDictionary(f => f.FamilyView, f => f);
+
+        //    return _fvgiMap;
+        //}
+
         public GedcomIndividual FindIndividual(IndividualView iv)
         {
-            return Individuals.FirstOrDefault(v => v.IndividualView.Equals(iv));
+            if (iv == null) return null; // why does this happen?
+            //return Individuals.FirstOrDefault(v => v.IndividualView.Equals(iv));
+            GetIndiMap().TryGetValue(iv, out GedcomIndividual rv);
+            return rv;
         }
+
 
         public GedcomFamily FindAsChildInFamily(GedcomIndividual indi)
         {
             if (indi == null) return null;
 
+            // todo: optimize this
+            // bug? there could be more than one result, eh?
             FamilyView fv = GedcomFile.FamilyViews.Find(f => f.Chiildren.Contains(indi.IndividualView));
             if (fv == null) return null;
 
-            GedcomFamily rvf = GedcomFamily.AllFamilies.FirstOrDefault(f => f.FamilyView.Equals(fv));
+            // GedcomFamily rvf = GedcomFamily.AllFamilies.FirstOrDefault(f => f.FamilyView.Equals(fv));
 
-            rvf = rvf ?? new GedcomFamily(fv);
+            GedcomFamily.GetFamMap().TryGetValue(fv, out GedcomFamily rvf);
+            rvf ??= GedcomFamily.Add(new GedcomFamily(fv));
 
             return rvf;
         }

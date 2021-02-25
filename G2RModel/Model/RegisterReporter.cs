@@ -185,26 +185,41 @@ namespace Ged2Reg.Model
                     NumberChildren(mainIndividual.ChildhoodFamily);
 
 
-                    // add the parents, if known
+                    // add the parents, if known and new 
                     GedcomIndividual dad = mainIndividual.ChildhoodFamily.Husband;
                     GedcomIndividual mom = mainIndividual.ChildhoodFamily.Wife;
+                    bool dadIncluded = false;
                     if (dad != null)
                     {
-                        dad.AssignedMainNumber = mainIndividual.AssignedMainNumber * 2;
-                        dad.FindFamilies(true);
-                        dad.EmitChildrenAfter = true;
-                        op.Add(dad);
+                        if (dad.AssignedChildNumber > 0)
+                        {
+                            mainIndividual.SetContinuation(dad);
+                        }
+                        else
+                        {
+                            dad.AssignedMainNumber = mainIndividual.AssignedMainNumber * 2;
+                            dad.FindFamilies(true);
+                            dad.EmitChildrenAfter = true;
+                            op.Add(dad);
+                            dadIncluded = true;
+                        }
                     }
                     if (mom != null)
                     {
-                        mom.AssignedMainNumber = mainIndividual.AssignedMainNumber * 2 + 1;
-                        mom.FindFamilies(true);
-                        mom.EmitChildrenAfter = true;
-                        if (dad!=null) dad.EmitChildrenAfter = false; // mom steals them, if she is known
-                        mom.SuppressSpouseInfo = dad != null;
-                        op.Add(mom);
+                        if (mom.AssignedChildNumber > 0)
+                        {
+                            mainIndividual.SetContinuation(mom);
+                        }
+                        else
+                        {
+                            mom.AssignedMainNumber = mainIndividual.AssignedMainNumber * 2 + 1;
+                            mom.FindFamilies(true);
+                            mom.EmitChildrenAfter = true;
+                            if (dadIncluded) dad.EmitChildrenAfter = false; // mom steals them, if she is known
+                            mom.SuppressSpouseInfo = dadIncluded;
+                            op.Add(mom);
+                        }
                     }
-
                 }
             }
         }
@@ -403,7 +418,7 @@ namespace Ged2Reg.Model
 
         private void EmitMainPerson(IWpdDocument doc, GedcomIndividual individual, int gen)
         {
-            bool timeToMinize = _ancestryReport && _minFromGen > 0 && _minFromGen <= gen;
+            bool timeToMinimize = _ancestryReport && _minFromGen > 0 && _minFromGen <= gen;
 
             //Formatting superFormatting = new Formatting() { Script = Script.superscript };
             Formatting generationNumberFormatting = new Formatting() { CharacterStyleName = _styleMap[StyleSlots.GenerationNumber].CharacterStyleName }; //  switched this to the style
@@ -434,8 +449,15 @@ namespace Ged2Reg.Model
 
             List<GedcomIndividual> noteworthy = AppendPersonDetails(p, individual);
 
-            if (timeToMinize)
+            string tinue = individual.GetContinuation(_includeGenerationNumbers);
+            if (tinue != null)
+                p.Append(" ").Append(tinue);
+
+            if (timeToMinimize)
+            {
+                // todo: min list the linked child(ren)
                 return;
+            }
 
             bool lastLineWasDivider = false;
             bool dividersApplied = false;

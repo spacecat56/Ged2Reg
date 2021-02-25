@@ -9,7 +9,8 @@ namespace Ged2Reg.Model
 {
     public class GedcomFamily
     {
-        public static List<GedcomFamily> AllFamilies = new List<GedcomFamily>();
+        private static List<GedcomFamily> AllFamilies = new List<GedcomFamily>();
+        private static Dictionary<FamilyView, GedcomFamily> _fvgiMap;
 
         public string DateMarried { get; set; }
         public string PlaceMarried { get; set; }
@@ -21,6 +22,26 @@ namespace Ged2Reg.Model
         public bool ChildrenAreSorted { get; set; }
         public FamilyView FamilyView { get; set; }
         private string _bestYear;
+
+        public static void ClearFamilies()
+        {
+            AllFamilies.Clear();
+            _fvgiMap?.Clear();
+        }
+        public static Dictionary<FamilyView, GedcomFamily> GetFamMap()
+        {
+            if (_fvgiMap != null) return _fvgiMap;
+
+            _fvgiMap = AllFamilies.ToDictionary(f => f.FamilyView, f => f);
+
+            return _fvgiMap;
+        }
+        public static GedcomFamily Add(GedcomFamily f)
+        {
+            AllFamilies.Add(f);
+            GetFamMap().Add(f.FamilyView, f);
+            return f;
+        }
 
         public string BestYear
         {
@@ -141,5 +162,6 @@ namespace Ged2Reg.Model
         {
             return indi == Husband ? Wife : Husband;
         }
+
     }
 }
