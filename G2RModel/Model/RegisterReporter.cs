@@ -144,8 +144,10 @@ namespace Ged2Reg.Model
         {
             int generation = 0;
 
-            NumberChildren(Generations[0][0].Families?[0]);
-            Generations[0][0].EmitChildrenAfter = true;
+            Generations[0][0].EmitChildrenAfter = _allFamilies;
+            if ((Generations[0][0].Families?.Count ?? 0) >0)
+                NumberChildren(Generations[0][0].Families?[0]);
+
             while (++generation < Generations.Length)
             {
                 ListOfGedcomIndividuals ip = Generations[generation-1];
@@ -181,9 +183,12 @@ namespace Ged2Reg.Model
                     if (mainIndividual.ChildhoodFamily == null)
                         continue;
 
+
+                    // NB NOTHING BELOW HERE unless it is about the 
+                    //  "childhood family"!
+
                     mainIndividual.ChildhoodFamily.IsIncluded = true;
                     NumberChildren(mainIndividual.ChildhoodFamily);
-
 
                     // add the parents, if known and new 
                     GedcomIndividual dad = mainIndividual.ChildhoodFamily.Husband;
@@ -191,7 +196,7 @@ namespace Ged2Reg.Model
                     bool dadIncluded = false;
                     if (dad != null)
                     {
-                        if (dad.AssignedChildNumber > 0)
+                        if (dad.AssignedMainNumber > 0)
                         {
                             mainIndividual.SetContinuation(dad);
                         }
@@ -206,7 +211,7 @@ namespace Ged2Reg.Model
                     }
                     if (mom != null)
                     {
-                        if (mom.AssignedChildNumber > 0)
+                        if (mom.AssignedMainNumber > 0)
                         {
                             mainIndividual.SetContinuation(mom);
                         }
