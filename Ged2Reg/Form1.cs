@@ -43,8 +43,10 @@ namespace Ged2Reg
         private int kbColPos = 320;
         private void AdjustForm ()
         {
+            nudGenerations.Maximum = 999;
+
             tabControl1.TabPages.Remove(tabPage4);
-            tpAncestry = new TabPage("Ancestry report");
+            tpAncestry = new TabPage("Ancestry Report");
             tpAncestry.SuspendLayout();
 
             //tabControl1.TabPages.Add(tpAncestry);
@@ -58,9 +60,10 @@ namespace Ged2Reg
 
             AddBoundCheckBox(tpAncestry, "Output Ancestors Report", nameof(G2RSettings.AncestorsReport));
             AddBoundCheckBox(tpAncestry, "Suppress generation superscripts", nameof(G2RSettings.SuppressGenNbrs));
-            AddBoundCheckBox(tpAncestry, "All families of ancestors", nameof(G2RSettings.AllFamilies));
+            AddBoundCheckBox(tpAncestry, "All families of ancestors (non-standard)", nameof(G2RSettings.AllFamilies));
             AddBoundCheckBox(tpAncestry, "Generation prefix numbers", nameof(G2RSettings.GenerationPrefix));
             AddBoundCheckBox(tpAncestry, "Generation headings", nameof(G2RSettings.GenerationHeadings));
+            AddBoundTextBox(tpAncestry, "Minimize from generation", nameof(G2RSettings.MinimizeFromGeneration));
 
             tpAncestry.Location = new Point(4, 35);
             tpAncestry.Margin = new Padding(2);
@@ -77,16 +80,7 @@ namespace Ged2Reg
 
         private void AddBoundCheckBox(TabPage tp, string lbl, string boundSetting)
         {
-            tp.Controls.Add(new Label
-            {
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
-                AutoSize = true,
-                Font = new Font("Microsoft Sans Serif", 11F, FontStyle.Regular, GraphicsUnit.Point),
-                Location = new Point(lbColPos, yPos-3),
-                Name = $"lbl{lbl.Replace(" ", "")}",
-                Text = lbl,
-                Visible = true
-            });
+            AddLabel(tp, lbl);
 
             CheckBox kb = new CheckBox()
             {
@@ -105,6 +99,43 @@ namespace Ged2Reg
             tp.Controls.Add(kb);
 
             yPos += rowStep;
+        }
+
+        private void AddBoundTextBox(TabPage tp, string lbl, string boundSetting)
+        {
+            AddLabel(tp, lbl, 2);
+
+            TextBox kb = new TextBox()
+            {
+                AutoSize = true,
+                //Checked = true,
+                //CheckState = CheckState.Checked,
+                Location = new Point(kbColPos, yPos),
+                Margin = new Padding(2),
+                Name = $"te{lbl.Replace(" ", "")}",
+                RightToLeft = RightToLeft.Yes,
+                Size = new Size(60, 21),
+                //TabIndex = 83,
+                //UseVisualStyleBackColor = true,
+            };
+            kb.DataBindings.Add(new Binding("Text", this.bsG2RSettings, boundSetting, true));
+            tp.Controls.Add(kb);
+
+            yPos += rowStep;
+        }
+
+        private void AddLabel(TabPage tp, string txt, int lblOffset = -3)
+        {
+            tp.Controls.Add(new Label
+            {
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
+                AutoSize = true,
+                Font = new Font("Microsoft Sans Serif", 11F, FontStyle.Regular, GraphicsUnit.Point),
+                Location = new Point(lbColPos, yPos + lblOffset),
+                Name = $"lbl{txt.Replace(" ", "")}",
+                Text = txt,
+                Visible = true
+            });
         }
 
         #endregion

@@ -532,9 +532,14 @@ namespace Ged2Reg
             0,
             0,
             0});
+            this.nudColumnsPlaceIndex.Maximum = new decimal(new int[] {
+                0x3e7,
+                0,
+                0,
+                0});
             this.nudGenerations.Name = "nudGenerations";
             this.nudGenerations.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.nudGenerations.Size = new System.Drawing.Size(34, 32);
+            this.nudGenerations.Size = new System.Drawing.Size(54, 32);
             this.nudGenerations.TabIndex = 12;
             this.nudGenerations.Value = new decimal(new int[] {
             4,
@@ -1517,7 +1522,7 @@ namespace Ged2Reg
             this.tabPage3.Padding = new System.Windows.Forms.Padding(2);
             this.tabPage3.Size = new System.Drawing.Size(759, 623);
             this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "Citation Options";
+            this.tabPage3.Text = "Citations";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
             // kbRefInline
@@ -1857,7 +1862,7 @@ namespace Ged2Reg
             this.tabPage7.Padding = new System.Windows.Forms.Padding(2);
             this.tabPage7.Size = new System.Drawing.Size(759, 623);
             this.tabPage7.TabIndex = 6;
-            this.tabPage7.Text = "Notes Options";
+            this.tabPage7.Text = "Notes";
             this.tabPage7.UseVisualStyleBackColor = true;
             // 
             // checkBox26
@@ -2050,7 +2055,7 @@ namespace Ged2Reg
             this.tabPage6.Padding = new System.Windows.Forms.Padding(2);
             this.tabPage6.Size = new System.Drawing.Size(759, 623);
             this.tabPage6.TabIndex = 5;
-            this.tabPage6.Text = "Index Options";
+            this.tabPage6.Text = "Indexes";
             this.tabPage6.UseVisualStyleBackColor = true;
             // 
             // nudColumnsPlaceIndex

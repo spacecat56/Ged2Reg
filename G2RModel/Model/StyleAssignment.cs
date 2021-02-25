@@ -19,6 +19,7 @@ namespace Ged2Reg.Model
         KidsAlt,
         GenerationDivider,
         GenerationDivider3Plus,
+        BodyTextNotes
     }
     public class ListOfStyleAssignments : SortableBindingList<StyleAssignment> { }
 

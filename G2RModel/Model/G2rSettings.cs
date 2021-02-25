@@ -326,6 +326,7 @@ namespace Ged2Reg.Model
             AddIfMissing(StyleSlots.KidsAlt);
             AddIfMissing(StyleSlots.GenerationDivider);
             AddIfMissing(StyleSlots.GenerationDivider3Plus);
+            AddIfMissing(StyleSlots.BodyTextNotes);
         }
 
         public void InitPageMetrics()
@@ -379,7 +380,8 @@ namespace Ged2Reg.Model
                 //new NamedValue<StyleSlots>(){Name = "Grandchildren", Value = StyleSlots.Grandkids},
                 new NamedValue<StyleSlots>() {Name = "Main person name (char)", Value = StyleSlots.MainPerson},
                 new NamedValue<StyleSlots>() {Name = "Main person text (para)", Value = StyleSlots.MainPersonText},
-                new NamedValue<StyleSlots>() {Name = "Main Notes", Value = StyleSlots.BodyTextIndent},
+                new NamedValue<StyleSlots>() {Name = "More text (para)", Value = StyleSlots.BodyTextIndent},
+                new NamedValue<StyleSlots>() {Name = "Main Notes", Value = StyleSlots.BodyTextNotes},
             };
         }
         private List<NamedValue<CitationPartName>> BuildCitePartChoices()
@@ -421,6 +423,7 @@ namespace Ged2Reg.Model
         private bool _allFamilies = true;
         private bool _suppressGenNbrs;
         private bool _gernerationPrefix;
+        private int _minFromGen;
 
         #region AncestorReportOptions
         [DataMember]
@@ -454,6 +457,13 @@ namespace Ged2Reg.Model
         {
             get { return _generationHeadings; }
             set { _generationHeadings = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public int MinimizeFromGeneration
+        {
+            get { return _minFromGen; }
+            set { _minFromGen = value; OnPropertyChanged(); }
         }
 
 

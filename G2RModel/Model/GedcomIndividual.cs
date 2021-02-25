@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using SimpleGedcomLib;
 
@@ -69,7 +70,7 @@ namespace Ged2Reg.Model
         public string PlaceBaptized { get; set; }
         public string BaptizedDescription { get; set; }
 
-        public long AssignedMainNumber { get; set; }
+        public BigInteger AssignedMainNumber { get; set; }
         public int AssignedChildNumber { get; set; }
 
         // these are used to control output positioning 

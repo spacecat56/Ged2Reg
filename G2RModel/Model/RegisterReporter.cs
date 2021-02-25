@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using G2RModel.Model;
@@ -51,6 +52,7 @@ namespace Ged2Reg.Model
         private bool _suppressGenNumbers;
         private bool _includeGenerationNumbers;
         private bool _allFamilies;
+        private int _minFromGen;
 
         public RegisterReportModel Model { get; set; }
 
@@ -69,6 +71,7 @@ namespace Ged2Reg.Model
             _suppressGenNumbers = _c.Settings.SuppressGenNbrs;
             _includeGenerationNumbers = _c.Settings.GenerationPrefix;
             _allFamilies = !_c.Settings.AncestorsReport || _c.Settings.AllFamilies;
+            _minFromGen = _c.Settings.MinimizeFromGeneration;
 
             _root = root;
             _root.AssignedMainNumber = 1;
@@ -252,7 +255,7 @@ namespace Ged2Reg.Model
 
             //bool hasAnotherGeneration = nextGen < Generations.Length - 1;
 
-            long greatestId = ip[^1].AssignedMainNumber;
+            BigInteger greatestId = ip[^1].AssignedMainNumber;
 
             foreach (GedcomIndividual mainIndividual in ip)
             {
@@ -400,6 +403,8 @@ namespace Ged2Reg.Model
 
         private void EmitMainPerson(IWpdDocument doc, GedcomIndividual individual, int gen)
         {
+            bool timeToMinize = _ancestryReport && _minFromGen > 0 && _minFromGen <= gen;
+
             //Formatting superFormatting = new Formatting() { Script = Script.superscript };
             Formatting generationNumberFormatting = new Formatting() { CharacterStyleName = _styleMap[StyleSlots.GenerationNumber].CharacterStyleName }; //  switched this to the style
             int genNbrIncr = _ancestryReport ? -1 : 1;
@@ -429,6 +434,9 @@ namespace Ged2Reg.Model
 
             List<GedcomIndividual> noteworthy = AppendPersonDetails(p, individual);
 
+            if (timeToMinize)
+                return;
+
             bool lastLineWasDivider = false;
             bool dividersApplied = false;
             foreach (GedcomIndividual indiNotes in noteworthy)
@@ -456,7 +464,7 @@ namespace Ged2Reg.Model
                         continue;
                     lastLineWasDivider = false;
                     p = doc.InsertParagraph();
-                    p.StyleName = _styleMap[StyleSlots.BodyTextIndent].CharacterStyleName;
+                    p.StyleName = _styleMap[StyleSlots.BodyTextNotes].CharacterStyleName;
                     p.Append(para);
                 }
             }
@@ -776,7 +784,7 @@ namespace Ged2Reg.Model
                     mid += "[?]";
                 GedcomFamily family = indi.SafeFamilies[mnbr];
                 GedcomIndividual spouse = (family.Husband == indi) ? family.Wife : family.Husband;
-                if (_c.Settings.SpousesNotes)
+                if (_c.Settings.SpousesNotes && !_ancestryReport)  // prevent duplication when both are handled as mains
                     toDoNotes.Add(spouse);
                 p.Append($" {(storyAppended ? indi.SafeNameForward : indi.Pronoun)} married{mid} ");
                 if (_c.Settings.DebuggingOutput)
