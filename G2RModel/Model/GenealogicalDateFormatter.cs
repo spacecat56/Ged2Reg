@@ -101,7 +101,7 @@ namespace Ged2Reg.Model
                 }
             }
 
-            return $"{prep}{string.Format(op, mon).Trim()}";
+            return $"{prep}{string.Format(op, mon).Trim()}".Replace("  ", " ");
         }
     }
 }

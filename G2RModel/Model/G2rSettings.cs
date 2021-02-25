@@ -284,23 +284,58 @@ namespace Ged2Reg.Model
             //StyleMap.Add(_saMainText  = new StyleAssignment(StyleSlots.MainPersonText){StyleName = MainPersonTextStyle});
 
             // default regexes for dates - based on FTM data 
+            InitDateRules();
+
+            return this;
+        }
+
+        private void InitDateRules()
+        {
             DateRules = new List<ContentReformatter>()
             {
-                new ContentReformatter(){Role = PatternRole.DateAboutBeforeAfter, RecognizerPattern = @"\A((?<about>ABT)|(?<after>AFT)|(?<before>BEF))\s+(?<date>.+)\z", Emitter = @"{0} {1}"},
+                new ContentReformatter()
+                {
+                    Role = PatternRole.DateAboutBeforeAfter,
+                    RecognizerPattern =
+                        @"\A(?i)((?<about>ABT)|(?<after>AFT)|(?<before>BEF))\s+(?<date>.+)\z", // era picked up in .+
+                    Emitter = @"{0} {1}"
+                },
                 //new ContentReformatter(){Role = PatternRole.DateAfter, RecognizerPattern = @"AFT\s+(?<year>\d{4})\s+AND\s+(?<year2>\d{4})", Emitter = @"after {0}"},
                 //new ContentReformatter(){Role = PatternRole.DateBefore, RecognizerPattern = @"BEF\s+(?<year>\d{4})\s+AND\s+(?<year2>\d{4})", Emitter = @"before {0}"},
                 //new ContentReformatter(){Role = PatternRole.DateAbout, RecognizerPattern = @"\AABT\s+(?<date>.+)\z", Emitter = @"about {0}"},
-                new ContentReformatter(){Role = PatternRole.DateBetween, RecognizerPattern = @"BET\s+(?<year>\d{4})\s+AND\s+(?<year2>\d{4})", Emitter = @"between ${year} and ${year2}"},
-                new ContentReformatter(){Role = PatternRole.Date, RecognizerPattern = @"\A((?<day>\d{1,2})\s+)?((?<month>[A-Z]{3})\s+)?(?<year>\d{4}(/\d{1,2})?)?\z", Emitter = @"${day} {0} ${year}"},
-                new ContentReformatter(){Role = PatternRole.PlaceUSA, RecognizerPattern = @"\A(?<PLACE>.*?), (USA|(United States of America))\z", Emitter = @""},
-                new ContentReformatter(){Role = PatternRole.Place3or4, RecognizerPattern = @"\A((?<locale>.+, ))?((?<city>.+)(, ))((?<county>.+)(, ))((?<state>.+))\z", Emitter = @"${locale}${city}, ${county}, ${state}", ShortEmitter = @"${locale}${city}"},
-                new ContentReformatter(){Role = PatternRole.Place1or2, RecognizerPattern = @"\A((?<city>.+, ))?((?<state>.+))\z", Emitter = @"${city}${state}"},
+                new ContentReformatter()
+                {
+                    Role = PatternRole.DateBetween,
+                    RecognizerPattern =
+                        @"(?i)BET\s+(?<year>\d+)(?<era>\s*(AD|BC|BCE|CE))?\s+AND\s+(?<year2>\d+)(?<era2>\s*(AD|BC|BCE|CE))?",
+                    Emitter = @"between ${year}${era} and ${year2}${era2}"
+                },
+                new ContentReformatter()
+                {
+                    Role = PatternRole.Date,
+                    RecognizerPattern =
+                        @"\A((?<day>\d{1,2})\s+)?((?<month>[A-Z]{3})\s+)?(?<year>\d{1,4}(/\d{1,2})?)?(?<era>\s*(AD|BC|BCE|CE))?\z",
+                    Emitter = @"${day} {0} ${year}${era}"
+                },
+                new ContentReformatter()
+                {
+                    Role = PatternRole.PlaceUSA, RecognizerPattern = @"\A(?<PLACE>.*?), (USA|(United States of America))\z",
+                    Emitter = @""
+                },
+                new ContentReformatter()
+                {
+                    Role = PatternRole.Place3or4,
+                    RecognizerPattern = @"\A((?<locale>.+, ))?((?<city>.+)(, ))((?<county>.+)(, ))((?<state>.+))\z",
+                    Emitter = @"${locale}${city}, ${county}, ${state}", ShortEmitter = @"${locale}${city}"
+                },
+                new ContentReformatter()
+                {
+                    Role = PatternRole.Place1or2, RecognizerPattern = @"\A((?<city>.+, ))?((?<state>.+))\z",
+                    Emitter = @"${city}${state}"
+                },
 
-                new ContentReformatter(){Role = PatternRole.Unknown, RecognizerPattern = @"", Emitter = @""},
-
+                new ContentReformatter() {Role = PatternRole.Unknown, RecognizerPattern = @"", Emitter = @""},
             };
-
-            return this;
         }
 
         public G2RSettings InitInternals()
@@ -308,6 +343,7 @@ namespace Ged2Reg.Model
             InitStyleSlotChoices();
             InitTextCleanerChoices();
             InitPageMetrics();
+            InitDateRules();
             ApplyVersionUpdates();
             return this;
         }
