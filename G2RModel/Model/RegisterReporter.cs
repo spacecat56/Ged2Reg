@@ -619,6 +619,8 @@ namespace Ged2Reg.Model
             reduced &= !_ancestryReport || indi.AssignedMainNumber > 0;
             doNotCite &= !_ancestryReport || indi.AssignedMainNumber > 0;
 
+            string comma = null;
+
             if (!isChild && _ancestryReport && indi.HasParents)
             {
                 p.Append(", ").Append(indi.NounAsChild.ToLower()).Append(" of ");
@@ -635,7 +637,8 @@ namespace Ged2Reg.Model
                     p.Append(indi.ChildhoodFamily.Wife.NameForward);
                 }
 
-                p.Append(",");
+                //p.Append(",");
+                comma = ",";
             }
 
             // to position footnote superscripts in the running text correctly (especially,
@@ -651,6 +654,11 @@ namespace Ged2Reg.Model
                 ? ConditionalEvent("was buried", indi.Buried, indi.PlaceBuried, indi.BurialDescription, _c.Settings.OmitBurialDate)
                 : null;
 
+            if (comma != null && !(p1_birt is null && p2_bapt is null && p3_deat is null && p4_buri is null))
+            {
+                p.Append(comma);
+                comma = null; // in case we need this again
+            }
             // knowing all the pieces, we can add the conjunctions, [NOT commas], pronouns needed to the text
             //string pendingPunctuation = "";
             if (p2_bapt != null)

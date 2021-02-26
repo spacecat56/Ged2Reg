@@ -127,6 +127,24 @@ namespace G2RModelTest
             Exec(gpf, input, expected);
         }
 
+        [TestMethod]
+        public void TestCountyState()
+        {
+            GenealogicalPlaceFormatter gpf = new GenealogicalPlaceFormatter() { InjectWordCounty = true }.Init();
+            string input = "Putnam, New York";
+            string expected = "Putnam, New York"; // ambiguous case, should be emitted unmodified
+            Exec(gpf, input, expected);
+        }
+
+        [TestMethod]
+        public void TestTrash()
+        {
+            GenealogicalPlaceFormatter gpf = new GenealogicalPlaceFormatter() { InjectWordCounty = true }.Init();
+            string input = ",,,,Syria";
+            string expected = "Syria"; 
+            Exec(gpf, input, expected);
+        }
+
 
 
 
