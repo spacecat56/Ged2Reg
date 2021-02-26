@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using G2RModel.Model;
 using SimpleGedcomLib;
 
 namespace Ged2Reg.Model
@@ -71,21 +72,24 @@ namespace Ged2Reg.Model
         public string BaptizedDescription { get; set; }
 
         #region transients
-        public BigInteger AssignedMainNumber { get; set; }
-        public int AssignedChildNumber { get; set; }
-        public AncestryNameList Ancestry { get; set; }
+        //public BigInteger AssignedMainNumber { get; set; }
+        //public int AssignedChildNumber { get; set; }
+        //public AncestryNameList Ancestry { get; set; }
 
-        // these are used to control output positioning 
-        // on the Ancestors report
-        public bool SuppressSpouseInfo { get; set; }
-        public bool EmitChildrenAfter { get; set; }
+        //// these are used to control output positioning 
+        //// on the Ancestors report
+        //public bool SuppressSpouseInfo { get; set; }
+        //public bool EmitChildrenAfter { get; set; }
 
-        // this is used on ancestry report to implement
-        // options and repositioning of list(s) of children
-        public List<GedcomFamily> FamiliesToReport { get; set; }
-        // this is used where we stop exploding to avoid repetition /
-        // recursion, to reference the number of the repeated ancestor
-        public List<GedcomIndividual> ContinuesWith { get; set; }
+        //// this is used on ancestry report to implement
+        //// options and repositioning of list(s) of children
+        //public List<GedcomFamily> FamiliesToReport { get; set; }
+        //// this is used where we stop exploding to avoid repetition /
+        //// recursion, to reference the number of the repeated ancestor
+        //public List<GedcomIndividual> ContinuesWith { get; set; }
+        //public int GenerationInCurrentReport { get; set; }
+        public ReportEntry FirstReportEntry { get; set; }
+        public bool FamiliesAreSorted { get; set; }
         #endregion
 
         public string Pronoun => "M".Equals(Gender) ? "He" : "She";
@@ -97,11 +101,11 @@ namespace Ged2Reg.Model
 
         public string Gender => IndividualView?.IndiTag?.GetChild(TagCode.SEX)?.Content ?? "U";
 
-        public string ChildNumberRoman => AssignedChildNumber.ToRoman();
+        //public string ChildNumberRoman => AssignedChildNumber.ToRoman();
         public bool ChildEntryEmitted { get; set; }
 
-        private int? _numberOfChildren;
         private string _reportableSpan;
+        private int? _numberOfChildren;
         public int NumberOfChildren => _numberOfChildren ?? (_numberOfChildren = CountChildren()) ?? 0;
         public bool HasDescendants => NumberOfChildren > 0;
         public bool HasParents => ChildhoodFamily?.Husband != null || ChildhoodFamily?.Wife != null;
@@ -124,7 +128,6 @@ namespace Ged2Reg.Model
             }
         }
 
-        public bool FamiliesAreSorted { get; set; }
 
         public List<GedcomIndividual> Spouses { get; set; }
 
@@ -132,11 +135,10 @@ namespace Ged2Reg.Model
 
         public CitablePersonEvents CitableEvents { get; set; }
 
-        public int GenerationInCurrentReport { get; set; }
 
-        public string GetNumber(bool withGeneration) => withGeneration 
-            ? $"{GenerationInCurrentReport:00}-{AssignedMainNumber}" 
-            : $"{AssignedMainNumber}";
+        //public string GetNumber(bool withGeneration) => withGeneration 
+        //    ? $"{GenerationInCurrentReport:00}-{AssignedMainNumber}" 
+        //    : $"{AssignedMainNumber}";
 
         private const string NullSpan = "0000 - 0000";
 
@@ -149,13 +151,14 @@ namespace Ged2Reg.Model
                 family.Reset();
             }
 
-            ContinuesWith = null;
-            FamiliesToReport = null;
+            //ContinuesWith = null;
+            //FamiliesToReport = null;
             Families = null;
             Spouses = null;
-            AssignedChildNumber = 0;
-            AssignedMainNumber = 0;
-            GenerationInCurrentReport = 0;
+            FirstReportEntry = null;
+            //AssignedChildNumber = 0;
+            //AssignedMainNumber = 0;
+            //GenerationInCurrentReport = 0;
             ChildEntryEmitted = false;
             SortFamilies();
         }
@@ -448,27 +451,27 @@ namespace Ged2Reg.Model
             return rvl;
         }
 
-        public void SetContinuation(GedcomIndividual indi)
-        {
-            (ContinuesWith ??= new List<GedcomIndividual>()).Add(indi);
-        }
+        //public void SetContinuation(GedcomIndividual indi)
+        //{
+        //    (ContinuesWith ??= new List<GedcomIndividual>()).Add(indi);
+        //}
 
-        public string GetContinuation(bool withGeneration)
-        {
-            if ((ContinuesWith?.Count ?? 0) == 0) return null;
+        //public string GetContinuation(bool withGeneration)
+        //{
+        //    if ((ContinuesWith?.Count ?? 0) == 0) return null;
 
-            StringBuilder sb = new StringBuilder();
-            string sep = " ";
-            sb.Append("(Continues with");
-            foreach (GedcomIndividual indi in ContinuesWith)
-            {
-                sb.Append(sep).Append(indi.GetNumber(withGeneration));
-                sep = ", ";
-            }
+        //    StringBuilder sb = new StringBuilder();
+        //    string sep = " ";
+        //    sb.Append("(Continues with");
+        //    foreach (GedcomIndividual indi in ContinuesWith)
+        //    {
+        //        sb.Append(sep).Append(indi.GetNumber(withGeneration));
+        //        sep = ", ";
+        //    }
 
-            sb.Append(".)");
+        //    sb.Append(".)");
 
-            return sb.ToString();
-        }
+        //    return sb.ToString();
+        //}
     }
 }

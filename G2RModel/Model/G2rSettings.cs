@@ -460,6 +460,8 @@ namespace Ged2Reg.Model
         private bool _suppressGenNbrs;
         private bool _gernerationPrefix;
         private int _minFromGen;
+        private bool _generationHeadings;
+        private bool _allowMultiple = true;
 
         #region AncestorReportOptions
         [DataMember]
@@ -486,7 +488,6 @@ namespace Ged2Reg.Model
             get { return _gernerationPrefix; }
             set { _gernerationPrefix = value; OnPropertyChanged(); }
         }
-        private bool _generationHeadings;
 
         [DataMember]
         public bool GenerationHeadings
@@ -502,8 +503,14 @@ namespace Ged2Reg.Model
             set { _minFromGen = value; OnPropertyChanged(); }
         }
 
-
         #endregion
+
+        [DataMember]
+        public bool AllowMultipleAppearances
+        {
+            get { return _allowMultiple; }
+            set { _allowMultiple = value; OnPropertyChanged(); }
+        }
 
 
 
