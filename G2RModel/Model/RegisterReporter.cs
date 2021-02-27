@@ -253,6 +253,7 @@ namespace Ged2Reg.Model
 
         private void NumberChildren(ReportFamilyEntry cf)
         {
+            if (cf == null) return;
             int greatestChildSeq = 0;
             if (cf.Children == null)
             {
@@ -365,21 +366,9 @@ namespace Ged2Reg.Model
                     continue;
                 Model.PostProgress($"processing generation {_currentGeneration}");
 
-                IWpdParagraph para;
-                switch (_currentGeneration)
-                {
-                    case 0:
-                    case 1:
-                        break;
-                    case 2:
-                        para = doc.InsertParagraph($"Generation {_currentGeneration}");
-                        para.StyleName = genDivider?.CharacterStyleName;
-                        break;
-                    default:
-                        para = doc.InsertParagraph($"Generation {_currentGeneration}");
-                        para.StyleName = genDivider3Plus?.CharacterStyleName;
-                        break;
-                }
+                if (_c.Settings.GenerationHeadings)
+                    EmitDivider(doc, genDivider, genDivider3Plus);
+
                 foreach (ReportEntry individual in generation)
                 {
                     EmitMainPerson(doc, individual, _currentGeneration);
@@ -406,6 +395,25 @@ namespace Ged2Reg.Model
             p = doc.InsertParagraph();
             p.StyleName = "ReportInfo";
             p.Append(GetStatsSummary().Replace("\t", ""));
+        }
+
+        private void EmitDivider(IWpdDocument doc, Formatting genDivider, Formatting genDivider3Plus)
+        {
+            IWpdParagraph para;
+            switch (_currentGeneration)
+            {
+                case 0:
+                case 1:
+                    break;
+                case 2:
+                    para = doc.InsertParagraph($"Generation {_currentGeneration}");
+                    para.StyleName = genDivider?.CharacterStyleName;
+                    break;
+                default:
+                    para = doc.InsertParagraph($"Generation {_currentGeneration}");
+                    para.StyleName = genDivider3Plus?.CharacterStyleName;
+                    break;
+            }
         }
 
         public string GetStatsSummary()
