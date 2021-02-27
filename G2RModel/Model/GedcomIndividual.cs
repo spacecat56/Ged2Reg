@@ -16,12 +16,17 @@ namespace Ged2Reg.Model
         internal static G2RSettings Settings => _settings ?? (_settings = ReportContext.Instance.Settings);
 
         public string Name => $"{Surname}, {GivenName}";
-        public string NameForward => $"{GivenName} {Surname}";
+        public string NameForward => string.IsNullOrEmpty(Surname) ? GivenName : $"{GivenName} {Surname}";
         public string GivenName => IsUnknown(IndividualView?.GivenName)
             ? Settings.UnknownInReport
             : $"{IndividualView?.GivenName}";
 
-        public string Surname => IsUnknown(IndividualView?.Surname) 
+        /// <summary>
+        /// If we fail to consider the given name here we wind up with nonsense
+        /// such as Charlemagne (Unknown) in the output
+        /// </summary>
+        public string Surname => 
+            IsUnknown(IndividualView?.Surname, IndividualView?.GivenName) || IndividualView?.Surname == Settings.UnknownInSource
             ? Settings.UnknownInReport 
             : $"{IndividualView?.Surname}";
 
@@ -39,13 +44,13 @@ namespace Ged2Reg.Model
             return true;
         }
 
-        public string SafeName => IsUnknown(IndividualView?.GivenName, IndividualView?.Surname)
-            ? Settings.UnknownInReport 
-            : $"{SafeSurname}, {SafeGivenName}";
+        //public string SafeName => IsUnknown(IndividualView?.GivenName, IndividualView?.Surname)
+        //    ? Settings.UnknownInReport
+        //    : $"{SafeSurname}, {SafeGivenName}";
 
         public string SafeNameForward => IsUnknown(IndividualView?.GivenName, IndividualView?.Surname)
             ? Settings.UnknownInReport
-            : $"{SafeGivenName} {SafeSurname}";
+            : (string.IsNullOrEmpty(SafeSurname) ? SafeGivenName : $"{SafeGivenName} {SafeSurname}");
 
         public string SafeGivenName => NotLiving ? $"{GivenName}" : "(Living)";
         public string SafeSurname => $"{Surname}"; // this usage is ambiguous

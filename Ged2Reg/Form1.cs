@@ -247,7 +247,7 @@ namespace Ged2Reg
 
         private void ToggleUiEnable(bool ena)
         {
-            tabPage2.Enabled = tabPage3.Enabled =
+            tpAncestry.Enabled = tabPage2.Enabled = tabPage3.Enabled =
                 tabPage4.Enabled = tabPage5.Enabled = tabPage6.Enabled = tabPage7.Enabled = ena;
 
             pnToggler.Enabled = pbGo.Enabled = ena;

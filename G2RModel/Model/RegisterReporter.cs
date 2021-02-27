@@ -54,7 +54,9 @@ namespace Ged2Reg.Model
         private bool _allFamilies;
         private bool _allowMultiple;
         private int _minFromGen;
+        private int _maxLivingGenerations;
 
+        private int _lastSlotWithPeople;
 
         public RegisterReportModel Model { get; set; }
 
@@ -75,6 +77,7 @@ namespace Ged2Reg.Model
             _allFamilies = !_c.Settings.AncestorsReport || _c.Settings.AllFamilies;
             _allowMultiple = _c.Settings.AllowMultipleAppearances;
             _minFromGen = _c.Settings.MinimizeFromGeneration;
+            _maxLivingGenerations = _c.Settings.AssumedMaxLivingGenerations;
 
             ReportEntryFactory.Init(!_allowMultiple);
             _root = ReportEntryFactory.Instance.GetReportEntry(root);
@@ -110,6 +113,9 @@ namespace Ged2Reg.Model
                 ApplyAncestryNumbering();
             else
                 ApplyDescendantNumbering(0);
+
+            if (_c.Settings.ObscureLiving)
+                ApplyNotLivingOverride();
 
             if (Model.CheckCancel()) throw new CanceledByUserException();
             Model.PostProgress("Analyzing source citations for main persons");
@@ -148,6 +154,23 @@ namespace Ged2Reg.Model
             Generations[ix].Add(p);
         }
 
+        private void ApplyNotLivingOverride()
+        {
+
+            int ix0 = !_ancestryReport ? 0 : _maxLivingGenerations;
+            int ixn = !_ancestryReport 
+                ? _lastSlotWithPeople - _maxLivingGenerations
+                : _lastSlotWithPeople;
+
+            for (int i = ix0; i <= ixn; i++)
+            {
+                foreach (ReportEntry re in Generations[i])
+                {
+                    re.OverrideAsNotLiving();
+                }
+            }
+        }
+
         private void ApplyAncestryNumbering()
         {
             int generation = 0;
@@ -160,7 +183,10 @@ namespace Ged2Reg.Model
             {
                 ListOfReportEntry ip = Generations[generation-1];
                 if (ip.Count == 0)
+                {
+                    _lastSlotWithPeople = generation - 2;
                     return;
+                }
 
                 // advance to the next generation, starting with an empty list of 'main' persons
                 ListOfReportEntry op = Generations[generation] = new ListOfReportEntry();
@@ -212,7 +238,7 @@ namespace Ged2Reg.Model
                     {
                         if (dad.FirstReportEntry != null && !_allowMultiple )
                         {
-                            re.SetContinuation(dad);
+                            re.SetContinuation(dad.FirstReportEntry);
                         }
                         else
                         {
@@ -231,7 +257,7 @@ namespace Ged2Reg.Model
                     {
                         if (mom.FirstReportEntry != null && !_allowMultiple)
                         {
-                            re.SetContinuation(mom);
+                            re.SetContinuation(mom.FirstReportEntry);
                         }
                         else
                         {
@@ -474,7 +500,8 @@ namespace Ged2Reg.Model
             //p.Append($"{gen}", generationNumberFormatting);
             if (!_suppressGenNumbers)
                 p.Append($"{gen}", false, generationNumberFormatting);
-            p.Append($" {re.Individual.SafeSurname}", false, _styleMap[StyleSlots.MainPerson]);
+            if (!string.IsNullOrEmpty(re.Individual.SafeSurname))
+                p.Append($" {re.Individual.SafeSurname}", false, _styleMap[StyleSlots.MainPerson]);
             ConditionallyEmitNameIndexEntry(doc, p, re.Individual);
             if (_c.Settings.DebuggingOutput)
             {
@@ -496,7 +523,15 @@ namespace Ged2Reg.Model
 
             if (timeToMinimize)
             {
-                // todo: min list the linked child(ren)
+                foreach (ReportFamilyEntry family in re.FindMainNumberedFamilies())
+                {
+                    List<ReportEntry> numbered = family.FindMainNumberedChildren();
+                    EmitFamilyIntroLine(doc, numbered.Count, family);
+                    foreach (ReportEntry child in numbered)
+                    {
+                        EmitChildEntry(doc, gen + genNbrIncr, child, generationNumberFormatting);
+                    }
+                }
                 return;
             }
 
@@ -554,44 +589,58 @@ namespace Ged2Reg.Model
 
                 if (!_allFamilies && !family.IsIncluded)
                     continue;
-
-                p = doc.InsertParagraph(); // NB insert empty "" para with a styleid DOES NOT WORK
-                p.StyleName = _styleMap[StyleSlots.KidsIntro].CharacterStyleName;
-                p.Append(((family.Children.Count > 1) ? "Children" : "Child"));
-                p.Append($" of {(family.Husband?.Individual?.SafeNameForward) ?? "unknown"}");
-                p.Append($" and {(family.Wife?.Individual?.SafeNameForward) ?? "unknown"}:");
+                int numberToList = family.Children.Count;
+                EmitFamilyIntroLine(doc, numberToList, family);
                 foreach (ReportEntry child in family.Children)
                 {
                     if (child.ChildEntryEmitted) 
                         continue;
                     child.ChildEntryEmitted = true;
-                    p = doc.InsertParagraph();
-                    p.StyleName = _styleMap[_ancestryReport ? StyleSlots.KidsAlt : StyleSlots.Kids].CharacterStyleName;
-                    char sp = child.AssignedMainNumber > 9999999 ? ' ' : '\t';
-                    string kidNbr = child.AssignedMainNumber > 0
-                        ? $"{child.GetNumber(_includeGenerationNumbers)}.\t{child.ChildNumberRoman}.{sp}"
-                        : $"\t{child.ChildNumberRoman}.\t";
-                    p.Append(kidNbr);
-                    p.Append(child.Individual.SafeGivenName);
-                    int g = gen+genNbrIncr;
-                    bool dropNbr = _suppressGenNumbers || g < 1 || (_ancestryReport && child.AssignedMainNumber < 1);
-                    if (!dropNbr)
-                        p.Append($"{g}", false, generationNumberFormatting);
-                    p.Append($" {child.Individual.SafeSurname}");
-                    if (child.AssignedMainNumber == 0)
-                    {
-                        MyReportStats.NonContinuedPerson++;
-                        if (!child.Individual.NotLiving)
-                            MyReportStats.MaybeLiving++;
-                    }
-                    ConditionallyEmitNameIndexEntry(doc, p, child.Individual);
-                    if (_c.Settings.DebuggingOutput)
-                    {
-                        p.Append($" [{child.IndividualView.Id}]");
-                    }
-                    AppendPersonDetails(p, child, true);
+                    EmitChildEntry(doc, gen + genNbrIncr, child, generationNumberFormatting);
                 }
             }
+        }
+
+        private void EmitFamilyIntroLine(IWpdDocument doc, int numberToList, ReportFamilyEntry family)
+        {
+            if (numberToList < 1) return; // guard
+            IWpdParagraph p = doc.InsertParagraph(); // NB insert empty "" para with a styleid DOES NOT WORK
+            p.StyleName = _styleMap[StyleSlots.KidsIntro].CharacterStyleName;
+            p.Append(((numberToList > 1) ? "Children" : "Child"));
+            p.Append($" of {(family.Husband?.Individual?.SafeNameForward) ?? "unknown"}");
+            p.Append($" and {(family.Wife?.Individual?.SafeNameForward) ?? "unknown"}:");
+        }
+
+        private void EmitChildEntry(IWpdDocument doc, int g, ReportEntry child, Formatting generationNumberFormatting)
+        {
+            IWpdParagraph p;
+            p = doc.InsertParagraph();
+            p.StyleName = _styleMap[_ancestryReport ? StyleSlots.KidsAlt : StyleSlots.Kids].CharacterStyleName;
+            char sp = child.AssignedMainNumber > 9999999 ? ' ' : '\t';
+            string kidNbr = child.AssignedMainNumber > 0
+                ? $"{child.GetNumber(_includeGenerationNumbers)}.\t{child.ChildNumberRoman}.{sp}"
+                : $"\t{child.ChildNumberRoman}.\t";
+            p.Append(kidNbr);
+            p.Append(child.Individual.SafeGivenName);
+            bool dropNbr = _suppressGenNumbers || g < 1 || (_ancestryReport && child.AssignedMainNumber < 1);
+            if (!dropNbr)
+                p.Append($"{g}", false, generationNumberFormatting);
+            if (!string.IsNullOrEmpty(child.Individual.SafeSurname))
+                p.Append($" {child.Individual.SafeSurname}");
+            if (child.AssignedMainNumber == 0)
+            {
+                MyReportStats.NonContinuedPerson++;
+                if (!child.Individual.NotLiving)
+                    MyReportStats.MaybeLiving++;
+            }
+
+            ConditionallyEmitNameIndexEntry(doc, p, child.Individual);
+            if (_c.Settings.DebuggingOutput)
+            {
+                p.Append($" [{child.IndividualView.Id}]");
+            }
+
+            AppendPersonDetails(p, child, true);
         }
 
         private Regex _rexDivider1 = new Regex(@"^[\-_]+$");

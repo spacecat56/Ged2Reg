@@ -1,4 +1,6 @@
-﻿using Ged2Reg.Model;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Ged2Reg.Model;
 
 namespace G2RModel.Model
 {
@@ -31,6 +33,14 @@ namespace G2RModel.Model
             }
 
             return this;
+        }
+
+        public List<ReportEntry> FindMainNumberedChildren()
+        {
+            if (Children == null)
+                return new List<ReportEntry>();
+            List<ReportEntry> rvl = Children.Where(c => c.AssignedMainNumber > 0).ToList<ReportEntry>();
+            return rvl;
         }
     }
 }

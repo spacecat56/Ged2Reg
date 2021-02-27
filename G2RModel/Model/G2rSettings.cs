@@ -363,6 +363,8 @@ namespace Ged2Reg.Model
             AddIfMissing(StyleSlots.GenerationDivider);
             AddIfMissing(StyleSlots.GenerationDivider3Plus);
             AddIfMissing(StyleSlots.BodyTextNotes);
+            if (AssumedMaxLivingGenerations == 0)
+                AssumedMaxLivingGenerations = 6;
         }
 
         public void InitPageMetrics()
@@ -510,6 +512,14 @@ namespace Ged2Reg.Model
         {
             get { return _allowMultiple; }
             set { _allowMultiple = value; OnPropertyChanged(); }
+        }
+        private int _assumedMaxLivingGenerations;
+
+        [DataMember]
+        public int AssumedMaxLivingGenerations
+        {
+            get { return _assumedMaxLivingGenerations; }
+            set { _assumedMaxLivingGenerations = value; OnPropertyChanged(); }
         }
 
 

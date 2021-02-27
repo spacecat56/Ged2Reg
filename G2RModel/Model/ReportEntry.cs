@@ -39,7 +39,7 @@ namespace G2RModel.Model
         public List<GedcomFamily> FamiliesToReport { get; set; }
         // this is used where we stop exploding to avoid repetition /
         // recursion, to reference the number of the repeated ancestor
-        public List<GedcomIndividual> ContinuesWith { get; set; }
+        public List<ReportEntry> ContinuesWith { get; set; }
 
         public int Generation { get; set; }
         public GedcomIndividual Individual { get; set; }
@@ -81,9 +81,9 @@ namespace G2RModel.Model
             return this;
         }
 
-        public void SetContinuation(GedcomIndividual indi)
+        public void SetContinuation(ReportEntry indi)
         {
-            (ContinuesWith ??= new List<GedcomIndividual>()).Add(indi);
+            (ContinuesWith ??= new List<ReportEntry>()).Add(indi);
         }
 
         public string GetContinuation(bool withGeneration)
@@ -93,9 +93,9 @@ namespace G2RModel.Model
             StringBuilder sb = new StringBuilder();
             string sep = " ";
             sb.Append("(Continues with");
-            foreach (GedcomIndividual indi in ContinuesWith)
+            foreach (ReportEntry re in ContinuesWith)
             {
-                sb.Append(sep).Append(GetNumber(withGeneration));
+                sb.Append(sep).Append(re.GetNumber(withGeneration));
                 sep = ", ";
             }
 
@@ -108,7 +108,7 @@ namespace G2RModel.Model
             int rv = 0;
             foreach (ReportFamilyEntry family in SafeFamilies)
             {
-                rv += family.Children.Count;
+                rv += family.Children?.Count ?? 0;
             }
 
             return rv;
@@ -116,7 +116,39 @@ namespace G2RModel.Model
 
         public void SortFamilies()
         {
-            // todo: needed?  hopeless? complicated?
+            // todo: not needed?  hopeless? complicated?
+        }
+
+        public List<ReportFamilyEntry> FindMainNumberedFamilies()
+        {
+            List<ReportFamilyEntry> rvl = new List<ReportFamilyEntry>();
+            if (!EmitChildrenAfter)  
+                return rvl;
+
+            foreach (ReportFamilyEntry familyEntry in FamilyEntries)
+            {
+                if (familyEntry.FindMainNumberedChildren().Count > 0)
+                    rvl.Add(familyEntry);
+            }
+
+            return rvl;
+        }
+        public List<ReportEntry> FindMainNumberedChildren()
+        {
+            List<ReportEntry> rvl = new List<ReportEntry>();
+            if (!EmitChildrenAfter)  //(FamilyEntries == null || (FamiliesToReport?.Count ?? 0) == 0)
+                return rvl;
+
+            foreach (ReportFamilyEntry familyEntry in FamilyEntries)
+            {
+                rvl.AddRange(familyEntry.FindMainNumberedChildren());
+            }
+            return rvl;
+        }
+
+        public void OverrideAsNotLiving()
+        {
+            Individual.NotLiving = true;
         }
     }
 
