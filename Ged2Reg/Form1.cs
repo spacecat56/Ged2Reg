@@ -58,14 +58,19 @@ namespace Ged2Reg
             // ONLY THEN does Insert() actually work.  WTF, Microsoft?
             tabControl1.TabPages.Insert(2, tpAncestry);
 
+            AddLabel(tpAncestry, "Options unique to Ancestry report:", xOffset: -20);
+            yPos += rowStep;
             AddBoundCheckBox(tpAncestry, "Output Ancestors Report", nameof(G2RSettings.AncestorsReport));
             AddBoundCheckBox(tpAncestry, "Suppress generation superscripts", nameof(G2RSettings.SuppressGenNbrs));
             AddBoundCheckBox(tpAncestry, "All families of ancestors (non-standard)", nameof(G2RSettings.AllFamilies));
             AddBoundCheckBox(tpAncestry, "Generation prefix numbers", nameof(G2RSettings.GenerationPrefix));
-            AddBoundCheckBox(tpAncestry, "Generation headings", nameof(G2RSettings.GenerationHeadings));
-            AddBoundCheckBox(tpAncestry, "Allow multiple appearances", nameof(G2RSettings.AllowMultipleAppearances));
             AddBoundTextBox(tpAncestry, "Minimize from generation", nameof(G2RSettings.MinimizeFromGeneration));
 
+            yPos += rowStep;
+            AddLabel(tpAncestry, "Options that may also affect Register report:", xOffset: -20);
+            yPos += rowStep;
+            AddBoundCheckBox(tpAncestry, "Generation headings", nameof(G2RSettings.GenerationHeadings));
+            AddBoundCheckBox(tpAncestry, "Allow multiple appearances", nameof(G2RSettings.AllowMultipleAppearances));
             tpAncestry.Location = new Point(4, 35);
             tpAncestry.Margin = new Padding(2);
             tpAncestry.Name = "tpAncestry";
@@ -125,14 +130,14 @@ namespace Ged2Reg
             yPos += rowStep;
         }
 
-        private void AddLabel(TabPage tp, string txt, int lblOffset = -3)
+        private void AddLabel(TabPage tp, string txt, int lblOffset = -3, int xOffset = 0)
         {
             tp.Controls.Add(new Label
             {
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
                 AutoSize = true,
                 Font = new Font("Microsoft Sans Serif", 11F, FontStyle.Regular, GraphicsUnit.Point),
-                Location = new Point(lbColPos, yPos + lblOffset),
+                Location = new Point(lbColPos+xOffset, yPos + lblOffset),
                 Name = $"lbl{txt.Replace(" ", "")}",
                 Text = txt,
                 Visible = true
@@ -321,7 +326,6 @@ namespace Ged2Reg
             }
         }
         #endregion
-
 
         #region buttonActions
         private void pbInit_Click(object sender, EventArgs e)
@@ -867,10 +871,5 @@ namespace Ged2Reg
             }
         }
         #endregion
-
-        private void tpAncestry_Click(object sender, EventArgs e)
-        {
-
-        }
     }
 }
