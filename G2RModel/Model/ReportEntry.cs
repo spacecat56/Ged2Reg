@@ -27,7 +27,7 @@ namespace G2RModel.Model
         private ReportEntry FindSpouse()
         {
             if (MyFamily == null) return null;
-            if (MyFamily.Husband == this) return MyFamily.Wife;
+            if (MyFamily.Husband?.Individual == Individual) return MyFamily.Wife;
             return MyFamily.Husband;
         }
 
@@ -148,7 +148,29 @@ namespace G2RModel.Model
 
         public void OverrideAsNotLiving()
         {
-            Individual.NotLiving = true;
+            Individual.PresumedDeceased = true;
+        }
+
+        public IEnumerable<ReportEntry> GatherVisiblePersons()
+        {
+            List<ReportEntry> rvl = new List<ReportEntry>();
+            rvl.Add(this);
+            if (ChildhoodFamily!=null)
+                rvl.AddRange(ChildhoodFamily.GatherVisiblePersons());
+            if (FamilyEntries == null)
+                return rvl;
+            foreach (ReportFamilyEntry familyEntry in FamilyEntries)
+            {
+                rvl.AddRange(familyEntry.GatherVisiblePersons());
+                foreach (ReportEntry party in familyEntry.Couple)
+                {
+                    if (party?.Individual == null || party.Individual == Individual)
+                        continue;
+                    rvl.AddRange(ReportEntryFactory.Instance.GetParents(party.Individual));
+                }
+            }
+
+            return rvl;
         }
     }
 

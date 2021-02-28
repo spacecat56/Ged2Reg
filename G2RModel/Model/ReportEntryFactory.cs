@@ -44,6 +44,21 @@ namespace G2RModel.Model
             return rv;
         }
 
+        public List<ReportEntry> GetParents(GedcomIndividual indi)
+        {
+            List<ReportEntry> rvl = new List<ReportEntry>();
+            if (indi.ChildhoodFamily == null)
+                indi.FindFamilies(false);
+            if (indi.ChildhoodFamily == null)
+                return rvl;
+            if (indi.ChildhoodFamily.Husband != null)
+                rvl.Add(GetReportEntry(indi.ChildhoodFamily.Husband));
+            if (indi.ChildhoodFamily.Wife != null)
+                rvl.Add(GetReportEntry(indi.ChildhoodFamily.Wife));
+            return rvl;
+        }
+
+
         private Dictionary<GedcomIndividual, ReportEntry> KnownEntries = new Dictionary<GedcomIndividual, ReportEntry>();
         private Dictionary<GedcomFamily, ReportFamilyEntry> KnownFamilies = new Dictionary<GedcomFamily, ReportFamilyEntry>();
         public bool Unique { get; }

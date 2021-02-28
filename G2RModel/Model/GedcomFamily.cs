@@ -57,9 +57,9 @@ namespace Ged2Reg.Model
         private string FindBestYear()
         {
             string rv = _bestYear ?? GedDate.ExtractYear(DateMarried, defaultVal:null);
-            if (rv != null || Children == null) return rv;
+            if (rv != null) return rv;
 
-            foreach (GedcomIndividual child in Children)
+            foreach (GedcomIndividual child in Children??new List<GedcomIndividual>())
             {
                 string x = GedDate.ExtractYear(child.Born, defaultVal: null);
                 if (x == null) 
@@ -68,6 +68,17 @@ namespace Ged2Reg.Model
                     rv = x;
                 else if (String.Compare(rv, x, StringComparison.Ordinal) < 0)
                     rv = x;
+            }
+
+            if (rv != null) return rv;
+
+            int.TryParse(GedDate.ExtractYear(Husband?.Born, defaultVal: "0"), out int dadBorn);
+            int.TryParse(GedDate.ExtractYear(Wife?.Born, defaultVal: "0"), out int momBorn);
+            int latest = Math.Max(dadBorn, momBorn);
+            if (latest > 0)
+            {
+                rv = $"{(latest + 25):0000}";
+                return rv;
             }
 
             return rv;

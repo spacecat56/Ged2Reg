@@ -197,30 +197,31 @@ namespace Ged2Reg.Model
                 spouse.FindFamilies(true);
             }
             
-            if (CheckCancel()) throw new CanceledByUserException();
-            if (Settings.ObscureLiving)
-                PostProgress($"obscure names of (possibly) living persons");
-
+            //if (Settings.ObscureLiving)
+            //    PostProgress($"obscure names of (possibly) living persons");
             // now everybody we care about for this report, is linked to the family
             // so we can evaluate the "maybe living" status of everyone
-            foreach (GedcomIndividual individual in Individuals)
-            {
-                if (CheckCancel()) throw new CanceledByUserException();
-                if (Settings.ObscureLiving)
-                {
-                    individual.EvalLivingStatus();
-                }
-                else
-                {
-                    individual.NotLiving = true;
-                }
-            }
+            //foreach (GedcomIndividual individual in Individuals)
+            //{
+            //    if (CheckCancel()) throw new CanceledByUserException();
+            //    if (Settings.ObscureLiving)
+            //    {
+            //        individual.EvalLivingStatus();
+            //    }
+            //    else
+            //    {
+            //        individual.PresumedDeceased = true;
+            //    }
+            //}
 
             //BuildFamiliesList();
 
             if (CheckCancel()) throw new CanceledByUserException();
             PostProgress($"initializing report model");
             Reporter = new RegisterReporter(){Model = this}.Init(root, DateTime.Now.Subtract(started));
+
+            if (CheckCancel()) throw new CanceledByUserException();
+            Reporter.ProcessLivingStatus();
 
             if (CheckCancel()) throw new CanceledByUserException();
             PostProgress($"processing report");

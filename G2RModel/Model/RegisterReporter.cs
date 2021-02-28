@@ -114,8 +114,8 @@ namespace Ged2Reg.Model
             else
                 ApplyDescendantNumbering(0);
 
-            if (_c.Settings.ObscureLiving)
-                ApplyNotLivingOverride();
+            //if (_c.Settings.ObscureLiving)
+            //    ApplyNotLivingOverride();
 
             if (Model.CheckCancel()) throw new CanceledByUserException();
             Model.PostProgress("Analyzing source citations for main persons");
@@ -135,6 +135,40 @@ namespace Ged2Reg.Model
             CitationCoordinator.Process(_c.Settings.CitationStrategy, _c.Settings.FillinCitationStrategy);
 
             return this;
+        }
+
+        internal void ProcessLivingStatus()
+        {
+            if (!(GedcomIndividual.ConsiderLivingStatus = _c.Settings.ObscureLiving))
+                return;
+            
+            Model.PostProgress($"obscure names of (possibly) living persons");
+
+            List<ReportEntry> res = GatherReportEntries();
+            int i = 0;
+            foreach (ReportEntry re in res)
+            {
+                i++;
+                re?.Individual?.EvalLivingStatus();
+            }
+            ApplyNotLivingOverride();
+        }
+
+        internal List<ReportEntry> GatherReportEntries()
+        {
+            List<ReportEntry> rvl = new List<ReportEntry>();
+
+            foreach (ListOfReportEntry generation in Generations)
+            {
+                if (generation == null)
+                    break;
+                foreach (ReportEntry reportEntry in generation)
+                {
+                    rvl.AddRange(reportEntry.GatherVisiblePersons());
+                }
+            }
+
+            return rvl;
         }
 
         private void AddPersonToGeneration(ReportEntry p, int ix)
@@ -509,7 +543,7 @@ namespace Ged2Reg.Model
             }
 
             MyReportStats.MainPerson++;
-            if (!re.Individual.NotLiving)
+            if (!re.Individual.PresumedDeceased)
                 MyReportStats.MaybeLiving++;
             
             if (!_ancestryReport)
@@ -630,7 +664,7 @@ namespace Ged2Reg.Model
             if (child.AssignedMainNumber == 0)
             {
                 MyReportStats.NonContinuedPerson++;
-                if (!child.Individual.NotLiving)
+                if (!child.Individual.PresumedDeceased)
                     MyReportStats.MaybeLiving++;
             }
 
@@ -806,7 +840,7 @@ namespace Ged2Reg.Model
             }
             
             bool doCite = _c.Settings.Citations && !doNotCite 
-                 && (!_c.Settings.ObscureLiving || !_c.Settings.OmitLivingCitations || re.Individual.NotLiving);
+                 && (!_c.Settings.ObscureLiving || !_c.Settings.OmitLivingCitations || re.Individual.PresumedDeceased);
             if (!string.IsNullOrEmpty(p1_birt?.EventString))
             {
                 p.Append(p1_birt.EventString);
@@ -907,9 +941,7 @@ namespace Ged2Reg.Model
                 if (mid != null && !re.FamiliesAreSorted)
                     mid += "[?]";
                 ReportFamilyEntry family = re.SafeFamilies[mnbr];
-                ReportEntry spouse = (family.Husband == re) ? family.Wife : family.Husband;
-                if (_c.Settings.SpousesNotes && !_ancestryReport)  // prevent duplication when both are handled as mains
-                    toDoNotes.Add(spouse.Individual);
+                ReportEntry spouse = (family.Husband.Individual == re.Individual) ? family.Wife : family.Husband;
                 p.Append($" {(storyAppended ? re.Individual.SafeNameForward : re.Individual.Pronoun)} married{mid} ");
                 if (_c.Settings.DebuggingOutput)
                 {
@@ -918,17 +950,19 @@ namespace Ged2Reg.Model
 
                 if (spouse != null)
                 {
+                    if (_c.Settings.SpousesNotes && !_ancestryReport)  // prevent duplication when both are handled as mains
+                        toDoNotes.Add(spouse.Individual);
                     p.Append(spouse.Individual.SafeNameForward);
                     if (isChild && re.AssignedMainNumber == 0)
                     {
                         MyReportStats.NonContinuedSpouses++;
-                        if (!re.Individual.NotLiving)
+                        if (!re.Individual.PresumedDeceased)
                             MyReportStats.MaybeLiving++;
                     }
                     else if (!isChild)
                     {
                         MyReportStats.MainSpouse++;
-                        if (!re.Individual.NotLiving)
+                        if (!re.Individual.PresumedDeceased)
                             MyReportStats.MaybeLiving++;
                     }
 
@@ -1023,7 +1057,7 @@ namespace Ged2Reg.Model
 
             p.Append($" {spouse.Individual.Pronoun}");
             bool isOpen = false;
-            bool doCite = _c.Settings.Citations && (!_c.Settings.ObscureLiving || !_c.Settings.OmitLivingCitations || spouse.Individual.NotLiving);
+            bool doCite = _c.Settings.Citations && (!_c.Settings.ObscureLiving || !_c.Settings.OmitLivingCitations || spouse.Individual.PresumedDeceased);
             string connector = null;
             string closer = ".";
 
@@ -1035,7 +1069,7 @@ namespace Ged2Reg.Model
                 {
                     p.Append($" {spousesChildhoodFamily.Husband.SafeNameForward}");
                     MyReportStats.SpouseParents++;
-                    if (!spousesChildhoodFamily.Husband.NotLiving)
+                    if (!spousesChildhoodFamily.Husband.PresumedDeceased)
                         MyReportStats.MaybeLiving++;
                     ConditionallyEmitNameIndexEntry(_c.Model.Doc, p, spousesChildhoodFamily.Husband);
                     if (_c.Settings.DebuggingOutput)
@@ -1048,7 +1082,7 @@ namespace Ged2Reg.Model
                 {
                     p.Append($" {conj}{spousesChildhoodFamily.Wife.SafeNameForward}");
                     MyReportStats.SpouseParents++;
-                    if (!spousesChildhoodFamily.Wife.NotLiving)
+                    if (!spousesChildhoodFamily.Wife.PresumedDeceased)
                         MyReportStats.MaybeLiving++;
                     ConditionallyEmitNameIndexEntry(_c.Model.Doc, p, spousesChildhoodFamily.Wife);
                     if (_c.Settings.DebuggingOutput)

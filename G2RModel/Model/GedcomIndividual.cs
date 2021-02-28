@@ -12,6 +12,9 @@ namespace Ged2Reg.Model
     public class GedcomIndividual
     {
         public GedcomIndividual() { }
+
+        public static bool ConsiderLivingStatus = false;
+
         private static G2RSettings _settings;
         internal static G2RSettings Settings => _settings ?? (_settings = ReportContext.Instance.Settings);
 
@@ -52,11 +55,23 @@ namespace Ged2Reg.Model
             ? Settings.UnknownInReport
             : (string.IsNullOrEmpty(SafeSurname) ? SafeGivenName : $"{SafeGivenName} {SafeSurname}");
 
-        public string SafeGivenName => NotLiving ? $"{GivenName}" : "(Living)";
+        public string SafeGivenName => PresumedDeceased || !ConsiderLivingStatus ? $"{GivenName}" : "(Living)";
         public string SafeSurname => $"{Surname}"; // this usage is ambiguous
 
         //public bool MayBeLiving { get; set; }
-        public bool NotLiving { get; set; }
+        private bool _presumedDeceased;
+
+        public bool PresumedDeceased
+        {
+            get
+            {
+                if (!DidEvaluateLivingStatus)
+                    EvalLivingStatus(); // last chance!
+                return _presumedDeceased;
+            }
+            set => _presumedDeceased = value;
+        }
+
         public bool DidEvaluateLivingStatus { get; set; }
 
         public string Born { get; set; }
@@ -165,6 +180,7 @@ namespace Ged2Reg.Model
             //AssignedMainNumber = 0;
             //GenerationInCurrentReport = 0;
             ChildEntryEmitted = false;
+            DidEvaluateLivingStatus = false;
             SortFamilies();
         }
 
@@ -190,7 +206,7 @@ namespace Ged2Reg.Model
                 YearBorn = ActualYearBorn ?? "0000";
                 //YearBorn = GedDate.ExtractYear(Born, defaultVal: "0000");
                 YearDied = GedDate.ExtractYear(Died, defaultVal: "0000");
-                LifeSpan = $"{YearBorn} - {YearDied}";
+                LifeSpan = $"{ParseAndPad(YearBorn)} - {ParseAndPad(YearDied)}";
                 if (NullSpan.Equals(LifeSpan)) LifeSpan = "";
 
                 tag = _individualView.IndiTag.GetChild(TagCode.BURI);
@@ -205,6 +221,13 @@ namespace Ged2Reg.Model
             }
         }
 
+        private string ParseAndPad(string year)
+        {
+            if (!int.TryParse(year, out int y))
+                return null;
+            return $"{y:0000}";
+        }
+
         public void EvalLivingStatus()
         {
             if (DidEvaluateLivingStatus)
@@ -214,7 +237,7 @@ namespace Ged2Reg.Model
             if (_individualView.IndiTag.GetChild(TagCode.DEAT) != null)
             {
                 // take this to mean, some basis to suppose not living
-                NotLiving = true;
+                _presumedDeceased = true;
             }
 
             int boundsYear = ReportContext.Instance.Settings.PresumedLivingBoundaryYear;
@@ -224,12 +247,31 @@ namespace Ged2Reg.Model
             //int.TryParse(YearBorn, out int iBorn);
             if (iBorn > 0 && iBorn < boundsYear)
             {
-                NotLiving = true;
+                _presumedDeceased = true;
             }
 
-            // now we can apply further rules for inferring a person not living
+            if (_presumedDeceased)
+            {
+                DidEvaluateLivingStatus = true;
+                return;
+            }
+
+            // still undecided...
+            // we can apply further rules for inferring a person not living
             // we have the indi in relation to spouse and children, as well as the 
             // children of the indi to consider
+            if (Families == null) 
+                FindFamilies(false);
+
+            int iParentsMarr = GenealogicalDateFormatter.ParseYear(ChildhoodFamily?.BestYear);
+            _presumedDeceased |= iParentsMarr < boundsYear - 25;
+
+            if (_presumedDeceased)
+            {
+                DidEvaluateLivingStatus = true;
+                return;
+            }
+
             foreach (GedcomFamily family in SafeFamilies)
             {
                 int yMarr = GenealogicalDateFormatter.ParseYear(family.BestYear);
@@ -239,19 +281,20 @@ namespace Ged2Reg.Model
                 int ySpouseBirt = GenealogicalDateFormatter.ParseYear(spouse?.YearBorn ?? "");
                 int ySpouseDeat = GenealogicalDateFormatter.ParseYear(spouse?.YearDied ?? "");
 
-                if (!NotLiving)
+                if (!_presumedDeceased)
                 {
                     // married over 75 years ago, assume not 
-                    NotLiving |= yMarr < boundsYear + 25;
+                    _presumedDeceased |= yMarr < boundsYear + 25;
 
                     // spouse born 100 years ago, assume not
-                    NotLiving |= ySpouseBirt < boundsYear;
+                    _presumedDeceased |= ySpouseBirt < boundsYear;
 
                     // spouse died 75 years ago, assume not
-                    NotLiving |= ySpouseDeat < boundsYear + 25;
+                    _presumedDeceased |= ySpouseDeat < boundsYear + 25;
                 }
 
-                if (!NotLiving)
+                //todo: pull this loop out and apply to childhoodfamily also
+                if (!_presumedDeceased)
                 {
                     // if any child was born or died or married more than 75 YA, assume not 
                     foreach (GedcomIndividual child in family.Children)
@@ -262,12 +305,12 @@ namespace Ged2Reg.Model
                         int icMarr = GenealogicalDateFormatter.ParseYear(child.EarliestMarriage ?? "");
                         if (icBorn >= boundsYear + 25 && icDeat >= boundsYear + 25 && icMarr >= boundsYear + 25)
                             continue;
-                        NotLiving = true;
+                        _presumedDeceased = true;
                         break;
                     }
                 }
 
-                // todo: reconsider this
+                // todo: reconsider this, probably unreachable in any case where it might matter
                 // consider the children... as explained by the parents' data
                 // if either parent was born 125+ YA, or died 100+ YA, assume the child is not living 
                 int iBirt = GenealogicalDateFormatter.ParseYear(YearBorn);
@@ -280,13 +323,13 @@ namespace Ged2Reg.Model
                 {
                     foreach (GedcomIndividual child in family.Children)
                     {
-                        child.NotLiving = true;
+                        child.PresumedDeceased = true;
                     }
                 }
 
             }
-            FindFamilies(false); // temp, for debugging
-            DidEvaluateLivingStatus = true; // NB DO NOT return from this method early
+            //FindFamilies(false); // temp, for debugging
+            DidEvaluateLivingStatus = true; // NB DO NOT return from this method early unless this is set
         }
 
         public string EarliestMarriage
