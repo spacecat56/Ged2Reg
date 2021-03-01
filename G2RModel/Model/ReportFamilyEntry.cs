@@ -26,12 +26,20 @@ namespace G2RModel.Model
             //Init(gf);
         }
 
-        public ReportFamilyEntry Init()
+        public ReportFamilyEntry Init(ReportEntry linked = null)
         {
+            if (Children != null)
+            {
+                return this;
+            }
             Children = new ListOfReportEntry();
             foreach (GedcomIndividual child in Family.Children)
             {
-                Children.Add(ReportEntryFactory.Instance.GetReportEntry(child));
+                if (linked?.Individual == child)
+                    // this is essential for correct ancestry numbering (of children)
+                    Children.Add(linked); 
+                else
+                    Children.Add(ReportEntryFactory.Instance.GetReportEntry(child));
             }
 
             return this;
@@ -53,7 +61,7 @@ namespace G2RModel.Model
 
             // we also need to locate spouses of children,
             // and their parents.  We are NOT calling
-            // Gather() mehtods because we do not 
+            // Gather() methods because we do not 
             // want to recurse through the whole file
             foreach (ReportEntry child in Children)
             {

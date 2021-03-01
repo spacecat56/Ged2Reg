@@ -9,7 +9,14 @@ namespace G2RModel.Model
 {
     public class ReportEntry
     {
-        public BigInteger AssignedMainNumber { get; set; }
+        private BigInteger _assignedMainNumber;
+
+        public BigInteger AssignedMainNumber
+        {
+            get => _assignedMainNumber;
+            set => _assignedMainNumber = value;
+        }
+
         public int AssignedChildNumber { get; set; }
         public AncestryNameList Ancestry { get; set; }
 
@@ -48,6 +55,7 @@ namespace G2RModel.Model
         public string ChildNumberRoman => AssignedChildNumber.ToRoman();
 
         private int? _numberOfChildren;
+        private ReportFamilyEntry _linkedFamily;
         public int NumberOfChildren => _numberOfChildren ?? (_numberOfChildren = CountChildren()) ?? 0;
         public bool HasDescendants => NumberOfChildren > 0;
         public bool HasParents => ChildhoodFamily?.Husband != null || ChildhoodFamily?.Wife != null;
@@ -64,20 +72,26 @@ namespace G2RModel.Model
         {
             Individual = indi;
             MyFamily = thisFamily; // todo: avoid duplication 
-            //Init(indi);
+            //Init(indi); // NO this leads to unwanted recursion
         }
 
         public ReportEntry Init()
         {
             FamilyEntries = new ListOfReportFamilyEntries();
-            Individual.FindFamilies(true); // todo: true?
+            Individual.FindFamilies(true); 
             foreach (GedcomFamily family in Individual.Families)
             {
-                FamilyEntries.Add(ReportEntryFactory.Instance.GetReportFamily(family));
+                if (_linkedFamily?.Family == family)
+                    // this is essential for correct ancestry structuring
+                    FamilyEntries.Add(_linkedFamily); 
+                else
+                    FamilyEntries.Add(ReportEntryFactory.Instance.GetReportFamily(family));
             }
 
             if (Individual.ChildhoodFamily == null) return this;
             ChildhoodFamily = ReportEntryFactory.Instance.GetReportFamily(Individual.ChildhoodFamily);
+            // we need to link across generations when doing multi-occurence
+            // this does not accomplish the task ChildhoodFamily?.Link(this);
             return this;
         }
 
@@ -171,6 +185,11 @@ namespace G2RModel.Model
             }
 
             return rvl;
+        }
+
+        public void Link(ReportFamilyEntry linkedFam)
+        {
+            _linkedFamily = linkedFam;
         }
     }
 

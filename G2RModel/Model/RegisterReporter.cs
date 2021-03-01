@@ -73,7 +73,7 @@ namespace Ged2Reg.Model
             _listBuri = _c.Settings.IncludeBurial;
             _ancestryReport = _c.Settings.AncestorsReport;
             _suppressGenNumbers = _c.Settings.SuppressGenNbrs;
-            _includeGenerationNumbers = _c.Settings.GenerationPrefix;
+            _includeGenerationNumbers = _c.Settings.GenerationPrefix && _ancestryReport;
             _allFamilies = !_c.Settings.AncestorsReport || _c.Settings.AllFamilies;
             _allowMultiple = _c.Settings.AllowMultipleAppearances;
             _minFromGen = _c.Settings.MinimizeFromGeneration;
@@ -211,7 +211,7 @@ namespace Ged2Reg.Model
 
             Generations[0][0].EmitChildrenAfter = _allFamilies;
             if ((Generations[0][0].Families?.Count ?? 0) >0)
-                NumberChildren(Generations[0][0].MyFamily);
+                NumberChildren(Generations[0][0].MyFamily, null);
 
             while (++generation < Generations.Length)
             {
@@ -242,7 +242,7 @@ namespace Ged2Reg.Model
                             //    continue;
                             family.Init();
                             family.IsIncluded = true;
-                            NumberChildren(family);
+                            NumberChildren(family, null);
                         }
                         // todo: what?
                         //foreach (GedcomFamily family in re.Individual.MyParentsFamilies())
@@ -261,7 +261,7 @@ namespace Ged2Reg.Model
                     //  "childhood family"!
 
                     re.ChildhoodFamily.IsIncluded = true;
-                    NumberChildren(re.ChildhoodFamily);
+                    NumberChildren(re.ChildhoodFamily, re);
 
                     // add the parents, if known and new 
                     GedcomIndividual dad = re.Individual.ChildhoodFamily.Husband;
@@ -281,6 +281,11 @@ namespace Ged2Reg.Model
                             de = ReportEntryFactory.Instance.GetReportEntry(dad);
                             de.AssignedMainNumber = re.AssignedMainNumber * 2;
                             de.EmitChildrenAfter = true;
+
+                            // when allowing multiple occurences, the factory 
+                            // does not have enough information to provide the 
+                            // right instance of the family, so, we push it here (and for mom, below)
+                            de.Link(re.ChildhoodFamily);
                             dad.FirstReportEntry ??= de;
                             dad.FindFamilies(true);
                             op.Add(de);
@@ -300,6 +305,7 @@ namespace Ged2Reg.Model
                             ReportEntry me = ReportEntryFactory.Instance.GetReportEntry(mom);
                             me.AssignedMainNumber = re.AssignedMainNumber * 2 + 1;
                             me.EmitChildrenAfter = true;
+                            me.Link(re.ChildhoodFamily);
                             mom.FirstReportEntry ??= me;
                             mom.FindFamilies(true);
                             if (dadIncluded) de.EmitChildrenAfter = false; // mom steals them, if she is known
@@ -311,13 +317,13 @@ namespace Ged2Reg.Model
             }
         }
 
-        private void NumberChildren(ReportFamilyEntry cf)
+        private void NumberChildren(ReportFamilyEntry cf, ReportEntry linked)
         {
             if (cf == null) return;
             int greatestChildSeq = 0;
-            if (cf.Children == null)
+            if (cf.Children == null || _allowMultiple)
             {
-                cf.Init();
+                cf.Init(linked);
             }
             foreach (ReportEntry child in cf?.Children)
             {
@@ -941,7 +947,7 @@ namespace Ged2Reg.Model
                 if (mid != null && !re.FamiliesAreSorted)
                     mid += "[?]";
                 ReportFamilyEntry family = re.SafeFamilies[mnbr];
-                ReportEntry spouse = (family.Husband.Individual == re.Individual) ? family.Wife : family.Husband;
+                ReportEntry spouse = (family.Husband?.Individual == re.Individual) ? family.Wife : family.Husband;
                 p.Append($" {(storyAppended ? re.Individual.SafeNameForward : re.Individual.Pronoun)} married{mid} ");
                 if (_c.Settings.DebuggingOutput)
                 {

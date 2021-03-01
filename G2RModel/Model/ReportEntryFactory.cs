@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Numerics;
 using Ged2Reg.Model;
 
 namespace G2RModel.Model
@@ -59,6 +60,7 @@ namespace G2RModel.Model
         }
 
 
+        //private Dictionary<BigInteger, ReportEntry> KnownMainNumbers = new Dictionary<BigInteger, ReportEntry>();
         private Dictionary<GedcomIndividual, ReportEntry> KnownEntries = new Dictionary<GedcomIndividual, ReportEntry>();
         private Dictionary<GedcomFamily, ReportFamilyEntry> KnownFamilies = new Dictionary<GedcomFamily, ReportFamilyEntry>();
         public bool Unique { get; }
