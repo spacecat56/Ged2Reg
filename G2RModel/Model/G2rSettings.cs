@@ -465,6 +465,11 @@ namespace Ged2Reg.Model
         private bool _generationHeadings;
         private bool _allowMultiple = true;
 
+        private bool _focus;
+        private bool _continue;
+        private string _focusName;
+        private string _focusId;
+
         #region AncestorReportOptions
         [DataMember]
         public bool AncestorsReport
@@ -503,6 +508,34 @@ namespace Ged2Reg.Model
         {
             get { return _minFromGen; }
             set { _minFromGen = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public bool Focus
+        {
+            get { return _focus; }
+            set { _focus = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public bool ContinuePastFocus
+        {
+            get { return _continue; }
+            set { _continue = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public string FocusName
+        {
+            get { return _focusName; }
+            set { _focusName = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public string FocusId 
+        {
+            get { return _focusId; }
+            set { _focusId = value; OnPropertyChanged(); }
         }
 
         #endregion

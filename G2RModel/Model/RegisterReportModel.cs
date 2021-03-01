@@ -154,7 +154,6 @@ namespace Ged2Reg.Model
             Doc.Apply(ps);
 
             // reset state
-            GedcomFamily.ClearFamilies(); // .AllFamilies.Clear();
             _ivgiMap = null;
             //_fvgiMap = null;
             ResetGedcom();
@@ -232,9 +231,10 @@ namespace Ged2Reg.Model
             return true;
         }
 
-        internal void ResetGedcom()
+        public void ResetGedcom()
         {
-            foreach (GedcomIndividual individual in Individuals)
+            GedcomFamily.ClearFamilies(); // .AllFamilies.Clear();
+            foreach (GedcomIndividual individual in Individuals ?? new ListOfGedcomIndividuals())
             {
                 individual.Reset();
             }

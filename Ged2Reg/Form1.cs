@@ -37,6 +37,9 @@ namespace Ged2Reg
 
         TabPage tpAncestry;
         Label lbAncestry;
+        private Button pbListAncestors;
+        private ComboBox cbAncestorChoices;
+        private Button pbPickFocus;
         private int rowStep = 24;
         private int yPos = 32;
         private int lbColPos = 40;
@@ -64,13 +67,35 @@ namespace Ged2Reg
             AddBoundCheckBox(tpAncestry, "Suppress generation superscripts", nameof(G2RSettings.SuppressGenNbrs));
             AddBoundCheckBox(tpAncestry, "All families of ancestors (non-standard)", nameof(G2RSettings.AllFamilies));
             AddBoundCheckBox(tpAncestry, "Generation prefix numbers", nameof(G2RSettings.GenerationPrefix));
+            AddBoundCheckBox(tpAncestry, "Allow multiple appearances", nameof(G2RSettings.AllowMultipleAppearances));
+            AddBoundCheckBox(tpAncestry, "Focus on one ancestor (see below*)", nameof(G2RSettings.Focus));
+            AddBoundCheckBox(tpAncestry, "Continue past focal ancestor", nameof(G2RSettings.ContinuePastFocus));
             AddBoundTextBox(tpAncestry, "Minimize from generation", nameof(G2RSettings.MinimizeFromGeneration));
+
 
             yPos += rowStep;
             AddLabel(tpAncestry, "Options that may also affect Register report:", xOffset: -20);
             yPos += rowStep;
             AddBoundCheckBox(tpAncestry, "Generation headings", nameof(G2RSettings.GenerationHeadings));
-            AddBoundCheckBox(tpAncestry, "Allow multiple appearances", nameof(G2RSettings.AllowMultipleAppearances));
+
+            yPos += rowStep;
+            AddLabel(tpAncestry, "*Focused ancestor", xOffset: -20);
+            yPos += rowStep;
+            var tb = AddBoundTextBox(tpAncestry, "Currently selected ancestor", nameof(G2RSettings.FocusName), 320, RightToLeft.No);
+            tb.ReadOnly = true;
+            tb.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+
+            yPos += 4;
+
+            pbListAncestors = AddButton(tpAncestry, "List choices", 120);
+            pbListAncestors.Click += pbListAncestors_Click;
+            yPos += 4;
+            cbAncestorChoices = AddComboBox(tpAncestry, nameof(cbAncestorChoices), 320);
+            cbAncestorChoices.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            yPos += pbListAncestors.Height;
+            pbPickFocus = AddButton(tpAncestry, "Select Focus", 120);
+            pbPickFocus.Click += pbPickFocus_Click;
+
             tpAncestry.Location = new Point(4, 35);
             tpAncestry.Margin = new Padding(2);
             tpAncestry.Name = "tpAncestry";
@@ -84,11 +109,44 @@ namespace Ged2Reg
             tpAncestry.ResumeLayout(false);
         }
 
+        private ComboBox AddComboBox(TabPage tp, string name, int w = 200, int x = -1)
+        {
+            ComboBox cb = new ComboBox();
+
+            //cb.DataBindings.Add(new Binding("SelectedValue", bsG2RSettings, "CitationStrategy", true));
+            //cb.DataSource = citationStrategyChoicesBindingSource;
+            //cb.DisplayMember = "Name";
+            //cb.ValueMember = "Value";
+            cb.FormattingEnabled = true;
+            cb.Location = new Point(x >= 0 ? x : kbColPos, yPos);
+            cb.Margin = new Padding(2);
+            cb.Name = name;
+            cb.Size = new Size(w, 34);
+            //cb.TabIndex = 61;
+            tp.Controls.Add(cb);
+            return cb;
+        }
+
+        private Button AddButton(TabPage tp, string txt, int w = 100, int x = -1)
+        {
+            Button pb = new Button();
+
+            pb.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            pb.Location = new Point(x>=0?x:lbColPos, yPos);
+            pb.Margin = new Padding(2);
+            pb.Name = $"pb{txt.Replace(" ", "")}";
+            pb.Size = new Size(w, 33);
+            pb.Text = txt;
+            pb.UseVisualStyleBackColor = true;
+            tp.Controls.Add(pb);
+            return pb;
+        }
+
         private void AddBoundCheckBox(TabPage tp, string lbl, string boundSetting)
         {
             AddLabel(tp, lbl);
 
-            CheckBox kb = new CheckBox()
+            CheckBox kb = new CheckBox
             {
                 AutoSize = true,
                 Checked = true,
@@ -101,33 +159,30 @@ namespace Ged2Reg
                 TabIndex = 83,
                 UseVisualStyleBackColor = true,
             };
-            kb.DataBindings.Add(new Binding("Checked", this.bsG2RSettings, boundSetting, true));
+            kb.DataBindings.Add(new Binding("Checked", bsG2RSettings, boundSetting, true));
             tp.Controls.Add(kb);
 
             yPos += rowStep;
         }
 
-        private void AddBoundTextBox(TabPage tp, string lbl, string boundSetting)
+        private TextBox AddBoundTextBox(TabPage tp, string lbl, string boundSetting, int w = 60, RightToLeft rtl = RightToLeft.Yes)
         {
             AddLabel(tp, lbl, 2);
 
-            TextBox kb = new TextBox()
+            TextBox textBox = new TextBox
             {
                 AutoSize = true,
-                //Checked = true,
-                //CheckState = CheckState.Checked,
                 Location = new Point(kbColPos, yPos),
                 Margin = new Padding(2),
                 Name = $"te{lbl.Replace(" ", "")}",
-                RightToLeft = RightToLeft.Yes,
-                Size = new Size(60, 21),
-                //TabIndex = 83,
-                //UseVisualStyleBackColor = true,
+                RightToLeft = rtl,
+                Size = new Size(w, 21),
             };
-            kb.DataBindings.Add(new Binding("Text", this.bsG2RSettings, boundSetting, true));
-            tp.Controls.Add(kb);
+            textBox.DataBindings.Add(new Binding("Text", bsG2RSettings, boundSetting, true));
+            tp.Controls.Add(textBox);
 
             yPos += rowStep;
+            return textBox;
         }
 
         private void AddLabel(TabPage tp, string txt, int lblOffset = -3, int xOffset = 0)
@@ -611,6 +666,71 @@ namespace Ged2Reg
                 MessageBox.Show($"Exception:{ex}");
             }
         }
+
+        private void pbListAncestors_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (dgvStartPerson.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show("Must load GEDCOM and select a person", "Action Required", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                    return;
+                }
+                Log("Building list of ancestors...");
+                Application.DoEvents();
+                _rrm.ResetGedcom();
+                var o = dgvStartPerson.SelectedRows[0]?.DataBoundItem as GedcomIndividual;
+                var t = new ReportTreeBuilder
+                {
+                    AllFamilies = false,
+                    AllowMultiple = false,
+                    Cm = null,
+                    Root = o
+                };
+                t.Init().Exec();
+                List<GedcomIndividual> choices = new List<GedcomIndividual>();
+                for (int i = 1; i < t.LastSlotWithPeople; i++)
+                {
+                    choices.AddRange(t.Generations[i].ToListOfIndividuals());
+                }
+                Log($"Potential choices: {choices.Count}");
+                _ancestorChoices = choices.OrderBy(c => c.Name).ToList();
+                // present them
+                cbAncestorChoices.Items.Clear();
+                string[] cc = _ancestorChoices.Select(c => $"{c.Name} {c.ReportableSpan}").ToArray();
+                for (int i = 0; i < cc.Length; i++)
+                {
+                    if (cc[i].Length < 3) continue;
+                    if (!cc[i].StartsWith(", ")) continue;
+                    cc[i] = cc[i].Substring(2);
+                }
+
+                cbAncestorChoices.Items.AddRange((object[])cc);
+                cbAncestorChoices.SelectedIndex = -1;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception:{ex}");
+            }
+        }
+
+        private void pbPickFocus_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                int ix = cbAncestorChoices.SelectedIndex;
+                var indi = _ancestorChoices[ix];
+                _rrm.Settings.FocusName = cbAncestorChoices.SelectedItem.ToString();
+                _rrm.Settings.FocusId = indi.IndividualView.Id;
+                bsG2RSettings.ResetBindings(false);
+                
+                Log($"Focus ancestor selected: {_rrm.Settings.FocusName}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception:{ex}");
+            }
+        }
         #endregion
 
         #region menuActions
@@ -837,6 +957,8 @@ namespace Ged2Reg
 
         #region FormDataErrorHandlers
         private int _dataerrortries;
+        private List<GedcomIndividual> _ancestorChoices;
+
         private void dgTitleCleaners_DataError(object sender, DataGridViewDataErrorEventArgs e)
         {
             if (e.ColumnIndex == 0)

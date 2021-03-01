@@ -1,18 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using G2RModel.Model;
-using DocxAdapterLib;
 using SimpleGedcomLib;
-//using Novacode;
 using WpdInterfaceLib;
-
-//using Novacode.Src;
-
 
 namespace Ged2Reg.Model
 {
