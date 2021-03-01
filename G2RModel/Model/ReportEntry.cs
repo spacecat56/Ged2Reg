@@ -195,6 +195,14 @@ namespace G2RModel.Model
 
     public class ListOfReportEntry : List<ReportEntry>
     {
+        public ListOfReportEntry() { }
+
+        public ListOfReportEntry(List<ReportEntry> l)
+        {
+            if (l==null) return;
+            AddRange(l);
+        }
+
         public List<GedcomIndividual> ToListOfIndividuals()
         {
             List<GedcomIndividual> rvl = this.Select(re => re.Individual).ToList();

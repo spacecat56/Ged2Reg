@@ -70,6 +70,82 @@ namespace G2RModel.Model
             return this;
         }
 
+        public ReportTreeBuilder ApplyReduction(string id, bool extend)
+        {
+            ListOfReportEntry[] ngs = new ListOfReportEntry[Generations.Length];
+            int firstGenFound = 0;
+            int lastGenFound = -1;
+            for (int i = 0; i < Generations.Length; i++)
+            {
+                if (Generations[i] == null) break;
+                ngs[i] = new ListOfReportEntry(Generations[i].FindAll(re => re.IndividualView?.Id == id));
+                if (ngs[i].Count > 0)
+                {
+                    lastGenFound = i;
+                    if (firstGenFound == 0)
+                        firstGenFound = i;
+                }
+            }
+
+            if (lastGenFound < 0) 
+                throw new Exception("focus person not found in selected tree scope");
+
+            // pick up the spouse of the focus person in each generation where found
+            for (int i = firstGenFound; i <= lastGenFound; i++)
+            {
+                HashSet<BigInteger> wanted = new HashSet<BigInteger>();
+                foreach (ReportEntry re in ngs[i])
+                {
+                    BigInteger spouseNbr = re.AssignedMainNumber;
+                    spouseNbr += (spouseNbr % 2 == 1) ? -1 : 1;
+                    if (!wanted.Contains(spouseNbr))
+                        wanted.Add(spouseNbr);
+                }
+                ngs[i].AddRange(Generations[i].FindAll(ind => wanted.Contains(ind.AssignedMainNumber)));
+            }
+
+            // pick up the descendants of focus person etc. walking down the 
+            // generations from the last one where s/he was initially found
+            for (int i = lastGenFound; i >0; i--)
+            {
+                HashSet<BigInteger> wanted = new HashSet<BigInteger>();
+                foreach (ReportEntry re in ngs[i])
+                {
+                    BigInteger childnbr = re.AssignedMainNumber / 2; // truncated 
+                    if (!wanted.Contains(childnbr))
+                        wanted.Add(childnbr);
+                    BigInteger cSpouse = childnbr + ((childnbr % 2 == 1) ? -1 : 1);
+                    if (!wanted.Contains(cSpouse))
+                        wanted.Add(cSpouse);
+                }
+                //ngs[i-1] ??= new ListOfReportEntry();
+                ngs[i-1].AddRange(Generations[i-1].FindAll(ind => wanted.Contains(ind.AssignedMainNumber)));
+            }
+
+            if (!extend)
+                return this;
+
+            // fill in the older generations that extend from 
+            // the most distant occurrence of the focus person
+            for (int i = lastGenFound; i+1 < ngs.Length; i++)
+            {
+                if ((ngs[i]?.Count??0) == 0) break;
+                HashSet<BigInteger> wanted = new HashSet<BigInteger>();
+                foreach (ReportEntry re in ngs[i])
+                {
+                    BigInteger father = re.AssignedMainNumber * 2;
+                    if (!wanted.Contains(father))
+                        wanted.Add(father);
+                    BigInteger mother = father + 1;
+                    if (!wanted.Contains(mother))
+                        wanted.Add(mother);
+                }
+                ngs[i+1].AddRange(Generations[i+1].FindAll(ind => wanted.Contains(ind.AssignedMainNumber)));
+            }
+
+            return this;
+        }
+
         public void ApplyAncestryNumbering()
         {
             int generation = 0;

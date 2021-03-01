@@ -40,6 +40,7 @@ namespace Ged2Reg
         private Button pbListAncestors;
         private ComboBox cbAncestorChoices;
         private Button pbPickFocus;
+        private Button pbTest;
         private int rowStep = 24;
         private int yPos = 32;
         private int lbColPos = 40;
@@ -95,6 +96,10 @@ namespace Ged2Reg
             yPos += pbListAncestors.Height;
             pbPickFocus = AddButton(tpAncestry, "Select Focus", 120);
             pbPickFocus.Click += pbPickFocus_Click;
+
+            yPos += pbListAncestors.Height;
+            pbTest = AddButton(tpAncestry, "Test Focus", 120);
+            pbTest.Click += pbTestFocus_Click;
 
             tpAncestry.Location = new Point(4, 35);
             tpAncestry.Margin = new Padding(2);
@@ -723,8 +728,41 @@ namespace Ged2Reg
                 _rrm.Settings.FocusName = cbAncestorChoices.SelectedItem.ToString();
                 _rrm.Settings.FocusId = indi.IndividualView.Id;
                 bsG2RSettings.ResetBindings(false);
-                
+
                 Log($"Focus ancestor selected: {_rrm.Settings.FocusName}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception:{ex}");
+            }
+        }
+
+        private void pbTestFocus_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (dgvStartPerson.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show("Must load GEDCOM and select a person", "Action Required", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                    return;
+                }
+                Log("Building list of ancestors...");
+                Application.DoEvents();
+                _rrm.ResetGedcom();
+                GedcomIndividual o = dgvStartPerson.SelectedRows[0]?.DataBoundItem as GedcomIndividual;
+                ReportTreeBuilder t = new ReportTreeBuilder
+                {
+                    AllFamilies = true,
+                    AllowMultiple = true,
+                    Cm = null,
+                    Root = o
+                };
+                t.Init().Exec();
+                Log("Focusing list of ancestors...");
+
+                t.ApplyReduction(_rrm.Settings.FocusId, true);
+
+                Log($"Focus ancestor applied: {_rrm.Settings.FocusName}");
             }
             catch (Exception ex)
             {
