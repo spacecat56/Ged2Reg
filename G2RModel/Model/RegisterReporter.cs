@@ -20,8 +20,10 @@ namespace Ged2Reg.Model
 
         //public ListOfGedcomIndividuals MainIndividuals { get; set; }
 
-        public ListOfReportEntry[] Generations;
-        private List<GedcomIndividual> _nonContinued;
+        public ListOfReportEntry[] Generations => _tree?.Generations;
+        private int _lastSlotWithPeople => _tree?.LastSlotWithPeople ?? 0;
+
+        private List<GedcomIndividual> _nonContinued => _tree?.NonContinued;
         private Dictionary<StyleSlots, Formatting> _styleMap;
         private GenealogicalDateFormatter _dateFormatter;
         private GenealogicalPlaceFormatter _placeFormatter;
@@ -50,11 +52,12 @@ namespace Ged2Reg.Model
         private int _minFromGen;
         private int _maxLivingGenerations;
 
-        private int _lastSlotWithPeople;
+
+        private ReportTreeBuilder _tree;
 
         public RegisterReportModel Model { get; set; }
 
-        private HashSet<string> _treedPersons;
+        //private HashSet<string> _treedPersons;
 
         public RegisterReporter Init(GedcomIndividual root, TimeSpan prep)
         {
@@ -88,25 +91,43 @@ namespace Ged2Reg.Model
 
             int oldState = CitationCoordinator.Reset();
 
-            _treedPersons = new HashSet<string>();
+            _tree = new ReportTreeBuilder()
+            {
+                AllFamilies = _allFamilies,
+                AllowMultiple = _allowMultiple,
+                Cm = _cm,
+                Mode = _ancestryReport ? TreeMode.Ancestors : TreeMode.Descendants,
+                Root = root
+            };
+
+            Model.PostProgress("Building report tree");
+            _tree.Init().Exec();
+
+            if (_c.Settings.Focus && _ancestryReport)
+            {
+                Model.PostProgress($"Focus report tree on {_c.Settings.FocusName}");
+                _tree.ApplyReduction(_c.Settings.FocusId, _c.Settings.ContinuePastFocus);
+            }
+
+            //_treedPersons = new HashSet<string>();
 
             // the root is generation 0
             // the array holds ordered lists of main persons by generation
             // the array index is the generation number
             // set up Generation 0 to initialize for recursion
-            Generations = new ListOfReportEntry[_c.Settings.Generations];
-            Generations[0] = new ListOfReportEntry();
+            //Generations = new ListOfReportEntry[_c.Settings.Generations];
+            //Generations[0] = new ListOfReportEntry();
 
-            AddPersonToGeneration(_root, 0);
+            //AddPersonToGeneration(_root, 0);
 
-            //_root.LocateCitations(_cm);
+            ////_root.LocateCitations(_cm);
 
-            _nonContinued = new List<GedcomIndividual>();
+            //_nonContinued = new List<GedcomIndividual>();
 
-            if (_ancestryReport)
-                ApplyAncestryNumbering();
-            else
-                ApplyDescendantNumbering(0);
+            //if (_ancestryReport)
+            //    ApplyAncestryNumbering();
+            //else
+            //    ApplyDescendantNumbering(0);
 
             //if (_c.Settings.ObscureLiving)
             //    ApplyNotLivingOverride();
@@ -165,22 +186,22 @@ namespace Ged2Reg.Model
             return rvl;
         }
 
-        private void AddPersonToGeneration(ReportEntry p, int ix)
-        {
-            if (_treedPersons.Contains(p.IndividualView.Id))
-            {
-                if (!_c.Settings.AllowMultipleAppearances)
-                {
-                    Debug.WriteLine($"Duplicate person, not added: {p.IndividualView.Id}");
-                    return;
-                }
-            }
-            else
-            {
-                _treedPersons.Add(p.IndividualView.Id);
-            }
-            Generations[ix].Add(p);
-        }
+        //private void AddPersonToGeneration(ReportEntry p, int ix)
+        //{
+        //    if (_treedPersons.Contains(p.IndividualView.Id))
+        //    {
+        //        if (!_c.Settings.AllowMultipleAppearances)
+        //        {
+        //            Debug.WriteLine($"Duplicate person, not added: {p.IndividualView.Id}");
+        //            return;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        _treedPersons.Add(p.IndividualView.Id);
+        //    }
+        //    Generations[ix].Add(p);
+        //}
 
         private void ApplyNotLivingOverride()
         {
@@ -199,201 +220,201 @@ namespace Ged2Reg.Model
             }
         }
 
-        private void ApplyAncestryNumbering()
-        {
-            int generation = 0;
+        //private void ApplyAncestryNumbering()
+        //{
+        //    int generation = 0;
 
-            Generations[0][0].EmitChildrenAfter = _allFamilies;
-            if ((Generations[0][0].Families?.Count ?? 0) >0)
-                NumberChildren(Generations[0][0].MyFamily, null);
+        //    Generations[0][0].EmitChildrenAfter = _allFamilies;
+        //    if ((Generations[0][0].Families?.Count ?? 0) >0)
+        //        NumberChildren(Generations[0][0].MyFamily, null);
 
-            while (++generation < Generations.Length)
-            {
-                ListOfReportEntry ip = Generations[generation-1];
-                if (ip.Count == 0)
-                {
-                    _lastSlotWithPeople = generation - 2;
-                    return;
-                }
+        //    while (++generation < Generations.Length)
+        //    {
+        //        ListOfReportEntry ip = Generations[generation-1];
+        //        if (ip.Count == 0)
+        //        {
+        //            _lastSlotWithPeople = generation - 2;
+        //            return;
+        //        }
 
-                // advance to the next generation, starting with an empty list of 'main' persons
-                ListOfReportEntry op = Generations[generation] = new ListOfReportEntry();
+        //        // advance to the next generation, starting with an empty list of 'main' persons
+        //        ListOfReportEntry op = Generations[generation] = new ListOfReportEntry();
 
-                foreach (ReportEntry re in ip)
-                {
-                    //GedcomIndividual mainIndividual = re.Individual;
-                    //mainIndividual.GenerationInCurrentReport = generation;
-                    re.Generation = generation;
-                    re.Init();
-                    //re.Individual.FindFamilies(true);
-                    //re.ChildhoodFamily = ReportEntryFactory.Instance.GetReportFamily(re.Individual.ChildhoodFamily);
-                    // number the sibs within descendant families
-                    if (_allFamilies)
-                    {
-                        foreach (ReportFamilyEntry family in re.FamilyEntries)
-                        {
-                            //if (family == mainIndividual.ChildhoodFamily)
-                            //    continue;
-                            family.Init();
-                            family.IsIncluded = true;
-                            NumberChildren(family, null);
-                        }
-                        // todo: what?
-                        //foreach (GedcomFamily family in re.Individual.MyParentsFamilies())
-                        //{
-                        //    if (family.IsIncluded) continue;
-                        //    family.IsIncluded = true;
-                        //    NumberChildren(family);
-                        //}
-                    }
+        //        foreach (ReportEntry re in ip)
+        //        {
+        //            //GedcomIndividual mainIndividual = re.Individual;
+        //            //mainIndividual.GenerationInCurrentReport = generation;
+        //            re.Generation = generation;
+        //            re.Init();
+        //            //re.Individual.FindFamilies(true);
+        //            //re.ChildhoodFamily = ReportEntryFactory.Instance.GetReportFamily(re.Individual.ChildhoodFamily);
+        //            // number the sibs within descendant families
+        //            if (_allFamilies)
+        //            {
+        //                foreach (ReportFamilyEntry family in re.FamilyEntries)
+        //                {
+        //                    //if (family == mainIndividual.ChildhoodFamily)
+        //                    //    continue;
+        //                    family.Init();
+        //                    family.IsIncluded = true;
+        //                    NumberChildren(family, null);
+        //                }
+        //                // todo: what?
+        //                //foreach (GedcomFamily family in re.Individual.MyParentsFamilies())
+        //                //{
+        //                //    if (family.IsIncluded) continue;
+        //                //    family.IsIncluded = true;
+        //                //    NumberChildren(family);
+        //                //}
+        //            }
 
-                    if (re.Individual.ChildhoodFamily == null)
-                        continue;
+        //            if (re.Individual.ChildhoodFamily == null)
+        //                continue;
 
 
-                    // NB NOTHING BELOW HERE unless it is about the 
-                    //  "childhood family"!
+        //            // NB NOTHING BELOW HERE unless it is about the 
+        //            //  "childhood family"!
 
-                    re.ChildhoodFamily.IsIncluded = true;
-                    NumberChildren(re.ChildhoodFamily, re);
+        //            re.ChildhoodFamily.IsIncluded = true;
+        //            NumberChildren(re.ChildhoodFamily, re);
 
-                    // add the parents, if known and new 
-                    GedcomIndividual dad = re.Individual.ChildhoodFamily.Husband;
-                    GedcomIndividual mom = re.Individual.ChildhoodFamily.Wife;
-                    ReportEntry de = null;
-                    bool dadIncluded = false;
-                    if (dad != null)
-                    {
-                        if (dad.FirstReportEntry != null && !_allowMultiple )
-                        {
-                            re.SetContinuation(dad.FirstReportEntry);
-                        }
-                        else
-                        {
-                            //dad.AssignedMainNumber = mainIndividual.AssignedMainNumber * 2;
-                            //dad.EmitChildrenAfter = true;
-                            de = ReportEntryFactory.Instance.GetReportEntry(dad);
-                            de.AssignedMainNumber = re.AssignedMainNumber * 2;
-                            de.EmitChildrenAfter = true;
+        //            // add the parents, if known and new 
+        //            GedcomIndividual dad = re.Individual.ChildhoodFamily.Husband;
+        //            GedcomIndividual mom = re.Individual.ChildhoodFamily.Wife;
+        //            ReportEntry de = null;
+        //            bool dadIncluded = false;
+        //            if (dad != null)
+        //            {
+        //                if (dad.FirstReportEntry != null && !_allowMultiple )
+        //                {
+        //                    re.SetContinuation(dad.FirstReportEntry);
+        //                }
+        //                else
+        //                {
+        //                    //dad.AssignedMainNumber = mainIndividual.AssignedMainNumber * 2;
+        //                    //dad.EmitChildrenAfter = true;
+        //                    de = ReportEntryFactory.Instance.GetReportEntry(dad);
+        //                    de.AssignedMainNumber = re.AssignedMainNumber * 2;
+        //                    de.EmitChildrenAfter = true;
 
-                            // when allowing multiple occurences, the factory 
-                            // does not have enough information to provide the 
-                            // right instance of the family, so, we push it here (and for mom, below)
-                            de.Link(re.ChildhoodFamily);
-                            dad.FirstReportEntry ??= de;
-                            dad.FindFamilies(true);
-                            op.Add(de);
-                            dadIncluded = true;
-                        }
-                    }
-                    if (mom != null)
-                    {
-                        if (mom.FirstReportEntry != null && !_allowMultiple)
-                        {
-                            re.SetContinuation(mom.FirstReportEntry);
-                        }
-                        else
-                        {
-                            //mom.AssignedMainNumber = mainIndividual.AssignedMainNumber * 2 + 1;
-                            //mom.EmitChildrenAfter = true;
-                            ReportEntry me = ReportEntryFactory.Instance.GetReportEntry(mom);
-                            me.AssignedMainNumber = re.AssignedMainNumber * 2 + 1;
-                            me.EmitChildrenAfter = true;
-                            me.Link(re.ChildhoodFamily);
-                            mom.FirstReportEntry ??= me;
-                            mom.FindFamilies(true);
-                            if (dadIncluded) de.EmitChildrenAfter = false; // mom steals them, if she is known
-                            me.SuppressSpouseInfo = dadIncluded;
-                            op.Add(me);
-                        }
-                    }
-                }
-            }
-        }
+        //                    // when allowing multiple occurences, the factory 
+        //                    // does not have enough information to provide the 
+        //                    // right instance of the family, so, we push it here (and for mom, below)
+        //                    de.Link(re.ChildhoodFamily);
+        //                    dad.FirstReportEntry ??= de;
+        //                    dad.FindFamilies(true);
+        //                    op.Add(de);
+        //                    dadIncluded = true;
+        //                }
+        //            }
+        //            if (mom != null)
+        //            {
+        //                if (mom.FirstReportEntry != null && !_allowMultiple)
+        //                {
+        //                    re.SetContinuation(mom.FirstReportEntry);
+        //                }
+        //                else
+        //                {
+        //                    //mom.AssignedMainNumber = mainIndividual.AssignedMainNumber * 2 + 1;
+        //                    //mom.EmitChildrenAfter = true;
+        //                    ReportEntry me = ReportEntryFactory.Instance.GetReportEntry(mom);
+        //                    me.AssignedMainNumber = re.AssignedMainNumber * 2 + 1;
+        //                    me.EmitChildrenAfter = true;
+        //                    me.Link(re.ChildhoodFamily);
+        //                    mom.FirstReportEntry ??= me;
+        //                    mom.FindFamilies(true);
+        //                    if (dadIncluded) de.EmitChildrenAfter = false; // mom steals them, if she is known
+        //                    me.SuppressSpouseInfo = dadIncluded;
+        //                    op.Add(me);
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
 
-        private void NumberChildren(ReportFamilyEntry cf, ReportEntry linked)
-        {
-            if (cf == null) return;
-            int greatestChildSeq = 0;
-            if (cf.Children == null || _allowMultiple)
-            {
-                cf.Init(linked);
-            }
-            foreach (ReportEntry child in cf?.Children)
-            {
-                if (child.AssignedChildNumber != 0) continue;
-                child.AssignedChildNumber = ++greatestChildSeq;
-                if (child.AssignedMainNumber == 0)
-                    _nonContinued.Add(child.Individual);
-                child.Individual.LocateCitations(_cm);
-                child.Individual.Expand(); // pick up extra info for the ancestors report
-            }
-        }
+        //private void NumberChildren(ReportFamilyEntry cf, ReportEntry linked)
+        //{
+        //    if (cf == null) return;
+        //    int greatestChildSeq = 0;
+        //    if (cf.Children == null || _allowMultiple)
+        //    {
+        //        cf.Init(linked);
+        //    }
+        //    foreach (ReportEntry child in cf?.Children)
+        //    {
+        //        if (child.AssignedChildNumber != 0) continue;
+        //        child.AssignedChildNumber = ++greatestChildSeq;
+        //        if (child.AssignedMainNumber == 0)
+        //            _nonContinued.Add(child.Individual);
+        //        child.Individual.LocateCitations(_cm);
+        //        child.Individual.Expand(); // pick up extra info for the ancestors report
+        //    }
+        //}
 
-        private void ApplyDescendantNumbering(int generation)
-        {
-            ListOfReportEntry ip = Generations[generation];
-            if (ip.Count == 0)
-                return;
-            if (generation >= Generations.Length - 1)
-            {
-                // well, this is awkward....
-                // we need to put i. 's on the children of the last gen in the report
-                foreach (ReportEntry mainIndividual in ip)
-                {
-                    // being in the list entails: indi has some child[ren]
-                    int greatestChildSeq = 0;
-                    foreach (ReportFamilyEntry family in mainIndividual.FamilyEntries)
-                    {
-                        foreach (ReportEntry child in family.Children)
-                        {
-                            if (child.AssignedChildNumber != 0) continue;
-                            child.AssignedChildNumber = ++greatestChildSeq;
-                            _nonContinued.Add(child.Individual);
-                        }
-                    }
-                }
-                return;
-            }
+        //private void ApplyDescendantNumbering(int generation)
+        //{
+        //    ListOfReportEntry ip = Generations[generation];
+        //    if (ip.Count == 0)
+        //        return;
+        //    if (generation >= Generations.Length - 1)
+        //    {
+        //        // well, this is awkward....
+        //        // we need to put i. 's on the children of the last gen in the report
+        //        foreach (ReportEntry mainIndividual in ip)
+        //        {
+        //            // being in the list entails: indi has some child[ren]
+        //            int greatestChildSeq = 0;
+        //            foreach (ReportFamilyEntry family in mainIndividual.FamilyEntries)
+        //            {
+        //                foreach (ReportEntry child in family.Children)
+        //                {
+        //                    if (child.AssignedChildNumber != 0) continue;
+        //                    child.AssignedChildNumber = ++greatestChildSeq;
+        //                    _nonContinued.Add(child.Individual);
+        //                }
+        //            }
+        //        }
+        //        return;
+        //    }
 
-            // advance to the next generation, starting with an empty list of 'main' persons
-            int nextGen = generation + 1;
-            ListOfReportEntry op = Generations[nextGen] = new ListOfReportEntry();
+        //    // advance to the next generation, starting with an empty list of 'main' persons
+        //    int nextGen = generation + 1;
+        //    ListOfReportEntry op = Generations[nextGen] = new ListOfReportEntry();
 
-            //bool hasAnotherGeneration = nextGen < Generations.Length - 1;
+        //    //bool hasAnotherGeneration = nextGen < Generations.Length - 1;
 
-            BigInteger greatestId = ip[^1].AssignedMainNumber;
+        //    BigInteger greatestId = ip[^1].AssignedMainNumber;
 
-            foreach (ReportEntry mainIndividual in ip)
-            {
-                AncestryNameList anl = mainIndividual.Ancestry?.Descend(mainIndividual.Individual) ??
-                                       new AncestryNameList(mainIndividual.Individual);
-                // being in the list entails: indi has some child[ren]
-                int greatestChildSeq = 0;
-                mainIndividual.Init();
-                foreach (ReportFamilyEntry family in mainIndividual.FamilyEntries)
-                {
-                    family.Init();
-                    foreach (ReportEntry child in family.Children)
-                    {
-                        child.Ancestry = anl;
-                        child.Individual.LocateCitations(_cm);
-                        if (child.AssignedChildNumber == 0)
-                            child.AssignedChildNumber = ++greatestChildSeq;
-                        if (child.Individual.NumberOfChildren == 0)
-                        {
-                            _nonContinued.Add(child.Individual);
-                            continue;
-                        }
-                        if (child.AssignedMainNumber == 0)
-                            child.AssignedMainNumber = ++greatestId;
-                        //op.Add(child);
-                        AddPersonToGeneration(child, nextGen);
-                    }
-                }
-            }
-            ApplyDescendantNumbering(nextGen);
-        }
+        //    foreach (ReportEntry mainIndividual in ip)
+        //    {
+        //        AncestryNameList anl = mainIndividual.Ancestry?.Descend(mainIndividual.Individual) ??
+        //                               new AncestryNameList(mainIndividual.Individual);
+        //        // being in the list entails: indi has some child[ren]
+        //        int greatestChildSeq = 0;
+        //        mainIndividual.Init();
+        //        foreach (ReportFamilyEntry family in mainIndividual.FamilyEntries)
+        //        {
+        //            family.Init();
+        //            foreach (ReportEntry child in family.Children)
+        //            {
+        //                child.Ancestry = anl;
+        //                child.Individual.LocateCitations(_cm);
+        //                if (child.AssignedChildNumber == 0)
+        //                    child.AssignedChildNumber = ++greatestChildSeq;
+        //                if (child.Individual.NumberOfChildren == 0)
+        //                {
+        //                    _nonContinued.Add(child.Individual);
+        //                    continue;
+        //                }
+        //                if (child.AssignedMainNumber == 0)
+        //                    child.AssignedMainNumber = ++greatestId;
+        //                //op.Add(child);
+        //                AddPersonToGeneration(child, nextGen);
+        //            }
+        //        }
+        //    }
+        //    ApplyDescendantNumbering(nextGen);
+        //}
 
         public void Exec(IWpdDocument doc)
         {

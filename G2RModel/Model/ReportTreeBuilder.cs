@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 using Ged2Reg.Model;
 
@@ -15,7 +16,9 @@ namespace G2RModel.Model
     {
         // properties of interest as results
         public ListOfReportEntry[] Generations { get; private set; }
+        public ListOfReportEntry[] CompleteGenerations { get; private set; }
         public int LastSlotWithPeople { get; private set; }
+        public List<GedcomIndividual> NonContinued { get; private set; }
 
         // configuration properties
         public bool AllFamilies { get; set; }
@@ -27,7 +30,6 @@ namespace G2RModel.Model
         public CitationsMap Cm { get; set; }
 
         // private fields
-        private List<GedcomIndividual> _nonContinued;
         private ReportContext _c;
         private ReportEntry _root;
         private HashSet<string> _treedPersons;
@@ -43,7 +45,7 @@ namespace G2RModel.Model
             Generations = new ListOfReportEntry[_c.Settings.Generations];
             Generations[0] = new ListOfReportEntry();
             _treedPersons = new HashSet<string>();
-            _nonContinued = new List<GedcomIndividual>();
+            NonContinued = new List<GedcomIndividual>();
 
             ReportEntryFactory.Init(!AllowMultiple);
             _root = ReportEntryFactory.Instance.GetReportEntry(Root);
@@ -72,6 +74,15 @@ namespace G2RModel.Model
 
         public ReportTreeBuilder ApplyReduction(string id, bool extend)
         {
+            void ApplyResults(int lastGenFound1, ListOfReportEntry[] listOfReportEntries)
+            {
+                for (int i = 1; i <= lastGenFound1; i++)
+                    listOfReportEntries[i] =
+                        new ListOfReportEntry(listOfReportEntries[i].OrderBy(re => re.AssignedMainNumber).ToList());
+                CompleteGenerations = Generations;
+                Generations = listOfReportEntries;
+            }
+
             ListOfReportEntry[] ngs = new ListOfReportEntry[Generations.Length];
             int firstGenFound = 0;
             int lastGenFound = -1;
@@ -123,7 +134,10 @@ namespace G2RModel.Model
             }
 
             if (!extend)
+            {
+                ApplyResults(lastGenFound, ngs);
                 return this;
+            }
 
             // fill in the older generations that extend from 
             // the most distant occurrence of the focus person
@@ -143,6 +157,7 @@ namespace G2RModel.Model
                 ngs[i+1].AddRange(Generations[i+1].FindAll(ind => wanted.Contains(ind.AssignedMainNumber)));
             }
 
+            ApplyResults(lastGenFound, ngs);
             return this;
         }
 
@@ -253,7 +268,7 @@ namespace G2RModel.Model
                 if (child.AssignedChildNumber != 0) continue;
                 child.AssignedChildNumber = ++greatestChildSeq;
                 if (child.AssignedMainNumber == 0)
-                    _nonContinued.Add(child.Individual);
+                    NonContinued.Add(child.Individual);
                 if (Cm != null)
                     child.Individual.LocateCitations(Cm);
                 child.Individual.Expand(); // pick up extra info for the ancestors report
@@ -279,7 +294,7 @@ namespace G2RModel.Model
                         {
                             if (child.AssignedChildNumber != 0) continue;
                             child.AssignedChildNumber = ++greatestChildSeq;
-                            _nonContinued.Add(child.Individual);
+                            NonContinued.Add(child.Individual);
                         }
                     }
                 }
@@ -313,7 +328,7 @@ namespace G2RModel.Model
                             child.AssignedChildNumber = ++greatestChildSeq;
                         if (child.Individual.NumberOfChildren == 0)
                         {
-                            _nonContinued.Add(child.Individual);
+                            NonContinued.Add(child.Individual);
                             continue;
                         }
                         if (child.AssignedMainNumber == 0)
