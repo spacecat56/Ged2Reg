@@ -278,7 +278,7 @@ namespace G2RModel.Model
         private void ApplyDescendantNumbering(int generation)
         {
             ListOfReportEntry ip = Generations[generation];
-            if (ip.Count == 0)
+            if ((ip?.Count??0) == 0)
                 return;
             if (generation >= Generations.Length - 1)
             {
@@ -350,6 +350,7 @@ namespace G2RModel.Model
             {
                 _treedPersons.Add(p.IndividualView.Id);
             }
+            Generations[ix] ??= new ListOfReportEntry();
             Generations[ix].Add(p);
         }
 

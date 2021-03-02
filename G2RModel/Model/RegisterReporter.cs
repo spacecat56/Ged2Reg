@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using G2RModel.Model;
@@ -38,6 +37,8 @@ namespace Ged2Reg.Model
         };
         private char[] _splitSpace = { ' ' };
         private int _currentGeneration;
+        private Regex _rexDivider1 = new Regex(@"^[\-_]+$");
+        private Regex _rexDivider2 = new Regex(@"^[=]+$");
 
         private bool _factDesc;
         private bool _reduceChild;
@@ -437,9 +438,6 @@ namespace Ged2Reg.Model
 
             AppendPersonDetails(p, child, true);
         }
-
-        private Regex _rexDivider1 = new Regex(@"^[\-_]+$");
-        private Regex _rexDivider2 = new Regex(@"^[=]+$");
 
         private bool AppliesAsDivider(IWpdParagraph p, string s)
         {
@@ -896,7 +894,6 @@ namespace Ged2Reg.Model
             return true;
         }
 
-
         private FormattedEvent ConditionalEvent(string ev, string dayt, string place, string detail = null, bool omitDate = false)
         {
             if (string.IsNullOrEmpty(dayt) && string.IsNullOrEmpty(place))
@@ -995,29 +992,6 @@ namespace Ged2Reg.Model
             initialLowercase = initialLowercase && (x1.Length > 2 || (x1.Length == 2 && x1.ToCharArray()[1] != '.'));
             initialLowercase = initialLowercase && (x2 == null || !char.IsUpper(x2.ToCharArray()[0]));
             return initialLowercase;
-        }
-
-        public class ReportStats
-        {
-            public TimeSpan PrepTime { get; set; }
-            public DateTime StartTime { get; set; }
-            public DateTime EndTime { get; set; }
-            public TimeSpan ReportTime => EndTime.Subtract(StartTime);
-            public int MainPerson { get; set; }
-            public int MainSpouse { get; set; }
-            public int NonContinuedPerson { get; set; }
-            public int NonContinuedSpouses { get; set; }
-            public int Citations { get; set; }
-            public int DistinctCitations { get; set; }
-            public int SpouseParents { get; set; }
-            public int MaybeLiving { get; set; }
-
-            public ReportStats Init(TimeSpan prep)
-            {
-                PrepTime = prep;
-                StartTime = DateTime.Now;
-                return this;
-            }
         }
     }
 }
