@@ -266,8 +266,8 @@ namespace Ged2Reg.Model
             sb.AppendLine($"\tPersons possibly living....{MyReportStats.MaybeLiving,8:N0}");
             sb.AppendLine($"\tCitations..................{MyReportStats.Citations,8:N0}");
             sb.AppendLine($"\tDistinct citations.........{MyReportStats.DistinctCitations,8:N0}");
-            sb.AppendLine($"\tPrep time...................{MyReportStats.PrepTime:h\\:mm\\:ss\\.fff}");
-            sb.AppendLine($"\tRun time....................{MyReportStats.ReportTime:h\\:mm\\:ss\\.fff}");
+            //sb.AppendLine($"\tPrep time...................{MyReportStats.PrepTime:h\\:mm\\:ss\\.fff}");
+            //sb.AppendLine($"\tRun time....................{MyReportStats.ReportTime:h\\:mm\\:ss\\.fff}");
             sb.AppendLine($"\tTotal execution time........{MyReportStats.ReportTime.Add(MyReportStats.PrepTime):h\\:mm\\:ss\\.fff}");
             sb.Append($"\tDate/time completed.........{MyReportStats.EndTime}");
             return sb.ToString();

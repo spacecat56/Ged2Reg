@@ -521,5 +521,12 @@ namespace Ged2Reg.Model
 
         //    return sb.ToString();
         //}
+        public string PresentationName()
+        {
+            string rv = $"{Name} {ReportableSpan}";
+            if (rv.Length < 3) return rv;
+            if (!rv.StartsWith(", ")) return rv;
+            return rv.Substring(2);
+        }
     }
 }

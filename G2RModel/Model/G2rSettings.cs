@@ -1117,6 +1117,18 @@ namespace Ged2Reg.Model
             Append(sb, "Program version", this.ProgramVer);
             Append(sb, "Generations", this.Generations);
             Append(sb, $"Report type", AncestorsReport?"Ancestors" : "Descendants");
+            if (AncestorsReport)
+            {
+                Append(sb, "All families", this.AllFamilies);
+                Append(sb, "Allow multiple appearances", this.AllFamilies);
+                Append(sb, "Minimize from generation", this.MinimizeFromGeneration);
+                Append(sb, "Focused on one ancestor", this.Focus);
+                if (Focus)
+                {
+                    Append(sb, "Selected ancestor", this.FocusName);
+                    Append(sb, "Continue past focus", this.ContinuePastFocus);
+                }
+            }
             Append(sb, "Obscure living", this.ObscureLiving);
             Append(sb, "Reduce place names", this.ReducePlaceNames);
             Append(sb, "Inject county", this.InjectCounty);

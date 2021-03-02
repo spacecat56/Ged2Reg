@@ -50,6 +50,8 @@ namespace Ged2Reg
             nudGenerations.Maximum = 999;
 
             tabControl1.TabPages.Remove(tabPage4);
+            kbAncestorsReport.Visible = false;
+
             tpAncestry = new TabPage("Ancestry Report");
             tpAncestry.SuspendLayout();
 
@@ -689,9 +691,10 @@ namespace Ged2Reg
                 var t = new ReportTreeBuilder
                 {
                     AllFamilies = false,
-                    AllowMultiple = false,
+                    AllowMultiple = true,
                     Cm = null,
-                    Root = o
+                    Root = o,
+                    GenerationsOverride = 999
                 };
                 t.Init().Exec();
                 List<GedcomIndividual> choices = new List<GedcomIndividual>();
@@ -699,20 +702,37 @@ namespace Ged2Reg
                 {
                     choices.AddRange(t.Generations[i].ToListOfIndividuals());
                 }
-                Log($"Potential choices: {choices.Count}");
-                _ancestorChoices = choices.OrderBy(c => c.Name).ToList();
-                // present them
-                cbAncestorChoices.Items.Clear();
-                string[] cc = _ancestorChoices.Select(c => $"{c.Name} {c.ReportableSpan}").ToArray();
-                for (int i = 0; i < cc.Length; i++)
+                
+                // prepare them.  we want to be able to flag multi-line ancestors
+                choices = choices.OrderBy(c => c.IndividualView.Id).ToList();
+                List<NamedValue<GedcomIndividual>> nvChoices = new List<NamedValue<GedcomIndividual>>();
+                int occurrences = 0;
+                int multiLine = 0;
+                for (int i = 0; i < choices.Count; i++)
                 {
-                    if (cc[i].Length < 3) continue;
-                    if (!cc[i].StartsWith(", ")) continue;
-                    cc[i] = cc[i].Substring(2);
+                    if (i < choices.Count - 1 
+                        && choices[i].IndividualView.Id == choices[i + 1].IndividualView.Id)
+                    {
+                        occurrences++;
+                        continue;
+                    }
+                    
+                    string pn = occurrences > 1
+                        ? $"{choices[i].PresentationName()} [{occurrences}]" : choices[i].PresentationName();
+                    nvChoices.Add(new NamedValue<GedcomIndividual>(pn, choices[i]));
+                    if (occurrences > 1) multiLine++;
+                    occurrences = 1;
                 }
 
-                cbAncestorChoices.Items.AddRange(cc);
+                var nvcs = nvChoices.OrderBy(nv => nv.Name).ToList();
+                List<string> choiceList = nvcs.Select(nv => nv.Name).ToList();
+                _ancestorChoices = nvcs.Select(nv => nv.Value).ToList();
+
+                // present them
+                cbAncestorChoices.Items.Clear();
+                cbAncestorChoices.Items.AddRange(choiceList.ToArray<object>());
                 cbAncestorChoices.SelectedIndex = -1;
+                Log($"Ancestor choices: {choiceList.Count}; with multiple lines: {multiLine}");
             }
             catch (Exception ex)
             {

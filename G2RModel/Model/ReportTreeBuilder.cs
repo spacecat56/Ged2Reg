@@ -24,6 +24,7 @@ namespace G2RModel.Model
         public bool AllFamilies { get; set; }
         public bool AllowMultiple { get; set; }
         public GedcomIndividual Root { get; set; }
+        public int? GenerationsOverride { get; set; }
 
         public TreeMode Mode { get; set; }
         // optional; citations not processed if null
@@ -42,7 +43,7 @@ namespace G2RModel.Model
             // the array holds ordered lists of main persons by generation
             // the array index is the generation number
             // set up Generation 0 to initialize for recursion
-            Generations = new ListOfReportEntry[_c.Settings.Generations];
+            Generations = new ListOfReportEntry[GenerationsOverride ?? _c.Settings.Generations];
             Generations[0] = new ListOfReportEntry();
             _treedPersons = new HashSet<string>();
             NonContinued = new List<GedcomIndividual>();
