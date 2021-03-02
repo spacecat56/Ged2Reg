@@ -20,6 +20,23 @@ namespace G2RModel.Model
         public int AssignedChildNumber { get; set; }
         public AncestryNameList Ancestry { get; set; }
 
+        /// <summary>
+        /// Marks spouse of a focal-line person
+        /// so s/he can be omitted if that is the option
+        /// chosen in the settings.  This is easier than
+        /// an 'include' flag because if the 'continue' option
+        /// is also chosen nothing additional needs to be done
+        /// beyond putting them in the tree
+        /// </summary>
+        public bool OutOfFocus { get; set; }
+        
+        /// <summary>
+        /// but we also need InFocus, which is NOT the same as
+        /// "not OutOfFocus"... InFocus males with OOF wives
+        /// need additional help to get the linked child emitted
+        /// </summary>
+        public bool InFocus { get; set; }
+
         // these are used to control output positioning 
         // on the Ancestors report
         public bool SuppressSpouseInfo { get; set; }

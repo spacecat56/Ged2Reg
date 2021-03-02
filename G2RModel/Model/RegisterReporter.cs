@@ -50,6 +50,7 @@ namespace Ged2Reg.Model
         private bool _includeGenerationNumbers;
         private bool _allFamilies;
         private bool _allowMultiple;
+        private bool _omitFocusSpouses;
         private int _minFromGen;
         private int _maxLivingGenerations;
 
@@ -71,6 +72,7 @@ namespace Ged2Reg.Model
             _includeGenerationNumbers = _c.Settings.GenerationPrefix && _ancestryReport;
             _allFamilies = !_c.Settings.AncestorsReport || _c.Settings.AllFamilies;
             _allowMultiple = _c.Settings.AllowMultipleAppearances;
+            _omitFocusSpouses = _c.Settings.OmitFocusSpouses;
             _minFromGen = _c.Settings.MinimizeFromGeneration;
             _maxLivingGenerations = _c.Settings.AssumedMaxLivingGenerations;
 
@@ -289,6 +291,9 @@ namespace Ged2Reg.Model
 
         private void EmitMainPerson(IWpdDocument doc, ReportEntry re, int gen)
         {
+            if (_omitFocusSpouses && re.OutOfFocus) 
+                return;
+
             bool timeToMinimize = _ancestryReport && _minFromGen > 0 && _minFromGen <= gen;
 
             Formatting generationNumberFormatting = new Formatting() { CharacterStyleName = _styleMap[StyleSlots.GenerationNumber].CharacterStyleName }; //  switched this to the style

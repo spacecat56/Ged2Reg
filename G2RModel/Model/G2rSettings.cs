@@ -480,6 +480,7 @@ namespace Ged2Reg.Model
         private bool _continue;
         private string _focusName;
         private string _focusId;
+        private bool _omitFocusSpouses;
 
         #region AncestorReportOptions
         [DataMember]
@@ -547,6 +548,13 @@ namespace Ged2Reg.Model
         {
             get { return _focusId; }
             set { _focusId = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public bool OmitFocusSpouses
+        {
+            get { return _omitFocusSpouses; }
+            set { _omitFocusSpouses = value; OnPropertyChanged(); }
         }
 
         #endregion

@@ -50,7 +50,7 @@ namespace Ged2Reg
             nudGenerations.Maximum = 999;
 
             tabControl1.TabPages.Remove(tabPage4);
-            kbAncestorsReport.Visible = false;
+            kbAncestorsReport.Visible = label65.Visible = false;
 
             tpAncestry = new TabPage("Ancestry Report");
             tpAncestry.SuspendLayout();
@@ -72,9 +72,9 @@ namespace Ged2Reg
             AddBoundCheckBox(tpAncestry, "Generation prefix numbers", nameof(G2RSettings.GenerationPrefix));
             AddBoundCheckBox(tpAncestry, "Allow multiple appearances", nameof(G2RSettings.AllowMultipleAppearances));
             AddBoundCheckBox(tpAncestry, "Focus on one ancestor (see below*)", nameof(G2RSettings.Focus));
+            AddBoundCheckBox(tpAncestry, "Omit focus spouse(s)", nameof(G2RSettings.OmitFocusSpouses));
             AddBoundCheckBox(tpAncestry, "Continue past focal ancestor", nameof(G2RSettings.ContinuePastFocus));
             AddBoundTextBox(tpAncestry, "Minimize from generation", nameof(G2RSettings.MinimizeFromGeneration));
-
 
             yPos += rowStep;
             AddLabel(tpAncestry, "Options that also affect Register report:", xOffset: -20);

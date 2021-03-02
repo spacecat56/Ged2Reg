@@ -84,6 +84,12 @@ namespace G2RModel.Model
                 Generations = listOfReportEntries;
             }
 
+            // we need to know this so we can turn on spouse sentences for 
+            // inFocus wives with no infocus husband
+            bool suppressingSpouses = _c.Settings.OmitFocusSpouses;
+
+            // first we transfer each instance of the focus person
+            // into the selective version of the tree
             ListOfReportEntry[] ngs = new ListOfReportEntry[Generations.Length];
             int firstGenFound = 0;
             int lastGenFound = -1;
@@ -91,16 +97,20 @@ namespace G2RModel.Model
             {
                 if (Generations[i] == null) break;
                 ngs[i] = new ListOfReportEntry(Generations[i].FindAll(re => re.IndividualView?.Id == id));
-                if (ngs[i].Count > 0)
+                if (ngs[i].Count <= 0) continue;
+                lastGenFound = i;
+                if (firstGenFound == 0)
+                    firstGenFound = i;
+                foreach (ReportEntry re in ngs[i])
                 {
-                    lastGenFound = i;
-                    if (firstGenFound == 0)
-                        firstGenFound = i;
+                    re.InFocus = true;
                 }
             }
 
             if (lastGenFound < 0) 
                 throw new Exception("focus person not found in selected tree scope");
+
+            ListOfReportEntry spousesToDefocus = new ListOfReportEntry();
 
             // pick up the spouse of the focus person in each generation where found
             for (int i = firstGenFound; i <= lastGenFound; i++)
@@ -113,7 +123,10 @@ namespace G2RModel.Model
                     if (!wanted.Contains(spouseNbr))
                         wanted.Add(spouseNbr);
                 }
-                ngs[i].AddRange(Generations[i].FindAll(ind => wanted.Contains(ind.AssignedMainNumber)));
+
+                var sps = Generations[i].FindAll(ind => wanted.Contains(ind.AssignedMainNumber));
+                ngs[i].AddRange(sps);
+                spousesToDefocus.AddRange(sps); // spouse of focus person "cannot" be a descendant of same
             }
 
             // pick up the descendants of focus person etc. walking down the 
@@ -126,12 +139,57 @@ namespace G2RModel.Model
                     BigInteger childnbr = re.AssignedMainNumber / 2; // truncated 
                     if (!wanted.Contains(childnbr))
                         wanted.Add(childnbr);
-                    BigInteger cSpouse = childnbr + ((childnbr % 2 == 1) ? -1 : 1);
-                    if (!wanted.Contains(cSpouse))
-                        wanted.Add(cSpouse);
                 }
+
+                //NB we need to do the spouses in a separate loop, BECAUSE
+                // it may happen that a spouse is independently descended from a focus
+                // and then it is "chance" as to whether we flag the spouse off or not
+                // if we don't first choose up all the focus persons
+                HashSet<BigInteger> wantedSpouses = new HashSet<BigInteger>();
+                foreach (ReportEntry re in ngs[i])
+                {
+                    BigInteger childnbr = re.AssignedMainNumber / 2; // truncated 
+                    BigInteger cSpouse = childnbr + ((childnbr % 2 == 1) ? -1 : 1);
+                    if (!wanted.Contains(cSpouse) && !wantedSpouses.Contains(cSpouse))
+                        wantedSpouses.Add(cSpouse);
+                }
+
+
                 //ngs[i-1] ??= new ListOfReportEntry();
-                ngs[i-1].AddRange(Generations[i-1].FindAll(ind => wanted.Contains(ind.AssignedMainNumber)));
+                var sps = Generations[i - 1].FindAll(ind => wantedSpouses.Contains(ind.AssignedMainNumber));
+                spousesToDefocus.AddRange(sps);
+                ngs[i - 1].AddRange(sps);
+
+                var infocus = Generations[i-1].FindAll(ind => wanted.Contains(ind.AssignedMainNumber));
+                ngs[i-1].AddRange(infocus);
+                foreach (ReportEntry re in infocus)
+                {
+                    re.InFocus = true;
+                }
+            }
+
+            foreach (ReportEntry spouseToDefocus in spousesToDefocus)
+            {
+                spouseToDefocus.OutOfFocus = true;
+            }
+
+            // make sure 
+            for (int i = 1; i < lastGenFound; i++)
+            {
+                for (int j = 0; j < ngs[i].Count; j++)
+                {
+                    if (!ngs[i][j].InFocus) continue;
+                    BigInteger spouseId = ngs[i][j].AssignedMainNumber;
+                    spouseId += (spouseId % 2 == 0) ? 1 : -1;
+                    ReportEntry spousEntryThisGeneration = ngs[i].Find(s => s.AssignedMainNumber == spouseId);
+                    if (spousEntryThisGeneration == null || !spousEntryThisGeneration.InFocus)
+                    {
+                        ngs[i][j].EmitChildrenAfter = true;
+                        if (suppressingSpouses)
+                            // note we can turn this OFF here but we cannot turn it ON here
+                            ngs[i][j].SuppressSpouseInfo = false;
+                    }
+                }
             }
 
             if (!extend)
