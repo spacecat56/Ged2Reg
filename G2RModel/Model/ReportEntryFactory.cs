@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Numerics;
 using Ged2Reg.Model;
 
 namespace G2RModel.Model
@@ -14,8 +13,6 @@ namespace G2RModel.Model
         }
 
         public static ReportEntryFactory Instance => _instance;
-
-        private ReportEntryFactory() { }
 
         private ReportEntryFactory(bool unique)
         {

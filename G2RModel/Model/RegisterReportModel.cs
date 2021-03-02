@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-//using System.Runtime.InteropServices;
 using G2RModel.Model;
-using DocxAdapterLib;
 using SimpleGedcomLib;
 using WpdInterfaceLib;
 
@@ -29,11 +27,7 @@ namespace Ged2Reg.Model
         // can't do this because the list is dynamic
         //private Dictionary<FamilyView, GedcomFamily> _fvgiMap;
 
-
         public IWpdFactory DocFactory { get; set; }
-
-        //public List<GedcomFamily> AllFamilies { get; set; }
-
 
         public ILocalLogger Logger { get; set; }
 
@@ -41,22 +35,18 @@ namespace Ged2Reg.Model
 
         public bool Init()
         {
-            //
-            bool rv = true;
             if (!string.IsNullOrEmpty(Settings.OutFile) && string.IsNullOrEmpty(Path.GetDirectoryName(Settings.OutFile)))
             {
                 Settings.OutFile = Path.Combine(Path.GetTempPath(), Settings.OutFile);
             }
-            //Doc.Save();
             if (!string.IsNullOrEmpty(Settings.GedcomFile))
                 OpenGedcom(Settings.GedcomFile);
 
             ReportContext.Init(Settings).Model = this;
 
             _ivgiMap = null;
-            //_fvgiMap = null;
 
-            return rv;
+            return true;
         }
 
         public static List<string[]> ListAvailableStyles(IWpdFactory docFactory, Stream docstream)
@@ -89,7 +79,6 @@ namespace Ged2Reg.Model
                 docstream?.Dispose();
             }
         }
-
         public bool CheckCancel()
         {
             return ActionDelegates?.CancelRequested ?? false;
@@ -110,38 +99,25 @@ namespace Ged2Reg.Model
             Settings.LastPersonId = root.IndividualView.Id;
             Settings.LastPersonFile = Settings.GedcomFile;
             Settings.BracketArray = Settings.Brackets ? new[] { "[", "]" } : null;
-
             ActionDelegates = aad;
 
             ActionDelegates?.PostStatusReport($"begin processing; starting person: {root.NameForward}");
 
             // reset the output
             Doc = DocFactory.Create(Settings.OutFile);
-            //Doc.ApplyTemplate(Settings.GetStylesStream(), false);
             // todo: this has to be factory-type-aware; or otherwise reconciled
             Doc.ApplyTemplateStyles(Settings.GetStylesStream(), true);
-
             Doc.ConfigureFootnotes(Settings.AsEndnotes, Settings.BracketArray);
 
             // clear author and title - may be copied from template
-            //if (Doc.OpenCoreProps())
-            {
-                 Doc.SetCoreProperty("dc:title", Settings.Title??"");
-                 Doc.SetCoreProperty("dc:creator", Settings.Author??"");
-                 //Doc.CloseCoreProps();
-            }
+            Doc.SetCoreProperty("dc:title", Settings.Title??"");
+            Doc.SetCoreProperty("dc:creator", Settings.Author??"");
 
             const float pointsPerInch = 72f;
 
             if (Settings.PageH == 0)
                 Settings.InitPageMetrics();
 
-            //Doc.PageHeight = Settings.PageH * pointsPerInch;
-            //Doc.PageWidth = Settings.PageW * pointsPerInch;
-            //Doc.MarginBottom = Settings.MarginB * pointsPerInch;
-            //Doc.MarginLeft = Settings.MarginL * pointsPerInch;
-            //Doc.MarginRight = Settings.MarginR * pointsPerInch;
-            //Doc.MarginTop = Settings.MarginT * pointsPerInch;
             var ps = new WpdPageSettings()
             {
                 PageHeight = Settings.PageH * pointsPerInch,
@@ -155,7 +131,6 @@ namespace Ged2Reg.Model
 
             // reset state
             _ivgiMap = null;
-            //_fvgiMap = null;
             ResetGedcom();
 
             // trigger rebuild of title cleaner, and place it where it will be used
@@ -167,7 +142,7 @@ namespace Ged2Reg.Model
             if (Settings.AncestorsReport)
             {
                 PostProgress("building ancestors tree");
-                //root.Ascend(false);
+
                 // this seems not really to work
                 // root.FindFamilies(true, true);
                 // so just do one step, and go stepwise in the numbering
@@ -184,7 +159,7 @@ namespace Ged2Reg.Model
             }
 
             // process all spouses, especially to evaluate whether they and their parents are maybe living
-            //BuildFamiliesList();
+            // todo: SPECULATIVE: SUSPECT THIS IS NOT NEEDED AND ALSO WASTEFUL
             List<GedcomIndividual> allSpouses = new List<GedcomIndividual>();
             foreach (GedcomIndividual individual in Individuals)
             {
@@ -195,25 +170,6 @@ namespace Ged2Reg.Model
             {
                 spouse.FindFamilies(true);
             }
-            
-            //if (Settings.ObscureLiving)
-            //    PostProgress($"obscure names of (possibly) living persons");
-            // now everybody we care about for this report, is linked to the family
-            // so we can evaluate the "maybe living" status of everyone
-            //foreach (GedcomIndividual individual in Individuals)
-            //{
-            //    if (CheckCancel()) throw new CanceledByUserException();
-            //    if (Settings.ObscureLiving)
-            //    {
-            //        individual.EvalLivingStatus();
-            //    }
-            //    else
-            //    {
-            //        individual.PresumedDeceased = true;
-            //    }
-            //}
-
-            //BuildFamiliesList();
 
             if (CheckCancel()) throw new CanceledByUserException();
             PostProgress($"initializing report model");
@@ -225,8 +181,6 @@ namespace Ged2Reg.Model
             if (CheckCancel()) throw new CanceledByUserException();
             PostProgress($"processing report");
             Reporter.Exec(Doc);
-
-            //PostProgress(Reporter.GetStatsSummary());
 
             return true;
         }
@@ -258,15 +212,6 @@ namespace Ged2Reg.Model
             return _ivgiMap;
         }
 
-        //private Dictionary<FamilyView, GedcomFamily> GetFamMap()
-        //{
-        //    if (_fvgiMap != null) return _fvgiMap;
-
-        //    _fvgiMap = GedcomFamily.AllFamilies.ToDictionary(f => f.FamilyView, f => f);
-
-        //    return _fvgiMap;
-        //}
-
         public GedcomIndividual FindIndividual(IndividualView iv)
         {
             if (iv == null) return null; // why does this happen?
@@ -274,7 +219,6 @@ namespace Ged2Reg.Model
             GetIndiMap().TryGetValue(iv, out GedcomIndividual rv);
             return rv;
         }
-
 
         public GedcomFamily FindAsChildInFamily(GedcomIndividual indi)
         {
@@ -284,8 +228,6 @@ namespace Ged2Reg.Model
             // bug? there could be more than one result, eh?
             FamilyView fv = GedcomFile.FamilyViews.Find(f => f.Chiildren.Contains(indi.IndividualView));
             if (fv == null) return null;
-
-            // GedcomFamily rvf = GedcomFamily.AllFamilies.FirstOrDefault(f => f.FamilyView.Equals(fv));
 
             GedcomFamily.GetFamMap().TryGetValue(fv, out GedcomFamily rvf);
             rvf ??= GedcomFamily.Add(new GedcomFamily(fv));

@@ -66,8 +66,6 @@ namespace G2RModel.Model
             ? $"{Generation:00}-{AssignedMainNumber}"
             : $"{AssignedMainNumber}";
 
-        private ReportEntry() { }
-
         public ReportEntry(GedcomIndividual indi, ReportFamilyEntry thisFamily = null)
         {
             Individual = indi;
@@ -126,11 +124,6 @@ namespace G2RModel.Model
             }
 
             return rv;
-        }
-
-        public void SortFamilies()
-        {
-            // todo: not needed?  hopeless? complicated?
         }
 
         public List<ReportFamilyEntry> FindMainNumberedFamilies()

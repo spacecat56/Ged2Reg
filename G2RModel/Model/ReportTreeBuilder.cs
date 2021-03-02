@@ -263,7 +263,7 @@ namespace G2RModel.Model
             {
                 cf.Init(linked);
             }
-            foreach (ReportEntry child in cf?.Children)
+            foreach (ReportEntry child in cf.Children)
             {
                 if (child.AssignedChildNumber != 0) continue;
                 child.AssignedChildNumber = ++greatestChildSeq;
@@ -303,10 +303,6 @@ namespace G2RModel.Model
 
             // advance to the next generation, starting with an empty list of 'main' persons
             int nextGen = generation + 1;
-            ListOfReportEntry op = Generations[nextGen] = new ListOfReportEntry();
-
-            //bool hasAnotherGeneration = nextGen < Generations.Length - 1;
-
             BigInteger greatestId = ip[^1].AssignedMainNumber;
 
             foreach (ReportEntry mainIndividual in ip)

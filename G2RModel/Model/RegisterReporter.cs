@@ -15,15 +15,13 @@ namespace Ged2Reg.Model
         public CitationCoordinator CitationCoordinator { get; internal set; }
         public ReportStats MyReportStats { get; set; }
 
-        private ReportEntry _root;
-        private ReportContext _c;
-
-        //public ListOfGedcomIndividuals MainIndividuals { get; set; }
-
+        // former fields, retargeted to the new tree builder
         public ListOfReportEntry[] Generations => _tree?.Generations;
         private int _lastSlotWithPeople => _tree?.LastSlotWithPeople ?? 0;
-
         private List<GedcomIndividual> _nonContinued => _tree?.NonContinued;
+
+        private ReportContext _c;
+        private CitationsMap _cm;
         private Dictionary<StyleSlots, Formatting> _styleMap;
         private GenealogicalDateFormatter _dateFormatter;
         private GenealogicalPlaceFormatter _placeFormatter;
@@ -38,6 +36,8 @@ namespace Ged2Reg.Model
             "fifth",
             // yeah, right. way to go, mon!
         };
+        private char[] _splitSpace = { ' ' };
+        private int _currentGeneration;
 
         private bool _factDesc;
         private bool _reduceChild;
@@ -54,10 +54,7 @@ namespace Ged2Reg.Model
 
 
         private ReportTreeBuilder _tree;
-
         public RegisterReportModel Model { get; set; }
-
-        //private HashSet<string> _treedPersons;
 
         public RegisterReporter Init(GedcomIndividual root, TimeSpan prep)
         {
@@ -77,20 +74,17 @@ namespace Ged2Reg.Model
             _maxLivingGenerations = _c.Settings.AssumedMaxLivingGenerations;
 
             ReportEntryFactory.Init(!_allowMultiple);
-            _root = ReportEntryFactory.Instance.GetReportEntry(root);
-            _root.AssignedMainNumber = 1;
 
             _cm = new CitationsMap(Model.GedcomFile);
-
             CitationCoordinator = new CitationCoordinator(Model.GedcomFile.CitationViews)
             {
                 IncludeBurial = _listBuri,
                 Priorities = _c.Settings.SourcePriorities,
                 AnitPriorities = _c.Settings.SourceAnitPriorities,
             };
-
             int oldState = CitationCoordinator.Reset();
 
+            Model.PostProgress("Building report tree");
             _tree = new ReportTreeBuilder()
             {
                 AllFamilies = _allFamilies,
@@ -99,8 +93,6 @@ namespace Ged2Reg.Model
                 Mode = _ancestryReport ? TreeMode.Ancestors : TreeMode.Descendants,
                 Root = root
             };
-
-            Model.PostProgress("Building report tree");
             _tree.Init().Exec();
 
             if (_c.Settings.Focus && _ancestryReport)
@@ -108,29 +100,6 @@ namespace Ged2Reg.Model
                 Model.PostProgress($"Focus report tree on {_c.Settings.FocusName}");
                 _tree.ApplyReduction(_c.Settings.FocusId, _c.Settings.ContinuePastFocus);
             }
-
-            //_treedPersons = new HashSet<string>();
-
-            // the root is generation 0
-            // the array holds ordered lists of main persons by generation
-            // the array index is the generation number
-            // set up Generation 0 to initialize for recursion
-            //Generations = new ListOfReportEntry[_c.Settings.Generations];
-            //Generations[0] = new ListOfReportEntry();
-
-            //AddPersonToGeneration(_root, 0);
-
-            ////_root.LocateCitations(_cm);
-
-            //_nonContinued = new List<GedcomIndividual>();
-
-            //if (_ancestryReport)
-            //    ApplyAncestryNumbering();
-            //else
-            //    ApplyDescendantNumbering(0);
-
-            //if (_c.Settings.ObscureLiving)
-            //    ApplyNotLivingOverride();
 
             if (Model.CheckCancel()) throw new CanceledByUserException();
             Model.PostProgress("Analyzing source citations for main persons");
@@ -186,23 +155,6 @@ namespace Ged2Reg.Model
             return rvl;
         }
 
-        //private void AddPersonToGeneration(ReportEntry p, int ix)
-        //{
-        //    if (_treedPersons.Contains(p.IndividualView.Id))
-        //    {
-        //        if (!_c.Settings.AllowMultipleAppearances)
-        //        {
-        //            Debug.WriteLine($"Duplicate person, not added: {p.IndividualView.Id}");
-        //            return;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        _treedPersons.Add(p.IndividualView.Id);
-        //    }
-        //    Generations[ix].Add(p);
-        //}
-
         private void ApplyNotLivingOverride()
         {
 
@@ -219,202 +171,6 @@ namespace Ged2Reg.Model
                 }
             }
         }
-
-        //private void ApplyAncestryNumbering()
-        //{
-        //    int generation = 0;
-
-        //    Generations[0][0].EmitChildrenAfter = _allFamilies;
-        //    if ((Generations[0][0].Families?.Count ?? 0) >0)
-        //        NumberChildren(Generations[0][0].MyFamily, null);
-
-        //    while (++generation < Generations.Length)
-        //    {
-        //        ListOfReportEntry ip = Generations[generation-1];
-        //        if (ip.Count == 0)
-        //        {
-        //            _lastSlotWithPeople = generation - 2;
-        //            return;
-        //        }
-
-        //        // advance to the next generation, starting with an empty list of 'main' persons
-        //        ListOfReportEntry op = Generations[generation] = new ListOfReportEntry();
-
-        //        foreach (ReportEntry re in ip)
-        //        {
-        //            //GedcomIndividual mainIndividual = re.Individual;
-        //            //mainIndividual.GenerationInCurrentReport = generation;
-        //            re.Generation = generation;
-        //            re.Init();
-        //            //re.Individual.FindFamilies(true);
-        //            //re.ChildhoodFamily = ReportEntryFactory.Instance.GetReportFamily(re.Individual.ChildhoodFamily);
-        //            // number the sibs within descendant families
-        //            if (_allFamilies)
-        //            {
-        //                foreach (ReportFamilyEntry family in re.FamilyEntries)
-        //                {
-        //                    //if (family == mainIndividual.ChildhoodFamily)
-        //                    //    continue;
-        //                    family.Init();
-        //                    family.IsIncluded = true;
-        //                    NumberChildren(family, null);
-        //                }
-        //                // todo: what?
-        //                //foreach (GedcomFamily family in re.Individual.MyParentsFamilies())
-        //                //{
-        //                //    if (family.IsIncluded) continue;
-        //                //    family.IsIncluded = true;
-        //                //    NumberChildren(family);
-        //                //}
-        //            }
-
-        //            if (re.Individual.ChildhoodFamily == null)
-        //                continue;
-
-
-        //            // NB NOTHING BELOW HERE unless it is about the 
-        //            //  "childhood family"!
-
-        //            re.ChildhoodFamily.IsIncluded = true;
-        //            NumberChildren(re.ChildhoodFamily, re);
-
-        //            // add the parents, if known and new 
-        //            GedcomIndividual dad = re.Individual.ChildhoodFamily.Husband;
-        //            GedcomIndividual mom = re.Individual.ChildhoodFamily.Wife;
-        //            ReportEntry de = null;
-        //            bool dadIncluded = false;
-        //            if (dad != null)
-        //            {
-        //                if (dad.FirstReportEntry != null && !_allowMultiple )
-        //                {
-        //                    re.SetContinuation(dad.FirstReportEntry);
-        //                }
-        //                else
-        //                {
-        //                    //dad.AssignedMainNumber = mainIndividual.AssignedMainNumber * 2;
-        //                    //dad.EmitChildrenAfter = true;
-        //                    de = ReportEntryFactory.Instance.GetReportEntry(dad);
-        //                    de.AssignedMainNumber = re.AssignedMainNumber * 2;
-        //                    de.EmitChildrenAfter = true;
-
-        //                    // when allowing multiple occurences, the factory 
-        //                    // does not have enough information to provide the 
-        //                    // right instance of the family, so, we push it here (and for mom, below)
-        //                    de.Link(re.ChildhoodFamily);
-        //                    dad.FirstReportEntry ??= de;
-        //                    dad.FindFamilies(true);
-        //                    op.Add(de);
-        //                    dadIncluded = true;
-        //                }
-        //            }
-        //            if (mom != null)
-        //            {
-        //                if (mom.FirstReportEntry != null && !_allowMultiple)
-        //                {
-        //                    re.SetContinuation(mom.FirstReportEntry);
-        //                }
-        //                else
-        //                {
-        //                    //mom.AssignedMainNumber = mainIndividual.AssignedMainNumber * 2 + 1;
-        //                    //mom.EmitChildrenAfter = true;
-        //                    ReportEntry me = ReportEntryFactory.Instance.GetReportEntry(mom);
-        //                    me.AssignedMainNumber = re.AssignedMainNumber * 2 + 1;
-        //                    me.EmitChildrenAfter = true;
-        //                    me.Link(re.ChildhoodFamily);
-        //                    mom.FirstReportEntry ??= me;
-        //                    mom.FindFamilies(true);
-        //                    if (dadIncluded) de.EmitChildrenAfter = false; // mom steals them, if she is known
-        //                    me.SuppressSpouseInfo = dadIncluded;
-        //                    op.Add(me);
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
-
-        //private void NumberChildren(ReportFamilyEntry cf, ReportEntry linked)
-        //{
-        //    if (cf == null) return;
-        //    int greatestChildSeq = 0;
-        //    if (cf.Children == null || _allowMultiple)
-        //    {
-        //        cf.Init(linked);
-        //    }
-        //    foreach (ReportEntry child in cf?.Children)
-        //    {
-        //        if (child.AssignedChildNumber != 0) continue;
-        //        child.AssignedChildNumber = ++greatestChildSeq;
-        //        if (child.AssignedMainNumber == 0)
-        //            _nonContinued.Add(child.Individual);
-        //        child.Individual.LocateCitations(_cm);
-        //        child.Individual.Expand(); // pick up extra info for the ancestors report
-        //    }
-        //}
-
-        //private void ApplyDescendantNumbering(int generation)
-        //{
-        //    ListOfReportEntry ip = Generations[generation];
-        //    if (ip.Count == 0)
-        //        return;
-        //    if (generation >= Generations.Length - 1)
-        //    {
-        //        // well, this is awkward....
-        //        // we need to put i. 's on the children of the last gen in the report
-        //        foreach (ReportEntry mainIndividual in ip)
-        //        {
-        //            // being in the list entails: indi has some child[ren]
-        //            int greatestChildSeq = 0;
-        //            foreach (ReportFamilyEntry family in mainIndividual.FamilyEntries)
-        //            {
-        //                foreach (ReportEntry child in family.Children)
-        //                {
-        //                    if (child.AssignedChildNumber != 0) continue;
-        //                    child.AssignedChildNumber = ++greatestChildSeq;
-        //                    _nonContinued.Add(child.Individual);
-        //                }
-        //            }
-        //        }
-        //        return;
-        //    }
-
-        //    // advance to the next generation, starting with an empty list of 'main' persons
-        //    int nextGen = generation + 1;
-        //    ListOfReportEntry op = Generations[nextGen] = new ListOfReportEntry();
-
-        //    //bool hasAnotherGeneration = nextGen < Generations.Length - 1;
-
-        //    BigInteger greatestId = ip[^1].AssignedMainNumber;
-
-        //    foreach (ReportEntry mainIndividual in ip)
-        //    {
-        //        AncestryNameList anl = mainIndividual.Ancestry?.Descend(mainIndividual.Individual) ??
-        //                               new AncestryNameList(mainIndividual.Individual);
-        //        // being in the list entails: indi has some child[ren]
-        //        int greatestChildSeq = 0;
-        //        mainIndividual.Init();
-        //        foreach (ReportFamilyEntry family in mainIndividual.FamilyEntries)
-        //        {
-        //            family.Init();
-        //            foreach (ReportEntry child in family.Children)
-        //            {
-        //                child.Ancestry = anl;
-        //                child.Individual.LocateCitations(_cm);
-        //                if (child.AssignedChildNumber == 0)
-        //                    child.AssignedChildNumber = ++greatestChildSeq;
-        //                if (child.Individual.NumberOfChildren == 0)
-        //                {
-        //                    _nonContinued.Add(child.Individual);
-        //                    continue;
-        //                }
-        //                if (child.AssignedMainNumber == 0)
-        //                    child.AssignedMainNumber = ++greatestId;
-        //                //op.Add(child);
-        //                AddPersonToGeneration(child, nextGen);
-        //            }
-        //        }
-        //    }
-        //    ApplyDescendantNumbering(nextGen);
-        //}
 
         public void Exec(IWpdDocument doc)
         {
@@ -519,21 +275,13 @@ namespace Ged2Reg.Model
         private WpdIndexField ConditionallyEmitIndexField(IWpdDocument doc, IndexSettings ixs)
         {
             if (!ixs.Enabled) return null;
-            //if (!_c.Settings.AsEndnotes) 
             doc.BreakForIndex();
             IWpdParagraph p = doc.InsertParagraph(); //ixs.IndexHeading);
-            //p = doc.InsertParagraph();
             WpdIndexField ixf = doc.BuildIndexField();
             ixf.IndexName = ixs.IndexName;
             ixf.Columns = ixs.Columns;
             ixf.EntryPageSeparator = ixs.Separator;
             ixf.Heading = ixs.IndexHeading;
-            //var ixf = new OoxIndexField(doc)
-            //{
-            //    IndexName = ixs.IndexName,
-            //    Columns = ixs.Columns,
-            //    EntryPageSeparator = ixs.Separator
-            //}; //.Build();
             p.AppendField(ixf.Build());
             return ixf;
         }
@@ -542,17 +290,15 @@ namespace Ged2Reg.Model
         {
             bool timeToMinimize = _ancestryReport && _minFromGen > 0 && _minFromGen <= gen;
 
-            //Formatting superFormatting = new Formatting() { Script = Script.superscript };
             Formatting generationNumberFormatting = new Formatting() { CharacterStyleName = _styleMap[StyleSlots.GenerationNumber].CharacterStyleName }; //  switched this to the style
             int genNbrIncr = _ancestryReport ? -1 : 1;
             Formatting introFormatting = new Formatting(){Bold = _c.Settings.IntroBold, Italic = _c.Settings.IntroItalic};
+
             // begin main person content
             IWpdParagraph p = doc.InsertParagraph();
             p.StyleName = _styleMap[StyleSlots.MainPersonText].CharacterStyleName;
             p.Append($"{re.GetNumber(_includeGenerationNumbers)}. ");
             p.Append(re.Individual.SafeGivenName, false, _styleMap[StyleSlots.MainPerson]);
-            //p.Append($"{gen}", _styleMap[StyleSlots.GenerationNumber]);
-            //p.Append($"{gen}", generationNumberFormatting);
             if (!_suppressGenNumbers)
                 p.Append($"{gen}", false, generationNumberFormatting);
             if (!string.IsNullOrEmpty(re.Individual.SafeSurname))
@@ -602,7 +348,6 @@ namespace Ged2Reg.Model
                 p.StyleName = _styleMap[StyleSlots.BodyTextIndent].CharacterStyleName; // trick/quirk: line may change the style, this must be done first
                 if (!lastLineWasDivider && _c.Settings.NotesDividers)
                 {
-                    //p.InsertHorizontalLine(HorizontalBorderPosition.top, BorderStyle.Tcbs_single);
                     p.InsertHorizontalLine(lineType:"single", position:"top");
                     dividersApplied = true;
                 }
@@ -624,14 +369,9 @@ namespace Ged2Reg.Model
 
             if (dividersApplied && !lastLineWasDivider)
             {
-                //p.InsertHorizontalLine(HorizontalBorderPosition.bottom, BorderStyle.Tcbs_single);
                 p.InsertHorizontalLine(lineType: "single");
                 lastLineWasDivider = true;
             }
-
-            // "something happens" that can disorder the families
-            // so... here at the LPM we will try to get them sorted
-            re.SortFamilies();
 
             if (_ancestryReport && !re.EmitChildrenAfter)
                 return;
@@ -706,7 +446,6 @@ namespace Ged2Reg.Model
             if (string.IsNullOrEmpty(s)) return false;
             if (_rexDivider1.IsMatch(s))
             {
-                //p.InsertHorizontalLine(HorizontalBorderPosition.bottom, BorderStyle.Tcbs_single);
                 p.InsertHorizontalLine(lineType: "single");
                 return true;
             }
@@ -714,7 +453,6 @@ namespace Ged2Reg.Model
             if (!_rexDivider2.IsMatch(s))
                 return false;
 
-            //p.InsertHorizontalLine(HorizontalBorderPosition.bottom, BorderStyle.Tcbs_double);
             p.InsertHorizontalLine(lineType: "double");
             return true;
         }
@@ -803,16 +541,10 @@ namespace Ged2Reg.Model
                 comma = null; // in case we need this again
             }
             // knowing all the pieces, we can add the conjunctions, [NOT commas], pronouns needed to the text
-            //string pendingPunctuation = "";
             if (p2_bapt != null)
             {
                 if (p1_birt == null)
                 {
-                    //    p2_bapt = $" {p2_bapt}";
-                    //    //pendingPunctuation = ",";
-                    //}
-                    //else
-                    //{
                     if (null == p3_deat && null == p4_buri)
                         p2_bapt.EventString = $" and was{p2_bapt.EventString}";
                     else
@@ -877,7 +609,6 @@ namespace Ged2Reg.Model
                             MyReportStats.DistinctCitations++;
                         ec.EmitNote(_c.Model.Doc, p);
                     }
-                    //ec1?.EmitNote(_c.Model.Doc, p);
                 }
                 ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p1_birt);
             }
@@ -895,8 +626,6 @@ namespace Ged2Reg.Model
                             MyReportStats.DistinctCitations++;
                         ec.EmitNote(_c.Model.Doc, p);
                     }
-                    //chosenCitations[TagCode.BAPM.ToString()]?.EmitNote(_c.Model.Doc, p);
-                    //ec2?.EmitNote(_c.Model.Doc, p);
                 }
                 ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p2_bapt);
             }
@@ -914,8 +643,6 @@ namespace Ged2Reg.Model
                             MyReportStats.DistinctCitations++;
                         ec.EmitNote(_c.Model.Doc, p);
                     }
-                    //chosenCitations[TagCode.DEAT.ToString()]?.EmitNote(_c.Model.Doc, p);
-                    //ec3?.EmitNote(_c.Model.Doc, p);
                 }
                 ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p3_deat);
             }
@@ -933,8 +660,6 @@ namespace Ged2Reg.Model
                             MyReportStats.DistinctCitations++;
                         ec.EmitNote(_c.Model.Doc, p);
                     }
-                    //chosenCitations[TagCode.BURI.ToString()]?.EmitNote(_c.Model.Doc, p);
-                    //ec4?.EmitNote(_c.Model.Doc, p);
                 }
                 ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p4_buri);
             }
@@ -1018,10 +743,6 @@ namespace Ged2Reg.Model
                             MyReportStats.DistinctCitations++;
                         ec.EmitNote(_c.Model.Doc, p);
                     }
-
-                    //chosenCitations[TagCode.MARR.ToString()+family.FamilyView.Id]?.EmitNote(_c.Model.Doc, p);
-                    //EventCitations ec = family.CitableEvents?.Find(family.EventTag(TagCode.MARR));
-                    //ec?.EmitNote(_c.Model.Doc, p);
                 }
 
                 storyAppended = !re.SuppressSpouseInfo && AppendSpouseSentence2(p, spouse);
@@ -1150,7 +871,6 @@ namespace Ged2Reg.Model
                             MyReportStats.DistinctCitations++;
                         ec_bb.EmitNote(_c.Model.Doc, p);
                     }
-                    //ec_bb?.EmitNote(_c.Model.Doc, p);
                 }
             }
 
@@ -1169,7 +889,6 @@ namespace Ged2Reg.Model
                             MyReportStats.DistinctCitations++;
                         ec_di.EmitNote(_c.Model.Doc, p);
                     }
-                    //ec_di?.EmitNote(_c.Model.Doc, p);
                 }
             }
             if (closer!=null)
@@ -1217,10 +936,6 @@ namespace Ged2Reg.Model
             public string PlaceIndexEntry { get; set; }
             public int PlaceIndexIndex { get; set; }
         }
-
-        private char[] _splitSpace = {' '};
-        private int _currentGeneration;
-        private CitationsMap _cm;
 
         private string OptimizeEventDetail(string detail)
         {

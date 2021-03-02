@@ -24,7 +24,7 @@ namespace Ged2Reg
 
         #region WinformsDesigner Fails - Workaround 
 
-        // the dotnet core / dotnet5 winforms desginer is unusable
+        // the dotnet core / dotnet5 winforms designer is unusable
         // so we are stuck.  here we fight with it to add the needed content at 
         // runtime
 
@@ -97,9 +97,9 @@ namespace Ged2Reg
             pbPickFocus = AddButton(tpAncestry, "Select Focus", 120);
             pbPickFocus.Click += pbPickFocus_Click;
 
-            yPos += pbListAncestors.Height;
-            pbTest = AddButton(tpAncestry, "Test Focus", 120);
-            pbTest.Click += pbTestFocus_Click;
+            //yPos += pbListAncestors.Height;
+            //pbTest = AddButton(tpAncestry, "Test Focus", 120);
+            //pbTest.Click += pbTestFocus_Click;
 
             tpAncestry.Location = new Point(4, 35);
             tpAncestry.Margin = new Padding(2);
@@ -710,7 +710,7 @@ namespace Ged2Reg
                     cc[i] = cc[i].Substring(2);
                 }
 
-                cbAncestorChoices.Items.AddRange((object[])cc);
+                cbAncestorChoices.Items.AddRange(cc);
                 cbAncestorChoices.SelectedIndex = -1;
             }
             catch (Exception ex)

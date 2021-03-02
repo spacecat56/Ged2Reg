@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Ged2Reg.Model;
-using OpenXmlPowerTools;
 
 namespace G2RModel.Model
 {
     public class ReportFamilyEntry
-    {
-        public ReportEntry Husband { get; set; }
+    { public ReportEntry Husband { get; set; }
         public ReportEntry Wife { get; set; }
         public ListOfReportEntry Children { get; set; }
         public GedcomFamily Family { get; set; }
@@ -49,7 +47,7 @@ namespace G2RModel.Model
         {
             if (Children == null)
                 return new List<ReportEntry>();
-            List<ReportEntry> rvl = Children.Where(c => c.AssignedMainNumber > 0).ToList<ReportEntry>();
+            List<ReportEntry> rvl = Children.Where(c => c.AssignedMainNumber > 0).ToList();
             return rvl;
         }
         public IEnumerable<ReportEntry> GatherVisiblePersons()
