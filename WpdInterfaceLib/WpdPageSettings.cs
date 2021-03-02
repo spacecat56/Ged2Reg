@@ -14,6 +14,7 @@
 
         public float MarginTop { get; set; }
 
+        public float PerInchFactorApplied { get; set; }
 
     }
 }

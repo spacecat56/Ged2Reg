@@ -48,7 +48,11 @@ namespace OdtAdapterLib
 
         public void Apply(WpdPageSettings ps)
         {
-            // todo
+            Document.TheStylesPart.SetMargins(
+                ps.MarginLeft / ps.PerInchFactorApplied,
+                ps.MarginRight / ps.PerInchFactorApplied,
+                ps.MarginTop / ps.PerInchFactorApplied,
+                ps.MarginBottom / ps.PerInchFactorApplied);
         }
 
         public void InsertPageBreak()

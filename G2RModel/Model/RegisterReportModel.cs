@@ -115,8 +115,8 @@ namespace Ged2Reg.Model
 
             const float pointsPerInch = 72f;
 
-            if (Settings.PageH == 0)
-                Settings.InitPageMetrics();
+            //if (Settings.PageH == 0)
+            Settings.ApplyMarginOption();
 
             var ps = new WpdPageSettings()
             {
@@ -126,6 +126,7 @@ namespace Ged2Reg.Model
                 MarginLeft = Settings.MarginL * pointsPerInch,
                 MarginRight = Settings.MarginR * pointsPerInch,
                 MarginTop = Settings.MarginT * pointsPerInch,
+                PerInchFactorApplied = pointsPerInch
             };
             Doc.Apply(ps);
 

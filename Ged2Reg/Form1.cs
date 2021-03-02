@@ -75,9 +75,10 @@ namespace Ged2Reg
 
 
             yPos += rowStep;
-            AddLabel(tpAncestry, "Options that may also affect Register report:", xOffset: -20);
+            AddLabel(tpAncestry, "Options that also affect Register report:", xOffset: -20);
             yPos += rowStep;
             AddBoundCheckBox(tpAncestry, "Generation headings", nameof(G2RSettings.GenerationHeadings));
+            AddBoundCheckBox(tpAncestry, "Reduced margins", nameof(G2RSettings.ReducedMargins));
 
             yPos += rowStep;
             AddLabel(tpAncestry, "*Focused ancestor", xOffset: -20);

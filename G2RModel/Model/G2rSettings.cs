@@ -377,6 +377,16 @@ namespace Ged2Reg.Model
             MarginT = 1.3f;
         }
 
+        public void ApplyReducedMargins()
+        {
+            PageH = 11f;
+            PageW = 8.5f;
+            MarginB = 1.0f;
+            MarginL = 1.0f;
+            MarginR = 1.0f;
+            MarginT = 1.0f;
+        }
+
         public List<NamedValue<TextCleanerContext>> TextCleanerChoices;
         //    = new List<NamedValue<TextCleanerContext>>()
         //{
@@ -464,6 +474,7 @@ namespace Ged2Reg.Model
         private int _minFromGen;
         private bool _generationHeadings;
         private bool _allowMultiple = true;
+        private bool _reduceMargins;
 
         private bool _focus;
         private bool _continue;
@@ -539,6 +550,18 @@ namespace Ged2Reg.Model
         }
 
         #endregion
+
+        [DataMember]
+        public bool ReducedMargins
+        {
+            get { return _reduceMargins; }
+            set
+            {
+                _reduceMargins = value;
+                OnPropertyChanged();
+                ApplyMarginOption();
+            }
+        }
 
         [DataMember]
         public bool AllowMultipleAppearances
@@ -1075,6 +1098,15 @@ namespace Ged2Reg.Model
         #endregion
 
         #region public convenience functions
+
+        public void ApplyMarginOption()
+        {
+            if (_reduceMargins)
+                ApplyReducedMargins();
+            else
+                InitPageMetrics();
+        }
+
         public string ReportKeySettings()
         {
             StringBuilder sb = new StringBuilder();
