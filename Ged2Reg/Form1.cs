@@ -74,6 +74,7 @@ namespace Ged2Reg
             AddBoundCheckBox(tpAncestry, "Focus on one ancestor (see below*)", nameof(G2RSettings.Focus));
             AddBoundCheckBox(tpAncestry, "Omit focus spouse(s)", nameof(G2RSettings.OmitFocusSpouses));
             AddBoundCheckBox(tpAncestry, "Continue past focal ancestor", nameof(G2RSettings.ContinuePastFocus));
+            AddBoundCheckBox(tpAncestry, "'Merge' duplicate ancestors", nameof(G2RSettings.FindDuplicates));
             AddBoundTextBox(tpAncestry, "Minimize from generation", nameof(G2RSettings.MinimizeFromGeneration));
 
             yPos += rowStep;
@@ -697,29 +698,37 @@ namespace Ged2Reg
                     GenerationsOverride = 999
                 };
                 t.Init().Exec();
-                List<GedcomIndividual> choices = new List<GedcomIndividual>();
+                if (_rrm.Settings.FindDuplicates)
+                {
+                    t.IdentifyDuplicates();
+                    Log($"Groups of (apparent) duplicates: {t.DuplicationGroups}");
+                }
+                // NB we need "natural" (GEDCOM) ids here, so, we either stick with 
+                // GedcomIndividual / IndividualView or else use the ReportEntry.NaturalId
+                // which works out to the same.  so, refactoring here is "unnecessary"
+                List<ReportEntry> choices = new List<ReportEntry>();
                 for (int i = 1; i < t.LastSlotWithPeople; i++)
                 {
-                    choices.AddRange(t.Generations[i].ToListOfIndividuals());
+                    choices.AddRange(t.Generations[i]);
                 }
                 
                 // prepare them.  we want to be able to flag multi-line ancestors
-                choices = choices.OrderBy(c => c.IndividualView.Id).ToList();
-                List<NamedValue<GedcomIndividual>> nvChoices = new List<NamedValue<GedcomIndividual>>();
+                choices = choices.OrderBy(c => c.Id).ToList(); // here we need to 'see' the override Id
+                List<NamedValue<ReportEntry>> nvChoices = new List<NamedValue<ReportEntry>>();
                 int occurrences = 0;
                 int multiLine = 0;
                 for (int i = 0; i < choices.Count; i++)
                 {
                     if (i < choices.Count - 1 
-                        && choices[i].IndividualView.Id == choices[i + 1].IndividualView.Id)
+                        && choices[i].Id == choices[i + 1].Id)
                     {
                         occurrences++;
                         continue;
                     }
                     
                     string pn = occurrences > 1
-                        ? $"{choices[i].PresentationName()} [{occurrences}]" : choices[i].PresentationName();
-                    nvChoices.Add(new NamedValue<GedcomIndividual>(pn, choices[i]));
+                        ? $"{choices[i].Individual.PresentationName()} [{occurrences}]" : choices[i].Individual.PresentationName();
+                    nvChoices.Add(new NamedValue<ReportEntry>(pn, choices[i]));
                     if (occurrences > 1) multiLine++;
                     occurrences = 1;
                 }
@@ -747,7 +756,7 @@ namespace Ged2Reg
                 int ix = cbAncestorChoices.SelectedIndex;
                 var indi = _ancestorChoices[ix];
                 _rrm.Settings.FocusName = cbAncestorChoices.SelectedItem.ToString();
-                _rrm.Settings.FocusId = indi.IndividualView.Id;
+                _rrm.Settings.FocusId = indi.NaturalId; // we need to 'see' the actual GEDCOM id here
                 bsG2RSettings.ResetBindings(false);
 
                 Log($"Focus ancestor selected: {_rrm.Settings.FocusName}");
@@ -1016,7 +1025,7 @@ namespace Ged2Reg
 
         #region FormDataErrorHandlers
         private int _dataerrortries;
-        private List<GedcomIndividual> _ancestorChoices;
+        private List<ReportEntry> _ancestorChoices;
 
         private void dgTitleCleaners_DataError(object sender, DataGridViewDataErrorEventArgs e)
         {

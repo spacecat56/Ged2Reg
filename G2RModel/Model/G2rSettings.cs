@@ -481,6 +481,7 @@ namespace Ged2Reg.Model
         private string _focusName;
         private string _focusId;
         private bool _omitFocusSpouses;
+        private bool _findDuplicates;
 
         #region AncestorReportOptions
         [DataMember]
@@ -555,6 +556,14 @@ namespace Ged2Reg.Model
         {
             get { return _omitFocusSpouses; }
             set { _omitFocusSpouses = value; OnPropertyChanged(); }
+        }
+
+
+        [DataMember]
+        public bool FindDuplicates
+        {
+            get { return _findDuplicates; }
+            set { _findDuplicates = value; OnPropertyChanged(); }
         }
 
         #endregion

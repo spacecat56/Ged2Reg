@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using Ged2Reg.Model;
 
 namespace G2RModel.Model
@@ -34,6 +35,7 @@ namespace G2RModel.Model
         private ReportContext _c;
         private ReportEntry _root;
         private HashSet<string> _treedPersons;
+        private bool _mergeDuplicates;
 
         public ReportTreeBuilder Init()
         {
@@ -84,9 +86,17 @@ namespace G2RModel.Model
                 Generations = listOfReportEntries;
             }
 
+            string effectiveId = id; // TODO: map to override if applicable
+
             // we need to know this so we can turn on spouse sentences for 
             // inFocus wives with no infocus husband
             bool suppressingSpouses = _c.Settings.OmitFocusSpouses;
+
+            _mergeDuplicates = _c?.Settings.FindDuplicates ?? false;
+            if (_mergeDuplicates)
+            {
+                effectiveId = IdentifyDuplicates(Generations, id);
+            }
 
             // first we transfer each instance of the focus person
             // into the selective version of the tree
@@ -96,7 +106,7 @@ namespace G2RModel.Model
             for (int i = 0; i < Generations.Length; i++)
             {
                 if (Generations[i] == null) break;
-                ngs[i] = new ListOfReportEntry(Generations[i].FindAll(re => re.IndividualView?.Id == id));
+                ngs[i] = new ListOfReportEntry(Generations[i].FindAll(re => re.Id == effectiveId));
                 if (ngs[i].Count <= 0) continue;
                 lastGenFound = i;
                 if (firstGenFound == 0)
@@ -218,6 +228,51 @@ namespace G2RModel.Model
 
             ApplyResults(lastGenFound, ngs);
             return this;
+        }
+
+        public int DuplicationGroups { get; private set; }
+        /// <summary>
+        /// Assign a matching OverrideId to each member of sets
+        /// of instances that appear to represent the same person
+        /// </summary>
+        /// <param name="lists"></param>
+        public string IdentifyDuplicates(ListOfReportEntry[] lists = null, string idOfInterest = null)
+        {
+            lists ??= Generations;
+            List<ReportEntry> bigList = new List<ReportEntry>();
+            foreach (ListOfReportEntry list in lists)
+            {
+                if (list == null) continue;
+                bigList.AddRange(list);
+            }
+
+            DuplicationGroups = 0;
+
+            var groups = bigList.GroupBy(re => re.Individual.PresentationName());
+            foreach (IGrouping<string, ReportEntry> grp in groups)
+            {
+                // skip null or short key, or lacking any span info to match
+                if (string.IsNullOrEmpty(grp.Key) || grp.Key.Length < 6 || !grp.Key.Contains("("))
+                    continue;
+                if (grp.Key.StartsWith("(Unknown)"))
+                    continue;
+
+                var glist = grp.ToList();
+                if (glist.Count < 2) 
+                    continue;
+
+                DuplicationGroups++;
+                // make them all synonyms of one (recognizable) id
+                string gid = $"OVR_{glist[0].NaturalId}";
+                foreach (ReportEntry re in glist)
+                {
+                    re.OverrideId = gid;
+                }
+            }
+
+            if (string.IsNullOrEmpty(idOfInterest)) return idOfInterest;
+            ReportEntry victim = bigList.Find(re => re.NaturalId == idOfInterest);
+            return (victim != null) ? victim.Id : idOfInterest;
         }
 
         public void ApplyAncestryNumbering()
@@ -403,17 +458,17 @@ namespace G2RModel.Model
         }
         private void AddPersonToGeneration(ReportEntry p, int ix)
         {
-            if (_treedPersons.Contains(p.IndividualView.Id))
+            if (_treedPersons.Contains(p.Id))
             {
                 if (!_c.Settings.AllowMultipleAppearances)
                 {
-                    Debug.WriteLine($"Duplicate person, not added: {p.IndividualView.Id}");
+                    Debug.WriteLine($"Duplicate person, not added: {p.Id}");
                     return;
                 }
             }
             else
             {
-                _treedPersons.Add(p.IndividualView.Id);
+                _treedPersons.Add(p.Id);
             }
             Generations[ix] ??= new ListOfReportEntry();
             Generations[ix].Add(p);

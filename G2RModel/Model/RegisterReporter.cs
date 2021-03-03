@@ -312,7 +312,7 @@ namespace Ged2Reg.Model
             ConditionallyEmitNameIndexEntry(doc, p, re.Individual);
             if (_c.Settings.DebuggingOutput)
             {
-                p.Append($" [{re.IndividualView.Id}]");
+                p.Append($" [{re.NaturalId}]");
             }
 
             MyReportStats.MainPerson++;
@@ -438,7 +438,7 @@ namespace Ged2Reg.Model
             ConditionallyEmitNameIndexEntry(doc, p, child.Individual);
             if (_c.Settings.DebuggingOutput)
             {
-                p.Append($" [{child.IndividualView.Id}]");
+                p.Append($" [{child.NaturalId}]");
             }
 
             AppendPersonDetails(p, child, true);
@@ -721,7 +721,7 @@ namespace Ged2Reg.Model
                     ConditionallyEmitNameIndexEntry(_c.Model.Doc, p, spouse.Individual);
                     if (_c.Settings.DebuggingOutput)
                     {
-                        p.Append($" [{spouse.IndividualView.Id}]");
+                        p.Append($" [{spouse.NaturalId}]");
                     }
                     // if appropriate, here say ", as his second wife, ", or similar
                     if ((spouse.Families?.Count ?? 0) > 1)
@@ -900,6 +900,9 @@ namespace Ged2Reg.Model
                     }
                 }
             }
+
+            if (!hasBb && isOpen)
+                connector = $" and {spouse.Individual.Pronoun.ToLower()}";
 
             if (hasDb)
             {
