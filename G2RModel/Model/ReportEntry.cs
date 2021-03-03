@@ -9,6 +9,20 @@ namespace G2RModel.Model
 {
     public class ReportEntry
     {
+        private static BigInteger _nextInternalId;
+
+        public string InternalId { get; set; } = $"{_nextInternalId++}";
+        public string OverrideId { get; set; }
+        public string NaturalId => IndividualView?.Id;
+
+        /// <summary>
+        /// The "natural" Id is the GEDCOM id. But, we allow an
+        /// override (set to recognize duplicates, when and where that
+        /// is supported) and also a fallback (could the underlying
+        /// instances ever be null? If so, we still won't throw).
+        /// </summary>
+        public string Id => OverrideId ?? NaturalId ?? InternalId;
+
         private BigInteger _assignedMainNumber;
 
         public BigInteger AssignedMainNumber
@@ -23,8 +37,8 @@ namespace G2RModel.Model
         /// <summary>
         /// Marks spouse of a focal-line person
         /// so s/he can be omitted if that is the option
-        /// chosen in the settings.  This is easier than
-        /// an 'include' flag because if the 'continue' option
+        /// chosen in the settings.  This is easier than relying
+        /// on an 'include' flag because if the 'continue' option
         /// is also chosen nothing additional needs to be done
         /// beyond putting them in the tree
         /// </summary>
@@ -37,10 +51,33 @@ namespace G2RModel.Model
         /// </summary>
         public bool InFocus { get; set; }
 
-        // these are used to control output positioning 
+        // these are used to fine-tune content 
         // on the Ancestors report
+
+        /// <summary>
+        /// Normally if the wife immediately follows the husband
+        /// (i.e. both parents are known and listed) then
+        /// we do not re-state the marriage details in the block for the
+        /// wife; thus, SuppressSpouseInfo == true;
+        /// HOWEVER, when the wife had additional marriages it is better to
+        /// list them... thus, SuppressSpouseInfo == false
+        /// </summary>
         public bool SuppressSpouseInfo { get; set; }
+
+        /// <summary>
+        /// Still, it would be tedious to fully recapitulate the details for the
+        /// marriage in the immediately preceding block... by setting this
+        /// property the details can be suppressed.
+        /// </summary>
+        public ReportEntry SpouseToMinimize { get; set; }
+
+        /// <summary>
+        /// Ancestry reports may have one or two parents listed in succeeding
+        /// generations; this flag is used to cue when to emit the
+        /// children, especially needed when only the male is listed
+        /// </summary>
         public bool EmitChildrenAfter { get; set; }
+
         public bool FamiliesAreSorted => Individual?.FamiliesAreSorted ?? false;
 
         public ListOfReportFamilyEntries FamilyEntries { get; set; }
@@ -86,7 +123,7 @@ namespace G2RModel.Model
         public ReportEntry(GedcomIndividual indi, ReportFamilyEntry thisFamily = null)
         {
             Individual = indi;
-            MyFamily = thisFamily; // todo: avoid duplication 
+            MyFamily = thisFamily;
             //Init(indi); // NO this leads to unwanted recursion
         }
 
@@ -132,6 +169,7 @@ namespace G2RModel.Model
 
             return sb.ToString();
         }
+
         private int? CountChildren()
         {
             int rv = 0;
@@ -200,6 +238,13 @@ namespace G2RModel.Model
         public void Link(ReportFamilyEntry linkedFam)
         {
             _linkedFamily = linkedFam;
+        }
+
+        public int MarriageNumberWith(ReportEntry re)
+        {
+            if (!FamiliesAreSorted) return 0;
+            int ix = Individual.SpouseIndex(re.Individual);
+            return ix;
         }
     }
 

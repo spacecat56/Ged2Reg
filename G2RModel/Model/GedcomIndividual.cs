@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using G2RModel.Model;
 using SimpleGedcomLib;
@@ -116,6 +115,7 @@ namespace Ged2Reg.Model
         public string AntiPronoun => "M".Equals(Gender) ? "She" : "He";
 
         public string NounAsChild => "M".Equals(Gender) ? "Son" : "Daughter";
+        public string NounAsSpouse => "M".Equals(Gender) ? "Husband" : "Wife";
 
         public string PronounPossessive => "M".Equals(Gender) ? "His" : "Her";
 
@@ -527,6 +527,13 @@ namespace Ged2Reg.Model
             if (rv.Length < 3) return rv;
             if (!rv.StartsWith(", ")) return rv;
             return rv.Substring(2);
+        }
+
+        public int SpouseIndex(GedcomIndividual indi)
+        {
+            if ((Families?.Count ?? 0) == 0) return 0;
+            GedcomFamily marriage = Families.Find(gf => gf.SpouseOf(this) == indi);
+            return marriage == null ? 0 : Families.IndexOf(marriage) + 1;
         }
     }
 }

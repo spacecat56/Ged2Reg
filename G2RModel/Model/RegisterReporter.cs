@@ -697,10 +697,13 @@ namespace Ged2Reg.Model
                     p.Append($"[{family.Family.FamilyView.Id}] ");
                 }
 
+                string pending = "";
                 if (spouse != null)
                 {
                     if (_c.Settings.SpousesNotes && !_ancestryReport)  // prevent duplication when both are handled as mains
                         toDoNotes.Add(spouse.Individual);
+
+
                     p.Append(spouse.Individual.SafeNameForward);
                     if (isChild && re.AssignedMainNumber == 0)
                     {
@@ -720,17 +723,27 @@ namespace Ged2Reg.Model
                     {
                         p.Append($" [{spouse.IndividualView.Id}]");
                     }
+                    // if appropriate, here say ", as his second wife, ", or similar
+                    if ((spouse.Families?.Count ?? 0) > 1)
+                    {
+                        string asNth = GenerateNthSpousePhrase(re, spouse);
+                        if (!string.IsNullOrEmpty(asNth))
+                        {
+                            p.Append($", {asNth}");
+                            pending = ",";
+                        }
+                    }
                 }
                 else
                 {
-                    p.Append("(unknown)");
+                    p.Append(" (unknown)");
                 }
 
                 FormattedEvent p5_marr = ConditionalEvent("", family.Family.DateMarried, family.Family.PlaceMarried,
                     reduced ? null : family.Family.MarriageDescription);
                 if (!string.IsNullOrEmpty(p5_marr?.EventString))
                 {
-                    p.Append($"{p5_marr.EventString}");
+                    p.Append($"{pending}{p5_marr.EventString}");
                     ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p5_marr);
                 }
 
@@ -748,9 +761,20 @@ namespace Ged2Reg.Model
                     }
                 }
 
+                if (spouse?.Id == re.SpouseToMinimize?.Id) 
+                    continue;
+
                 storyAppended = !re.SuppressSpouseInfo && AppendSpouseSentence2(p, spouse);
                 //...
             }
+        }
+
+        private string GenerateNthSpousePhrase(ReportEntry re, ReportEntry spouse)
+        {
+            int i = spouse.MarriageNumberWith(re);
+            if (i < 1)
+                return null;
+            return $"as {spouse.Individual.PronounPossessive.ToLower()} {_wordsForNumbers[i]} {re.Individual.NounAsSpouse.ToLower()}";
         }
 
         private bool AppendSpouseSentence2(IWpdParagraph p, ReportEntry spouse)

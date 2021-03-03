@@ -281,7 +281,7 @@ namespace G2RModel.Model
                             de.AssignedMainNumber = re.AssignedMainNumber * 2;
                             de.EmitChildrenAfter = true;
 
-                            // when allowing multiple occurences, the factory 
+                            // when allowing multiple occurrences, the factory 
                             // does not have enough information to provide the 
                             // right instance of the family, so, we push it here (and for mom, below)
                             de.Link(re.ChildhoodFamily);
@@ -305,8 +305,14 @@ namespace G2RModel.Model
                             me.Link(re.ChildhoodFamily);
                             mom.FirstReportEntry ??= me;
                             mom.FindFamilies(true);
-                            if (dadIncluded) de.EmitChildrenAfter = false; // mom steals them, if she is known
-                            me.SuppressSpouseInfo = dadIncluded;
+                            if (dadIncluded) 
+                            {
+                                de.EmitChildrenAfter = false; // mom steals them, if she is known
+                                if ((me.Families?.Count ?? 0) < 2)
+                                    me.SuppressSpouseInfo = true;
+                                else
+                                    me.SpouseToMinimize = de;
+                            }
                             op.Add(me);
                         }
                     }

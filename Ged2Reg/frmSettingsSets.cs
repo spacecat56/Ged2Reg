@@ -63,7 +63,8 @@ namespace Ged2Reg
 
         private bool CheckUnfinishedBiz()
         {
-            if (!_nameEdited) return true;
+            if (!_nameEdited || string.IsNullOrEmpty(teNewName.Text)) 
+                return true;
             DialogResult dr = MessageBox.Show(
                 "You edited the name but have not applied it.  Are you really finished here?",
                 "Confirm Action", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
