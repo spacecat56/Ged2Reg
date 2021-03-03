@@ -17,6 +17,7 @@ namespace Ged2Reg
  
         public ListOfSettingsSets SettingSets { get; set; }
 
+        private bool _nameEdited;
         public frmSettingsSets()
         {
             InitializeComponent();
@@ -40,6 +41,9 @@ namespace Ged2Reg
             bsSelectedSet.DataSource = _setSelect;
             RefreshBindings();
             cbChooseSet.SelectedIndex = current;
+
+            teNewName.TextChanged += teNewName_TextChanged;
+            
             return this;
         }
 
@@ -57,14 +61,33 @@ namespace Ged2Reg
                 SettingSets.Add(set);
         }
 
+        private bool CheckUnfinishedBiz()
+        {
+            if (!_nameEdited) return true;
+            DialogResult dr = MessageBox.Show(
+                "You edited the name but have not applied it.  Are you really finished here?",
+                "Confirm Action", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            return dr == DialogResult.Yes;
+        }
+
         private void pbOk_Click(object sender, EventArgs e)
         {
+            if (!CheckUnfinishedBiz())
+            {
+                DialogResult = DialogResult.None;
+                return;
+            }
             DialogResult = DialogResult.OK;
             Close();
         }
 
         private void pbCancel_Click(object sender, EventArgs e)
         {
+            if (!CheckUnfinishedBiz())
+            {
+                DialogResult = DialogResult.None;
+                return;
+            }
             DialogResult = DialogResult.Cancel;
             Close();
         }
@@ -76,8 +99,21 @@ namespace Ged2Reg
 
         }
 
+        private void teNewName_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                _nameEdited = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception:{ex}");
+            }
+        }
+
         private void pbDelete_Click(object sender, EventArgs e)
         {
+            
             try
             {
                 if (!ValidateNoUndo("delete")) return;
@@ -118,6 +154,7 @@ namespace Ged2Reg
 
                 Apply(newSettings);
                 cbChooseSet.SelectedIndex = _setSelect.Count - 1;
+                _nameEdited = false;
             }
             catch (Exception ex)
             {
@@ -169,6 +206,7 @@ namespace Ged2Reg
             _setSelect.First(s => s.Value == SelectedSet).Name = teNewName.Text;
             _setModelOn.First(s => s.Value == SelectedSet).Name = teNewName.Text;
             RefreshBindings();
+            _nameEdited = false;
         }
     }
 }
