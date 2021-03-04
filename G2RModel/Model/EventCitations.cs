@@ -124,7 +124,11 @@ namespace Ged2Reg.Model
                         throw new ArgumentOutOfRangeException();
                 }
             }
-            f.Apply(p, settings.BookMarkNotes && SelectedItem.SelectedCount > 1); // bookmark not needed if this is used only once
+            // bookmark not needed if this is used only once
+            // use 0 (SB 1) to workaround a bug: SelectedItem.SelectedCount not working for this anymore
+            // always bookmark, some (many/most) will not be used.
+            // todo: understand what really happened here
+            f.Apply(p, settings.BookMarkNotes && SelectedItem.SelectedCount > 0); 
             // this function is too expensive: 25% of total runtime to get MaxFootnoteId
             //if (doc.MaxFootnoteId() != f.Id)
             //{
