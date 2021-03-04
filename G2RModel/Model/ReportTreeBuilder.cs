@@ -192,7 +192,7 @@ namespace G2RModel.Model
                     BigInteger spouseId = ngs[i][j].AssignedMainNumber;
                     spouseId += (spouseId % 2 == 0) ? 1 : -1;
                     ReportEntry spousEntryThisGeneration = ngs[i].Find(s => s.AssignedMainNumber == spouseId);
-                    if (spousEntryThisGeneration == null || !spousEntryThisGeneration.InFocus)
+                    if (spousEntryThisGeneration == null) // this LOOKS LIKE a mistake here? : || !spousEntryThisGeneration.InFocus)
                     {
                         ngs[i][j].EmitChildrenAfter = true;
                         if (suppressingSpouses)
