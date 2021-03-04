@@ -84,6 +84,7 @@ namespace Ged2Reg
             yPos += rowStep;
             AddBoundCheckBox(tpAncestry, "Generation headings", nameof(G2RSettings.GenerationHeadings));
             AddBoundCheckBox(tpAncestry, "Reduced margins", nameof(G2RSettings.ReducedMargins));
+            AddBoundCheckBox(tpAncestry, "Use host name for link text", nameof(G2RSettings.UseHostName));
 
             yPos += rowStep;
             AddLabel(tpAncestry, "*Focused ancestor", xOffset: -20);

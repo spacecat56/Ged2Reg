@@ -103,9 +103,13 @@ namespace Ged2Reg.Model
 
             ActionDelegates?.PostStatusReport($"begin processing; starting person: {root.NameForward}");
 
-            // reset the output
+            // we can push static settings into the implementation
+            // using the factory Configure method; just 'host name' ATM
+            DocFactory.Configure(Settings.UseHostName);
+
             Doc = DocFactory.Create(Settings.OutFile);
-            // todo: this has to be factory-type-aware; or otherwise reconciled
+
+            // todo: this has to be factory-type-aware; or otherwise reconciled; ATM odt ignores it!
             Doc.ApplyTemplateStyles(Settings.GetStylesStream(), true);
             Doc.ConfigureFootnotes(Settings.AsEndnotes, Settings.BracketArray);
 

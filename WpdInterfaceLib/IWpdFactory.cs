@@ -7,5 +7,6 @@ namespace WpdInterfaceLib
         IWpdDocument Load(Stream stream, bool editable = false);
         IWpdDocument Create(string filename);
         string DocType { get; }
+        void Configure(bool useDomainForHyperlinkText);
     }
 }

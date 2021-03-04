@@ -13,6 +13,7 @@ namespace DocxAdapterLib
             Endnote
         }
         public static string DefaultHyperlinkStyle { get; set; } = "Hyperlink";
+        public static bool UseDomainForNullLinkText { get; set; } = true;
 
         public string LinkStyle { get; set; }
 
@@ -29,13 +30,20 @@ namespace DocxAdapterLib
 
             Rel = Doc.AddHyperlinkRelationship(Uri, true, Location);
             MyHyperlink = new Hyperlink(){Anchor = Anchor, Id = Rel.Id};
-            Run r = new Run(new Text(LinkText ?? Anchor))
+            Run r = new Run(new Text(BestText()))
             {
                 RunProperties = new RunProperties(new RunStyle() {Val = LinkStyle ?? DefaultHyperlinkStyle})
             };
             MyHyperlink.AppendChild(r);
             para.Append(MyHyperlink);
             return this;
+        }
+
+        internal string BestText()
+        {
+            return LinkText 
+                   ?? ((UseDomainForNullLinkText) ? $"{Uri?.Host}" : Anchor)
+                   ?? Anchor;
         }
     }
 }

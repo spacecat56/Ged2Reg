@@ -8,6 +8,10 @@ namespace OdtAdapterLib
     public class OalDocFactory : IWpdFactory
     {
         #region Implementation of IWpdFactory
+        public void Configure(bool useDomainForHyperlinkText)
+        {
+            OdtHyperlink.UseDomainForNullLinkText = useDomainForHyperlinkText;
+        }
 
         public IWpdDocument Load(Stream stream, bool editable = false)
         {

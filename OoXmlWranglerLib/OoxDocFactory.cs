@@ -8,6 +8,10 @@ namespace DocxAdapterLib
         #region Implementation of IWpdFactory
 
         public string DocType => ".docx";
+        public void Configure(bool useDomainForHyperlinkText)
+        {
+            OoxHyperlink.UseDomainForNullLinkText = useDomainForHyperlinkText;
+        }
 
         public IWpdDocument Load(Stream stream, bool editable = false)
         {

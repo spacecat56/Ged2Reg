@@ -475,6 +475,7 @@ namespace Ged2Reg.Model
         private bool _generationHeadings;
         private bool _allowMultiple = true;
         private bool _reduceMargins;
+        private bool _useHostName;
 
         private bool _focus;
         private bool _continue;
@@ -602,6 +603,12 @@ namespace Ged2Reg.Model
             set { _assumedMaxLivingGenerations = value; OnPropertyChanged(); }
         }
 
+        [DataMember]
+        public bool UseHostName
+        {
+            get { return _useHostName; }
+            set { _useHostName = value; OnPropertyChanged(); }
+        }
 
 
         [DataMember]
