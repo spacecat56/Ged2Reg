@@ -52,6 +52,7 @@ namespace Ged2Reg.Model
         private bool _allowMultiple;
         private bool _omitFocusSpouses;
         private int _minFromGen;
+        private bool _omitBackRefs;
         private int _maxLivingGenerations;
 
 
@@ -74,6 +75,7 @@ namespace Ged2Reg.Model
             _allowMultiple = _c.Settings.AllowMultipleAppearances;
             _omitFocusSpouses = _c.Settings.OmitFocusSpouses;
             _minFromGen = _c.Settings.MinimizeFromGeneration;
+            _omitBackRefs = _c.Settings.OmitBackRefs && _ancestryReport;
             _maxLivingGenerations = _c.Settings.AssumedMaxLivingGenerations;
 
             ReportEntryFactory.Init(!_allowMultiple);
@@ -330,6 +332,8 @@ namespace Ged2Reg.Model
 
             if (timeToMinimize)
             {
+                if (_omitBackRefs)
+                    return;
                 foreach (ReportFamilyEntry family in re.FindMainNumberedFamilies())
                 {
                     List<ReportEntry> numbered = family.FindMainNumberedChildren();
@@ -466,7 +470,7 @@ namespace Ged2Reg.Model
             string ixn = _c.Settings.NameIndexSettings.IndexName;
             if (string.IsNullOrEmpty(ixn))
                 ixn = null;
-            var ex = doc.BuildIndexEntryField(ixn, $"{indi.SafeSurname}:{indi.SafeGivenName}").Build();
+            var ex = doc.BuildIndexEntryField(ixn, $"{indi.IndexableSurname}:{indi.SafeGivenName}").Build();
             p.AppendField(ex);
             return true;
         }

@@ -56,6 +56,9 @@ namespace Ged2Reg.Model
 
         public string SafeGivenName => PresumedDeceased || !ConsiderLivingStatus ? $"{GivenName}" : "(Living)";
         public string SafeSurname => $"{Surname}"; // this usage is ambiguous
+        public string IndexableSurname => string.IsNullOrEmpty(SafeSurname) ? NoSurnameIndexValue : SafeSurname;
+
+        public static string NoSurnameIndexValue { get; set; } = "(No surname)";
 
         //public bool MayBeLiving { get; set; }
         private bool _presumedDeceased;

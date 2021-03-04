@@ -43,13 +43,19 @@ namespace G2RModel.Model
         /// beyond putting them in the tree
         /// </summary>
         public bool OutOfFocus { get; set; }
-        
+
+ 
         /// <summary>
         /// but we also need InFocus, which is NOT the same as
         /// "not OutOfFocus"... InFocus males with OOF wives
         /// need additional help to get the linked child emitted
         /// </summary>
-        public bool InFocus { get; set; }
+        public bool InFocus
+        {
+            get => _inFocus;
+            set => _inFocus = value;
+        }
+       private bool _inFocus;
 
         // these are used to fine-tune content 
         // on the Ancestors report
@@ -71,12 +77,18 @@ namespace G2RModel.Model
         /// </summary>
         public ReportEntry SpouseToMinimize { get; set; }
 
+        private bool _emitChildrenAfter;
+
         /// <summary>
         /// Ancestry reports may have one or two parents listed in succeeding
         /// generations; this flag is used to cue when to emit the
         /// children, especially needed when only the male is listed
         /// </summary>
-        public bool EmitChildrenAfter { get; set; }
+        public bool EmitChildrenAfter
+        {
+            get => _emitChildrenAfter;
+            set => _emitChildrenAfter = value;
+        }
 
         public bool FamiliesAreSorted => Individual?.FamiliesAreSorted ?? false;
 

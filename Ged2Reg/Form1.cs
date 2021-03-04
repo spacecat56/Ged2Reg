@@ -76,6 +76,8 @@ namespace Ged2Reg
             AddBoundCheckBox(tpAncestry, "Continue past focal ancestor", nameof(G2RSettings.ContinuePastFocus));
             AddBoundCheckBox(tpAncestry, "'Merge' duplicate ancestors", nameof(G2RSettings.FindDuplicates));
             AddBoundTextBox(tpAncestry, "Minimize from generation", nameof(G2RSettings.MinimizeFromGeneration));
+            yPos += rowStep / 4;
+            AddBoundCheckBox(tpAncestry, "    Also omit back-references", nameof(G2RSettings.OmitBackRefs));
 
             yPos += rowStep;
             AddLabel(tpAncestry, "Options that also affect Register report:", xOffset: -20);
@@ -94,12 +96,12 @@ namespace Ged2Reg
 
             pbListAncestors = AddButton(tpAncestry, "List choices", 120);
             pbListAncestors.Click += pbListAncestors_Click;
+            pbPickFocus = AddButton(tpAncestry, "Apply selection:", 120, lbColPos+pbListAncestors.Width+8);
+            pbPickFocus.Click += pbPickFocus_Click;
             yPos += 4;
             cbAncestorChoices = AddComboBox(tpAncestry, nameof(cbAncestorChoices), 320);
             cbAncestorChoices.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            yPos += pbListAncestors.Height;
-            pbPickFocus = AddButton(tpAncestry, "Select Focus", 120);
-            pbPickFocus.Click += pbPickFocus_Click;
+            //yPos += pbListAncestors.Height;
 
             //yPos += pbListAncestors.Height;
             //pbTest = AddButton(tpAncestry, "Test Focus", 120);
@@ -680,6 +682,8 @@ namespace Ged2Reg
         {
             try
             {
+                Cursor = Cursors.WaitCursor;
+                Application.DoEvents();
                 if (dgvStartPerson.SelectedRows.Count == 0)
                 {
                     MessageBox.Show("Must load GEDCOM and select a person", "Action Required", MessageBoxButtons.OK, MessageBoxIcon.Hand);
@@ -703,9 +707,9 @@ namespace Ged2Reg
                     t.IdentifyDuplicates();
                     Log($"Groups of (apparent) duplicates: {t.DuplicationGroups}");
                 }
-                // NB we need "natural" (GEDCOM) ids here, so, we either stick with 
-                // GedcomIndividual / IndividualView or else use the ReportEntry.NaturalId
-                // which works out to the same.  so, refactoring here is "unnecessary"
+                // NB we need "natural" (GEDCOM) ids to save in settings, but
+                // will only recognize duplicates based on the consolidated, 
+                // ReportEntry.Id property, which will 'see' the optional override
                 List<ReportEntry> choices = new List<ReportEntry>();
                 for (int i = 1; i < t.LastSlotWithPeople; i++)
                 {
@@ -733,7 +737,10 @@ namespace Ged2Reg
                     occurrences = 1;
                 }
 
-                var nvcs = nvChoices.OrderBy(nv => nv.Name).ToList();
+                var nvcs = nvChoices
+                    .Where(x => !x.Value.Individual.PresentationName().StartsWith("(Unknown),"))
+                    .OrderBy(nv => nv.Name)
+                    .ToList();
                 List<string> choiceList = nvcs.Select(nv => nv.Name).ToList();
                 _ancestorChoices = nvcs.Select(nv => nv.Value).ToList();
 
@@ -746,6 +753,10 @@ namespace Ged2Reg
             catch (Exception ex)
             {
                 MessageBox.Show($"Exception:{ex}");
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
             }
         }
 
