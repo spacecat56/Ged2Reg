@@ -42,8 +42,22 @@ namespace DocxAdapterLib
         internal string BestText()
         {
             return LinkText 
-                   ?? ((UseDomainForNullLinkText) ? $"{Uri?.Host}" : Anchor)
+                   ?? ((UseDomainForNullLinkText) ? $"{Uri?.Domain()}" : Anchor)
                    ?? Anchor;
+        }
+    }
+
+    public static class LocalExtensions
+    {
+        public static string Domain(this Uri uri)
+        {
+            if (uri == null) return null;
+            string host = uri.Host;
+            while (host.IndexOf('.') != host.LastIndexOf('.'))
+                host = host.Substring(host.IndexOf('.')+1);
+            if (host.Length < 2)
+                return host;
+            return $"{host.Substring(0, 1).ToUpper()}{host.Substring(1)}";
         }
     }
 }
