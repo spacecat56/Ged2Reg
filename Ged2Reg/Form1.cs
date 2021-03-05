@@ -45,15 +45,50 @@ namespace Ged2Reg
         private int yPos = 32;
         private int lbColPos = 40;
         private int kbColPos = 320;
+        private CheckBox kbItalicsLineage;
+        private CheckBox kbStdBriefContd;
+
+
         private void AdjustForm ()
         {
             nudGenerations.Maximum = 999;
 
             tabControl1.TabPages.Remove(tabPage4);
+
+
+            // add the option to Content tab
+            TabPage tpContentOptions = tabPage2;
+            yPos = label30.Top - 6;
+            lbColPos = label9.Left;
+            kbColPos = checkBox4.Left;
+            tpContentOptions.SuspendLayout();
+            kbItalicsLineage = AddBoundCheckBox(tpContentOptions, 
+                "Italicize names in lineage list", 
+                nameof(G2RSettings.ItalicsNamesInLineageList));
+            kbItalicsLineage.Top += 10;  // sigh.  not sure why.
+
+            yPos = label61.Top;
+            lbColPos = label61.Left;
+            kbColPos = kbIncludeEvents.Left;
+            kbStdBriefContd = AddBoundCheckBox(tpContentOptions,
+                "Brief (standard) output for continued",
+                nameof(G2RSettings.StandardBriefContinued));
+            kbStdBriefContd.Top += 6;  // sigh.  not sure why.
+
+            // extra copy of this setting, not needed
             kbAncestorsReport.Visible = label65.Visible = false;
+            // hide grandkids - not implemented
+            label6.Visible = checkBox1.Visible = false;
+            // additional events - not implemented
+            label61.Visible = kbIncludeEvents.Visible = false;
+            tpContentOptions.ResumeLayout();
+
 
             tpAncestry = new TabPage("Ancestry Report");
             tpAncestry.SuspendLayout();
+            yPos = 32;
+            lbColPos = 40;
+            kbColPos = 320;
 
             //tabControl1.TabPages.Add(tpAncestry);
             // the next line is the "secret" workaround to the 
@@ -154,7 +189,7 @@ namespace Ged2Reg
             return pb;
         }
 
-        private void AddBoundCheckBox(TabPage tp, string lbl, string boundSetting)
+        private CheckBox AddBoundCheckBox(TabPage tp, string lbl, string boundSetting)
         {
             AddLabel(tp, lbl);
 
@@ -175,6 +210,7 @@ namespace Ged2Reg
             tp.Controls.Add(kb);
 
             yPos += rowStep;
+            return kb;
         }
 
         private TextBox AddBoundTextBox(TabPage tp, string lbl, string boundSetting, int w = 60, RightToLeft rtl = RightToLeft.Yes)

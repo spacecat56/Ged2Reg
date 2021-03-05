@@ -157,8 +157,10 @@ namespace Ged2Reg.Model
         private bool _omitBurialDate = true;
         private BaptismOptions _baptismOption = BaptismOptions.Always;
         private bool _includeFactDescriptions = true;
+        private bool _italicsInLineage;
         private bool _reduceContinuedChildren = true;
         private bool _minimizeContinuedChildren;
+        private bool _stdBriefContd;
         private bool _reducePlaceNames = true;
         private int _generations = 5;
 
@@ -187,7 +189,7 @@ namespace Ged2Reg.Model
 
         private bool _unknowns = true;
         private string _unkInSource = "_";
-        private string _unkInReport = "(Unknown)";
+        private string _unkInReport = "_____";
 
         private string _lastPersonId;
         private string _lastPersonFile;
@@ -1064,6 +1066,13 @@ namespace Ged2Reg.Model
         }
 
         [DataMember]
+        public bool ItalicsNamesInLineageList
+        {
+            get { return _italicsInLineage; }
+            set { _italicsInLineage = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
         public bool ReduceContinuedChildren
         {
             get => _reduceContinuedChildren;
@@ -1075,6 +1084,13 @@ namespace Ged2Reg.Model
         {
             get { return _minimizeContinuedChildren; }
             set { _minimizeContinuedChildren = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public bool StandardBriefContinued
+        {
+            get { return _stdBriefContd; }
+            set { _stdBriefContd = value; OnPropertyChanged(); }
         }
 
         [DataMember]

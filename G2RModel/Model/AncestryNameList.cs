@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using WpdInterfaceLib;
 
 
@@ -30,7 +26,7 @@ namespace Ged2Reg.Model
             return rv;
         }
 
-        public void Emit(IWpdParagraph p, WpdInterfaceLib.Formatting fmtName, WpdInterfaceLib.Formatting fmtNumber)
+        public void Emit(IWpdParagraph p, Formatting fmtName, Formatting fmtNumber)
         {
             p.Append(" (");
             bool furst = true;

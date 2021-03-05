@@ -45,6 +45,10 @@ namespace Ged2Reg.Model
         private bool _listBapt;
         private bool _listBuri;
 
+        private bool _generationalReducePlaceNames;
+        private bool _standardReducePlaceNames;
+        private bool _standardBriefContdChild;
+
         private bool _ancestryReport;
         private bool _suppressGenNumbers;
         private bool _includeGenerationNumbers;
@@ -57,6 +61,7 @@ namespace Ged2Reg.Model
 
 
         private ReportTreeBuilder _tree;
+        private Formatting _childNameFormatting;
         public RegisterReportModel Model { get; set; }
 
         public RegisterReporter Init(GedcomIndividual root, TimeSpan prep)
@@ -77,6 +82,11 @@ namespace Ged2Reg.Model
             _minFromGen = _c.Settings.MinimizeFromGeneration;
             _omitBackRefs = _c.Settings.OmitBackRefs && _ancestryReport;
             _maxLivingGenerations = _c.Settings.AssumedMaxLivingGenerations;
+
+            
+            _generationalReducePlaceNames = _c.Settings.FullPlaceOncePerGen;
+            _standardReducePlaceNames = _c.Settings.ReducePlaceNames && !_c.Settings.FullPlaceOncePerGen;
+            _standardBriefContdChild = _c.Settings.StandardBriefContinued;
 
             ReportEntryFactory.Init(!_allowMultiple);
 
@@ -187,13 +197,14 @@ namespace Ged2Reg.Model
 
             _styleMap.TryGetValue(StyleSlots.GenerationDivider, out Formatting genDivider);
             _styleMap.TryGetValue(StyleSlots.GenerationDivider3Plus, out Formatting genDivider3Plus);
+            _styleMap.TryGetValue(StyleSlots.ChildName, out _childNameFormatting);
 
             _dateFormatter = new GenealogicalDateFormatter();
             _placeFormatter = new GenealogicalPlaceFormatter()
             {
                 DropUSA = _c.Settings.DropUsa, 
                 InjectWordCounty = _c.Settings.InjectCounty,
-                ReduceOnRepetition = _c.Settings.ReducePlaceNames,
+                ReduceOnRepetition = _generationalReducePlaceNames || _standardReducePlaceNames,
             }.Init();
 
             _currentGeneration = 0;
@@ -202,7 +213,7 @@ namespace Ged2Reg.Model
                 _currentGeneration++;
                 if (Model.CheckCancel()) throw new CanceledByUserException();
                 Debug.WriteLine($"Generation {_currentGeneration} begins {DateTime.Now:G}");
-                if (_c.Settings.FullPlaceOncePerGen)
+                if (_generationalReducePlaceNames)
                     _placeFormatter.Reset();
                 if ((generation?.Count??0)==0)
                     continue;
@@ -213,6 +224,8 @@ namespace Ged2Reg.Model
 
                 foreach (ReportEntry individual in generation)
                 {
+                    if (_standardReducePlaceNames)
+                        _placeFormatter.Reset();
                     EmitMainPerson(doc, individual, _currentGeneration);
                 }
             }
@@ -301,6 +314,7 @@ namespace Ged2Reg.Model
             Formatting generationNumberFormatting = new Formatting() { CharacterStyleName = _styleMap[StyleSlots.GenerationNumber].CharacterStyleName }; //  switched this to the style
             int genNbrIncr = _ancestryReport ? -1 : 1;
             Formatting introFormatting = new Formatting(){Bold = _c.Settings.IntroBold, Italic = _c.Settings.IntroItalic};
+            Formatting lineageListNameFormatting = new Formatting() { Italic = _c.Settings.ItalicsNamesInLineageList, CharacterStyleName = _styleMap[StyleSlots.MainPersonText].CharacterStyleName };
 
             // begin main person content
             IWpdParagraph p = doc.InsertParagraph();
@@ -322,7 +336,7 @@ namespace Ged2Reg.Model
                 MyReportStats.MaybeLiving++;
             
             if (!_ancestryReport)
-                re.Ancestry?.Emit(p, _styleMap[StyleSlots.MainPersonText], _styleMap[StyleSlots.GenerationNumber]);
+                re.Ancestry?.Emit(p, lineageListNameFormatting, _styleMap[StyleSlots.GenerationNumber]);
 
             List<GedcomIndividual> noteworthy = AppendPersonDetails(p, re); //todo: ??
 
@@ -426,12 +440,22 @@ namespace Ged2Reg.Model
                 ? $"{child.GetNumber(_includeGenerationNumbers)}.\t{child.ChildNumberRoman}.{sp}"
                 : $"\t{child.ChildNumberRoman}.\t";
             p.Append(kidNbr);
-            p.Append(child.Individual.SafeGivenName);
-            bool dropNbr = _suppressGenNumbers || g < 1 || (_ancestryReport && child.AssignedMainNumber < 1);
-            if (!dropNbr)
-                p.Append($"{g}", false, generationNumberFormatting);
-            if (!string.IsNullOrEmpty(child.Individual.SafeSurname))
-                p.Append($" {child.Individual.SafeSurname}");
+            string childNameStyle = _styleMap[StyleSlots.ChildName].CharacterStyleName;
+            if (child.AssignedChildNumber > 1)
+            {
+                // just the name please: standard applies
+                p.Append(child.Individual.SafeNameForward, false, _childNameFormatting);
+            }
+            else
+            {
+                // include the generation number
+                p.Append(child.Individual.SafeGivenName, false, _childNameFormatting);
+                bool dropNbr = _suppressGenNumbers || g < 1 || (_ancestryReport && child.AssignedMainNumber < 1);
+                if (!dropNbr)
+                    p.Append($"{g}", false, generationNumberFormatting);
+                if (!string.IsNullOrEmpty(child.Individual.SafeSurname))
+                    p.Append($" {child.Individual.SafeSurname}", false, _childNameFormatting);
+            }
             if (child.AssignedMainNumber == 0)
             {
                 MyReportStats.NonContinuedPerson++;
@@ -466,7 +490,7 @@ namespace Ged2Reg.Model
 
         internal bool ConditionallyEmitNameIndexEntry(IWpdDocument doc, IWpdParagraph p, GedcomIndividual indi)
         {
-            if (!_c.Settings.NameIndexSettings.Enabled) return false;
+            if (!_c.Settings.NameIndexSettings.Enabled || indi == null) return false;
             string ixn = _c.Settings.NameIndexSettings.IndexName;
             if (string.IsNullOrEmpty(ixn))
                 ixn = null;
@@ -488,6 +512,39 @@ namespace Ged2Reg.Model
         private List<GedcomIndividual> AppendPersonDetails(IWpdParagraph p, ReportEntry re, bool isChild = false)
         {
             List<GedcomIndividual> toDoNotes = new List<GedcomIndividual>();
+
+            // short-stop: optional standard / brief child line if so configured and the child is continued
+            if (isChild && _standardBriefContdChild && re.AssignedMainNumber > 0)
+            {
+                string conn = ", m.";
+                FormattedEvent p0_bbp = ConditionalEvent(", b.", re.Individual.Born, re.Individual.PlaceBorn);
+                if (string.IsNullOrEmpty(p0_bbp?.EventString))
+                {
+                    p0_bbp = ConditionalEvent(", bp.", re.Individual.Baptized, re.Individual.PlaceBaptized);
+                }
+                if (!string.IsNullOrEmpty(p0_bbp?.EventString))
+                {
+                    p.Append(p0_bbp.EventString.TrimStart().Replace(" on ", " "));  // ugly little tweaks; this needs to all be smarter
+                    ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p0_bbp);
+                    conn = "; m.";
+                }
+
+                string mnbr = re.SafeFamilies.Count > 1 ? $" {_wordsForNumbers[1]}" : "";
+                for (int i = 0; i < re.SafeFamilies.Count; i++)
+                {
+                    GedcomIndividual spouze = re.SafeFamilies[i].Family.SpouseOf(re.Individual);
+                    string s = $"{conn}{mnbr} {spouze?.NameForward}";
+                    p.Append(s);
+                    ConditionallyEmitNameIndexEntry(_c.Model.Doc, p, spouze);
+                    conn = ", ";
+                    mnbr = $" {_wordsForNumbers[i + 2]}";
+                }
+
+                p.Append(".");
+                return toDoNotes;
+            }
+
+
             // optional minimized or reduced output for child listing if there are descendants, except for the last reported generation
             bool minimized = isChild && _c.Settings.MinimizeContinuedChildren && re.HasDescendants && _currentGeneration < _c.Settings.Generations;
             if (minimized)
@@ -497,6 +554,7 @@ namespace Ged2Reg.Model
                 return toDoNotes;
             }
 
+            // we can decide if we are doing citations
             bool reduced = isChild && _reduceChild && re.HasDescendants && _currentGeneration < _c.Settings.Generations;
             bool doNotCite = isChild && _c.Settings.OmitCitesOnContinued && re.HasDescendants && _currentGeneration < _c.Settings.Generations;
             
@@ -504,8 +562,28 @@ namespace Ged2Reg.Model
             reduced &= !_ancestryReport || re.AssignedMainNumber > 0;
             doNotCite &= !_ancestryReport || re.AssignedMainNumber > 0;
 
-            string comma = null;
+            bool doCite = _c.Settings.Citations && !doNotCite
+                                                && (!_c.Settings.ObscureLiving || !_c.Settings.OmitLivingCitations || re.Individual.PresumedDeceased);
 
+            // and we can detect and optimize out consecutive repeats of the same citation
+            // NB this list is ORDERED by the appearance of the cited facts
+            CitationProposals cp = new CitationProposals();
+            if (doCite)
+            {
+                cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(TagCode.BIRT)));
+                cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(TagCode.BAPM)));
+                cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(TagCode.DEAT)));
+                cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(TagCode.BURI)));
+                for (int mnbr = 0; mnbr < re.SafeFamilies.Count; mnbr++)
+                {
+                    ReportFamilyEntry family = re.SafeFamilies[mnbr];
+                    EventCitations ec = family.Family.CitableEvents?.Find(family.Family.EventTag(TagCode.MARR));
+                    cp.AddNonNull(ec, family.Family.FamilyView.Id);
+                }
+            }
+            CitationProposals chosenCitations = CitationCoordinator.Optimize(cp);
+
+            string comma = null;
             if (!isChild && _ancestryReport && re.HasParents)
             {
                 p.Append(", ").Append(re.Individual.NounAsChild.ToLower()).Append(" of ");
@@ -575,23 +653,6 @@ namespace Ged2Reg.Model
             else
                 p.Append(".");
 
-            // and we can detect and optimize out consecutive repeats of the same citation
-            // NB this list is ORDERED by the appearance of the cited facts
-            CitationProposals cp = new CitationProposals();
-
-            cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(TagCode.BIRT)));
-            cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(TagCode.BAPM)));
-            cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(TagCode.DEAT)));
-            cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(TagCode.BURI)));
-
-            for (int mnbr = 0; mnbr < re.SafeFamilies.Count; mnbr++)
-            {
-                ReportFamilyEntry family = re.SafeFamilies[mnbr];
-                EventCitations ec = family.Family.CitableEvents?.Find(family.Family.EventTag(TagCode.MARR));
-                cp.AddNonNull(ec, family.Family.FamilyView.Id);
-            }
-
-            CitationProposals chosenCitations = CitationCoordinator.Optimize(cp);
 
             if (p4_buri != null)
             {
@@ -599,8 +660,6 @@ namespace Ged2Reg.Model
                 p4_buri.EventString = $" {re.Individual.Pronoun}{p4_buri.EventString}.";
             }
             
-            bool doCite = _c.Settings.Citations && !doNotCite 
-                 && (!_c.Settings.ObscureLiving || !_c.Settings.OmitLivingCitations || re.Individual.PresumedDeceased);
             if (!string.IsNullOrEmpty(p1_birt?.EventString))
             {
                 p.Append(p1_birt.EventString);
