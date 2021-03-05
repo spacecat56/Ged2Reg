@@ -461,7 +461,7 @@ namespace Ged2Reg.Model
         [IgnoreDataMember] 
         public TextCleaner CitationTitleCleaner
         {
-            get { return _cleaner ?? (_cleaner = new TextCleaner(TextCleaners)); }
+            get { return _cleaner ??= new TextCleaner(TextCleaners); }
             set { _cleaner = value; }
         }
 
@@ -705,8 +705,14 @@ namespace Ged2Reg.Model
         [DataMember]
         public string SetName { get; set; }
 
+        private ListOfTextCleanerEntry _textCleaners;
+
         [DataMember]
-        public ListOfTextCleanerEntry TextCleaners { get; set; }
+        public ListOfTextCleanerEntry TextCleaners
+        {
+            get => _textCleaners ??= new ListOfTextCleanerEntry();
+            set => _textCleaners = value;
+        }
 
         [DataMember]
         public bool DebuggingOutput
