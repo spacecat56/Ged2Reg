@@ -49,6 +49,7 @@ namespace Ged2Reg.Model
             TagCode.BIRT,
             TagCode.DEAT,
             TagCode.BAPM,
+            TagCode.CHR,
             TagCode.BURI
         };
 
@@ -340,6 +341,8 @@ namespace Ged2Reg.Model
                     case TagCode.BIRT:
                         hasBirth = true;
                         break;
+                    case TagCode.CHR when BaptismOption == BaptismOptions.None:
+                    case TagCode.CHR when BaptismOption == BaptismOptions.WhenNoBirth && hasBirth:
                     case TagCode.BAPM when BaptismOption == BaptismOptions.None:
                     case TagCode.BAPM when BaptismOption == BaptismOptions.WhenNoBirth && hasBirth:
                     case TagCode.BURI when !IncludeBurial:

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Ged2Reg.Model
@@ -42,6 +41,22 @@ namespace Ged2Reg.Model
             "Ireland"
         };
 
+        public HashSet<string> LargestCities { get; set; } = new HashSet<string>()
+        {
+            "New York",
+            "Los Angeles",
+            "Chicago",
+            "Houston",
+            "Phoenix",
+            "Philadelphia",
+            "San Antonio",
+            "San Diego",
+            "Dallas",
+            "San Jose",
+            "London",
+            "Dublin"
+        };
+
         public string NameOfUsa { get; set; } = "USA";
 
         Dictionary<string, string> _previouslyUsedNames = new Dictionary<string, string>();
@@ -68,20 +83,28 @@ namespace Ged2Reg.Model
 
         public FormattedPlaceName Reformat(string p)
         {
-            FormattedPlaceName rv = ReformatInternal(p);
+            CanonicalPlace cp = new CanonicalPlace();
+            FormattedPlaceName rv = ReformatInternal(p, cp);
+
             if ((rv.LongName?.IndexOf(", ,") ?? 0) > 0)
                 Debug.WriteLine($"Unexpected result in place name: '{rv.LongName}'");
+
+            rv.SpecificLocation = cp.City ?? ((cp.Locality?.Count??0) > 0 ? cp.Locality[0] : null);
+            if (string.IsNullOrEmpty(rv.SpecificLocation))
+                rv.Preposition = "in";
+            else
+                rv.Preposition = cp.IsAmbiguous || LargestCities.Contains(rv.SpecificLocation) ? "in" : "at";
+
             return rv;
         }
 
-        internal FormattedPlaceName ReformatInternal(string p)
+        internal FormattedPlaceName ReformatInternal(string p, CanonicalPlace cp)
         {
             p = DeTrash(p);
 
             if (string.IsNullOrEmpty(p)) return EmptyPlace;
 
             FormattedPlaceName rv = new FormattedPlaceName(){UnformattedName = p};
-            CanonicalPlace cp = new CanonicalPlace();
 
             bool isDC = DetectDC(p, cp);
             if (isDC)
@@ -286,7 +309,14 @@ namespace Ged2Reg.Model
         public string ShortName { get; set; }
         public bool PreferShort { get; set; }
         public string IndexEntry { get; set; }
+        public string SpecificLocation { get; set; }
+        public string Preposition { get; set; } = "in";
         public string PreferredName => PreferShort ? ShortName : LongName ?? UnformattedName;
+
+        //public void InAt()
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 
     public class StringEqualComparer : IEqualityComparer<string>

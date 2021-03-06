@@ -6,7 +6,9 @@ namespace Ged2Reg.Model
     public class CanonicalPlace
     {
         public List<string> Locality { get; set; } = new List<string>();
+
         public string City { get; set; }
+
         public string County { get; set; }
         public string State { get; set; }
         public string Country { get; set; }

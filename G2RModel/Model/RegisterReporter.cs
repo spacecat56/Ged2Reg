@@ -62,6 +62,7 @@ namespace Ged2Reg.Model
 
         private ReportTreeBuilder _tree;
         private Formatting _childNameFormatting;
+        Formatting _generationNumberFormatting;
         public RegisterReportModel Model { get; set; }
 
         public RegisterReporter Init(GedcomIndividual root, TimeSpan prep)
@@ -96,6 +97,7 @@ namespace Ged2Reg.Model
                 IncludeBurial = _listBuri,
                 Priorities = _c.Settings.SourcePriorities,
                 AnitPriorities = _c.Settings.SourceAnitPriorities,
+                BaptismOption = _c.Settings.BaptismOption,
             };
             int oldState = CitationCoordinator.Reset();
 
@@ -311,7 +313,8 @@ namespace Ged2Reg.Model
 
             bool timeToMinimize = _ancestryReport && _minFromGen > 0 && _minFromGen <= gen;
 
-            Formatting generationNumberFormatting = new Formatting() { CharacterStyleName = _styleMap[StyleSlots.GenerationNumber].CharacterStyleName }; //  switched this to the style
+            //  switched this to the style
+            _generationNumberFormatting = new Formatting() { CharacterStyleName = _styleMap[StyleSlots.GenerationNumber].CharacterStyleName };
             int genNbrIncr = _ancestryReport ? -1 : 1;
             Formatting introFormatting = new Formatting(){Bold = _c.Settings.IntroBold, Italic = _c.Settings.IntroItalic};
             Formatting lineageListNameFormatting = new Formatting() { Italic = _c.Settings.ItalicsNamesInLineageList, CharacterStyleName = _styleMap[StyleSlots.MainPersonText].CharacterStyleName };
@@ -322,7 +325,7 @@ namespace Ged2Reg.Model
             p.Append($"{re.GetNumber(_includeGenerationNumbers)}. ");
             p.Append(re.Individual.SafeGivenName, false, _styleMap[StyleSlots.MainPerson]);
             if (!_suppressGenNumbers)
-                p.Append($"{gen}", false, generationNumberFormatting);
+                p.Append($"{gen}", false, _generationNumberFormatting);
             if (!string.IsNullOrEmpty(re.Individual.SafeSurname))
                 p.Append($" {re.Individual.SafeSurname}", false, _styleMap[StyleSlots.MainPerson]);
             ConditionallyEmitNameIndexEntry(doc, p, re.Individual);
@@ -354,7 +357,7 @@ namespace Ged2Reg.Model
                     EmitFamilyIntroLine(doc, numbered.Count, family);
                     foreach (ReportEntry child in numbered)
                     {
-                        EmitChildEntry(doc, gen + genNbrIncr, child, generationNumberFormatting);
+                        EmitChildEntry(doc, gen + genNbrIncr, child);
                     }
                 }
                 return;
@@ -375,7 +378,7 @@ namespace Ged2Reg.Model
                     p.InsertHorizontalLine(lineType:"single", position:"top");
                     dividersApplied = true;
                 }
-                string intro = string.Format(_c.Settings.NoteIntro, indiNotes.NameForward);
+                string intro = string.Format(_c.Settings.NoteIntro, indiNotes.SafeNameForward);
                 p.Append(intro, false, introFormatting);
                 string[] paras = s.Split('\n');
                 foreach (string para in paras)
@@ -415,7 +418,7 @@ namespace Ged2Reg.Model
                     if (child.ChildEntryEmitted) 
                         continue;
                     child.ChildEntryEmitted = true;
-                    EmitChildEntry(doc, gen + genNbrIncr, child, generationNumberFormatting);
+                    EmitChildEntry(doc, gen + genNbrIncr, child);
                 }
             }
         }
@@ -426,11 +429,18 @@ namespace Ged2Reg.Model
             IWpdParagraph p = doc.InsertParagraph(); // NB insert empty "" para with a styleid DOES NOT WORK
             p.StyleName = _styleMap[StyleSlots.KidsIntro].CharacterStyleName;
             p.Append(((numberToList > 1) ? "Children" : "Child"));
-            p.Append($" of {(family.Husband?.Individual?.SafeNameForward) ?? "unknown"}");
-            p.Append($" and {(family.Wife?.Individual?.SafeNameForward) ?? "unknown"}:");
+            //p.Append($" of {(family.Husband?.Individual?.SafeNameForward) ?? "unknown"}");
+            p.Append($" of {(family.Husband?.Individual?.SafeGivenName) ?? "unknown"}");
+            p.Append($"{_currentGeneration}", false, _generationNumberFormatting);
+            //p.Append($" and {(family.Wife?.Individual?.SafeNameForward) ?? "unknown"}:");
+            string s = family.ExtendedWifeName();
+            if (!string.IsNullOrEmpty(s))
+                p.Append($" and {s}:");
+            else
+                p.Append($" {(family.Husband?.Individual?.SafeSurname) ?? "unknown"}");
         }
 
-        private void EmitChildEntry(IWpdDocument doc, int g, ReportEntry child, Formatting generationNumberFormatting)
+        private void EmitChildEntry(IWpdDocument doc, int g, ReportEntry child)
         {
             IWpdParagraph p;
             p = doc.InsertParagraph();
@@ -452,7 +462,7 @@ namespace Ged2Reg.Model
                 p.Append(child.Individual.SafeGivenName, false, _childNameFormatting);
                 bool dropNbr = _suppressGenNumbers || g < 1 || (_ancestryReport && child.AssignedMainNumber < 1);
                 if (!dropNbr)
-                    p.Append($"{g}", false, generationNumberFormatting);
+                    p.Append($"{g}", false, _generationNumberFormatting);
                 if (!string.IsNullOrEmpty(child.Individual.SafeSurname))
                     p.Append($" {child.Individual.SafeSurname}", false, _childNameFormatting);
             }
@@ -533,11 +543,11 @@ namespace Ged2Reg.Model
                 for (int i = 0; i < re.SafeFamilies.Count; i++)
                 {
                     GedcomIndividual spouze = re.SafeFamilies[i].Family.SpouseOf(re.Individual);
-                    string s = $"{conn}{mnbr} {spouze?.NameForward}";
+                    string s = $"{conn}{mnbr} {spouze?.SafeNameForward??GedcomIndividual.UnknownName}";
                     p.Append(s);
                     ConditionallyEmitNameIndexEntry(_c.Model.Doc, p, spouze);
                     conn = ", ";
-                    mnbr = $" {_wordsForNumbers[i + 2]}";
+                    mnbr = $"{_wordsForNumbers[i + 2]}";
                 }
 
                 p.Append(".");
@@ -568,10 +578,11 @@ namespace Ged2Reg.Model
             // and we can detect and optimize out consecutive repeats of the same citation
             // NB this list is ORDERED by the appearance of the cited facts
             CitationProposals cp = new CitationProposals();
+            bool gotBapt = false;
             if (doCite)
             {
                 cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(TagCode.BIRT)));
-                cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(TagCode.BAPM)));
+                gotBapt = cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(re.Individual.BaptismTagCode)));
                 cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(TagCode.DEAT)));
                 cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(TagCode.BURI)));
                 for (int mnbr = 0; mnbr < re.SafeFamilies.Count; mnbr++)
@@ -590,14 +601,14 @@ namespace Ged2Reg.Model
                 string conjunction = " ";
                 if (re.ChildhoodFamily.Husband != null)
                 {
-                    p.Append(re.ChildhoodFamily.Husband.Individual.NameForward);
+                    p.Append(re.ChildhoodFamily.Husband.Individual.SafeNameForward);
                     conjunction = " and ";
                 }
 
                 if (re.ChildhoodFamily.Wife != null)
                 {
                     p.Append(conjunction);
-                    p.Append(re.ChildhoodFamily.Wife.Individual.NameForward);
+                    p.Append(re.ChildhoodFamily.Wife.Individual.SafeNameForward);
                 }
 
                 //p.Append(",");
@@ -684,7 +695,7 @@ namespace Ged2Reg.Model
                 p.Append(p2_bapt.EventString);
                 if (doCite)
                 {
-                    EventCitations ec = chosenCitations[TagCode.BAPM.ToString()];
+                    EventCitations ec = chosenCitations[re.Individual.BaptismTagCode.ToString()];
                     if (ec?.SelectedItem != null)
                     {
                         MyReportStats.Citations++;
@@ -866,7 +877,7 @@ namespace Ged2Reg.Model
             // to reduce the number of cites and get the minimal case... b&d same source... down to one
             // note that birt/bapm and deat/buri are natural synonyms, and 
             // we are listing only one from each pair here, so, we have at most two citations
-            EventCitations ec_bb = spouse.Individual.CitableEvents?.Find(spouse.Individual.EventTag(p1_birt == null ? TagCode.BAPM : TagCode.BIRT));
+            EventCitations ec_bb = spouse.Individual.CitableEvents?.Find(spouse.Individual.EventTag(p1_birt == null ? spouse.Individual.BaptismTagCode : TagCode.BIRT));
             EventCitations ec_di = spouse.Individual.CitableEvents?.Find(spouse.Individual.EventTag(p3_deat == null ? TagCode.BURI : TagCode.DEAT));
 
             // and if they are the same, drop the earlier one
@@ -899,7 +910,14 @@ namespace Ged2Reg.Model
                 string conj = null;
                 if (hasPere)
                 {
-                    p.Append($" {spousesChildhoodFamily.Husband.SafeNameForward}");
+                    if (hasMere)
+                    {
+                        p.Append($" {spousesChildhoodFamily.Husband.SafeGivenName}");
+                    }
+                    else
+                    {
+                        p.Append($" {spousesChildhoodFamily.Husband.SafeNameForward}");
+                    }
                     MyReportStats.SpouseParents++;
                     if (!spousesChildhoodFamily.Husband.PresumedDeceased)
                         MyReportStats.MaybeLiving++;
@@ -912,7 +930,7 @@ namespace Ged2Reg.Model
                 }
                 if (hasMere)
                 {
-                    p.Append($" {conj}{spousesChildhoodFamily.Wife.SafeNameForward}");
+                    p.Append($" {conj}{spousesChildhoodFamily.ExtendedWifeName()}");
                     MyReportStats.SpouseParents++;
                     if (!spousesChildhoodFamily.Wife.PresumedDeceased)
                         MyReportStats.MaybeLiving++;
@@ -1003,7 +1021,8 @@ namespace Ged2Reg.Model
             if (!string.IsNullOrEmpty(place))
             {
                 FormattedPlaceName fpn = _placeFormatter.Reformat(place);
-                sb.Append(" in ").Append(fpn.PreferredName);
+                
+                sb.Append($" {fpn.Preposition} ").Append(fpn.PreferredName);
                 fe.PlaceIndexIndex = sb.Length;
                 fe.PlaceIndexEntry = fpn.IndexEntry;
             }

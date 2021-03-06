@@ -60,6 +60,7 @@ namespace Ged2Reg.Model
             TagCode.DEAT,
             TagCode.MARR,
             TagCode.BAPM,
+            TagCode.CHR,
             TagCode.BURI,
         };
         private Dictionary<string, List<CitationView>> _personCitations = new Dictionary<string, List<CitationView>>();

@@ -14,6 +14,8 @@ namespace Ged2Reg.Model
 
         public static bool ConsiderLivingStatus = false;
 
+        public static string UnknownName => ReportContext.Instance.Settings.UnknownInReport;
+
         private static G2RSettings _settings;
         internal static G2RSettings Settings => _settings ?? (_settings = ReportContext.Instance.Settings);
 
@@ -91,6 +93,7 @@ namespace Ged2Reg.Model
         public string BurialDescription { get; set; }
         public string Baptized { get; set; }
         public string PlaceBaptized { get; set; }
+        public TagCode BaptismTagCode { get; set; } = TagCode.BAPM;
         public string BaptizedDescription { get; set; }
 
         #region transients
@@ -221,6 +224,7 @@ namespace Ged2Reg.Model
                 Baptized = tag?.GetChild(TagCode.DATE)?.Content;
                 PlaceBaptized = tag?.GetChild(TagCode.PLAC)?.Content;
                 BaptizedDescription = tag?.FullText();
+                BaptismTagCode = tag?.Code ?? TagCode.BAPM; 
             }
         }
 

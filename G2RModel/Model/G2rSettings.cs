@@ -1160,6 +1160,80 @@ namespace Ged2Reg.Model
                 InitPageMetrics();
         }
 
+        public void ConformToRegister()
+        {
+            BaptismOption = BaptismOptions.Always;
+            IncludeBurial = true;
+            OmitBurialDate = false;
+            ReducePlaceNames = true;
+            InjectCounty = true;
+            DropUsa = true;
+            FullPlaceOncePerGen = false;
+            ItalicsNamesInLineageList = true;
+
+            ReduceContinuedChildren = false;
+            MinimizeContinuedChildren = false;
+            StandardBriefContinued = true;
+
+            HandleUnknownNames = true;
+            UnknownInReport = "_____";
+
+            SuppressGenNbrs = true;
+            AllFamilies = false;
+            AllowMultipleAppearances = true;
+            Focus = false;
+            OmitBackRefs = true;
+
+            OmitCitesOnContinued = true;
+        }
+        public string ReportConformanceSettings()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine();
+            sb.AppendLine("....Settings ('Register' conformance)");
+
+            Append(sb, $"Report type", AncestorsReport ? "Ancestors" : "Descendants");
+            Append(sb, "Include baptism", this.BaptismOption.ToString());
+            Append(sb, "Include burial events", this.IncludeBurial);
+            Append(sb, "Omit burial date", this.OmitBurialDate);
+            Append(sb, "Reduce place names", this.ReducePlaceNames);
+            Append(sb, "Full place name/gen", this.FullPlaceOncePerGen);
+            Append(sb, "Inject county", this.InjectCounty);
+            Append(sb, "Drop USA", this.DropUsa);
+            Append(sb, "Italics Names In Lineage List", this.ItalicsNamesInLineageList);
+
+            Append(sb, "Reduce continued", this.ReduceContinuedChildren);
+            Append(sb, "Minimize continued", this.MinimizeContinuedChildren);
+            Append(sb, "Brief (standard) continued", this.StandardBriefContinued);
+
+            Append(sb, "Reformat unknowns", this.HandleUnknownNames);
+            Append(sb, "Unknown name as output", this.UnknownInReport);
+
+            sb.AppendLine();
+            sb.AppendLine("....Settings ('standard' Ancestry report)");
+
+            Append(sb, "Suppress Gen Nbrs", this.SuppressGenNbrs);
+            Append(sb, "All Families", this.AllFamilies);
+            Append(sb, "Allow Multiple Appearances", this.AllowMultipleAppearances);
+            Append(sb, "Focus", this.Focus);
+            Append(sb, "Omit Back Refs", this.OmitBackRefs);
+            Append(sb, "Placeholders for unknowns", "pending");
+
+            sb.AppendLine();
+            sb.AppendLine("....Settings (citation conformance) (incomplete)");
+            Append(sb, "Omit On Continued", this.OmitCitesOnContinued);
+            Append(sb, "Cite each fact separately", "pending");
+            Append(sb, "Compound cites at para end", "pending");
+
+            sb.AppendLine();
+            sb.AppendLine("....Settings (index conformance)");
+            Append(sb, "Also index married names", "pending");
+
+            return sb.ToString();
+        }
+
+
         public string ReportKeySettings()
         {
             StringBuilder sb = new StringBuilder();
@@ -1298,6 +1372,7 @@ namespace Ged2Reg.Model
         private List<NamedValue<CitationPartName>> _cpcs;
         public List<NamedValue<CitationPartName>> CitationPartChoices => _cpcs ?? (_cpcs = BuildCitePartChoices());
         #endregion
+
     }
 
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Ged2Reg.Model;
 
 namespace G2RModel.Model
@@ -10,6 +11,36 @@ namespace G2RModel.Model
         public ListOfReportEntry Children { get; set; }
         public GedcomFamily Family { get; set; }
         public ReportEntry[] Couple => new[] {Husband, Wife};
+
+        public string ExtendedWifeName(string placeholder = "_____")
+        {
+            if (Wife == null)
+            {
+                return null;
+            }
+            
+            StringBuilder sb = new StringBuilder();
+
+            // start with given name and maiden name
+            sb.Append(Wife.Individual.SafeGivenName);
+            sb.Append(" (").Append(Wife.Individual.SafeSurname).Append(')');
+
+            // add the surnames of all prior marriages
+            int ix = Wife.Families.IndexOf(Family);
+            for (int i = 0; i < ix; i++)
+            {
+                sb.Append(" (").Append(SafeSurname(Wife?.Individual?.Families[i].Husband?.SafeSurname, placeholder)).Append(')');
+            }
+
+            sb.Append(' ').Append(SafeSurname(Husband?.Individual?.SafeSurname, placeholder));
+
+            return sb.ToString();
+        }
+
+        private string SafeSurname(string s, string placeholder)
+        {
+            return !string.IsNullOrEmpty(s) ? s : placeholder;
+        }
 
         public bool IsIncluded { get; set; }
 

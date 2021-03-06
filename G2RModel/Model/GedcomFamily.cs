@@ -173,6 +173,34 @@ namespace Ged2Reg.Model
         {
             return indi == Husband ? Wife : Husband;
         }
+        public string ExtendedWifeName(string placeholder = "_____")
+        {
+            if (Wife == null)
+            {
+                return null;
+            }
+
+            StringBuilder sb = new StringBuilder();
+
+            // start with given name and maiden name
+            sb.Append(Wife.SafeGivenName);
+            sb.Append(" (").Append(Wife.SafeSurname).Append(')');
+
+            // add the surnames of all prior marriages
+            int ix = Wife.Families.IndexOf(this);
+            for (int i = 0; i < ix; i++)
+            {
+                sb.Append(" (").Append(SafeName(Wife?.Families[i].Husband?.SafeSurname, placeholder)).Append(')');
+            }
+
+            sb.Append(' ').Append(SafeName(Husband?.SafeSurname, placeholder));
+
+            return sb.ToString();
+        }
+        private string SafeName(string s, string placeholder)
+        {
+            return !string.IsNullOrEmpty(s) ? s : placeholder;
+        }
 
     }
 }

@@ -38,6 +38,7 @@ namespace Ged2Reg
         TabPage tpAncestry;
         Label lbAncestry;
         private Button pbListAncestors;
+        private Button pbConform;
         private ComboBox cbAncestorChoices;
         private Button pbPickFocus;
         private Button pbTest;
@@ -74,6 +75,10 @@ namespace Ged2Reg
                 "Brief (standard) output for continued",
                 nameof(G2RSettings.StandardBriefContinued));
             kbStdBriefContd.Top += 6;  // sigh.  not sure why.
+
+            yPos = label45.Bottom + 36;
+            pbConform = AddButton(tpContentOptions, "Conform to 'Register'", 180, label45.Left);
+            pbConform.Click += pbConform_Click;
 
             // extra copy of this setting, not needed
             kbAncestorsReport.Visible = label65.Visible = false;
@@ -714,6 +719,21 @@ namespace Ged2Reg
                 MessageBox.Show($"Exception:{ex}");
             }
         }
+        private void pbConform_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Log("Conforming settings to 'Register' conventions...");
+                _rrm.Settings.ConformToRegister();
+                Log(_rrm.Settings.ReportConformanceSettings(), false);
+                Log("...best conforming settings applied, see Log for details");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception:{ex}");
+            }
+        }
+
 
         private void pbListAncestors_Click(object sender, EventArgs e)
         {
