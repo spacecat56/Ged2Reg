@@ -91,7 +91,9 @@ namespace DocxAdapterLib
             FootnoteEndnoteType f = CreateNoteInstance();
             OoxParagraph footPara = new OoxParagraph(f.AppendChild(new Paragraph()));
             footPara.StyleName = NoteTextStyle;
-            footPara.Append(BuildNoteRefMark());
+            //footPara.Append(BuildNoteRefMark());
+            // do this instead, to get the number at te foot in 10pt instead of in superscript
+            footPara.Append(new Run(new FootnoteReferenceMark()));
             string space = (Fragments[0].Content ?? "").StartsWith(" ") ? "" : " ";
             foreach (WpdNoteFragment fragment in Fragments)
             {
@@ -129,6 +131,7 @@ namespace DocxAdapterLib
             IsApplied = true;
 
             FootnoteEndnoteReferenceType footnoteReference = CreateNoteReference();
+            // todo: don't I have a Style for this already?  And, isn't that better?
             VerticalTextAlignment footRefFormat = new VerticalTextAlignment { Val = VerticalPositionValues.Superscript };
             Run footnoteReferenceRun = new Run() { RunProperties = new RunProperties(footRefFormat) };
             if (Brackets != null)
