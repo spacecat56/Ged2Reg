@@ -175,7 +175,7 @@ namespace Ged2Reg.Model
         }
         public string ExtendedWifeName(string placeholder = "_____")
         {
-            if (Wife == null)
+            if (Wife?.Families == null)
             {
                 return null;
             }

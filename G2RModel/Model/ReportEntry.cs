@@ -128,6 +128,12 @@ namespace G2RModel.Model
 
         public bool ChildEntryEmitted { get; set; }
 
+        public bool IsRepeat => AssignedMainNumber > 0 &&
+                                AssignedMainNumber > FirstAppearance;
+
+        public BigInteger FirstAppearance => (Individual.FirstReportEntry?.AssignedMainNumber 
+                                              ?? AssignedMainNumber);
+
         public string GetNumber(bool withGeneration) => withGeneration
             ? $"{Generation:00}-{AssignedMainNumber}"
             : $"{AssignedMainNumber}";

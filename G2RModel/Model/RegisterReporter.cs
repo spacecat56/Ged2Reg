@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using G2RModel.Model;
@@ -50,13 +51,19 @@ namespace Ged2Reg.Model
         private bool _standardBriefContdChild;
 
         private bool _ancestryReport;
-        private bool _suppressGenNumbers;
-        private bool _includeGenerationNumbers;
-        private bool _allFamilies;
+        private bool _suppressGenSuperscripts;
         private bool _allowMultiple;
+        private bool _generationNumberPrefixes;
+        private bool _placeholders;
+        private string _unknownName;
+
+        private bool _includeBackRefs;
+        private bool _includeSibsOfBackrefs;
+
+        private bool _allFamilies;
         private bool _omitFocusSpouses;
         private int _minFromGen;
-        private bool _omitBackRefs;
+        private bool _omitBackRefsLater;
         private int _maxLivingGenerations;
 
 
@@ -74,14 +81,21 @@ namespace Ged2Reg.Model
             _reduceChild = _c.Settings.ReduceContinuedChildren;
             _listBapt = _c.Settings.IncludeBaptism;
             _listBuri = _c.Settings.IncludeBurial;
+
             _ancestryReport = _c.Settings.AncestorsReport;
-            _suppressGenNumbers = _c.Settings.SuppressGenNbrs;
-            _includeGenerationNumbers = _c.Settings.GenerationPrefix && _ancestryReport;
-            _allFamilies = !_c.Settings.AncestorsReport || _c.Settings.AllFamilies;
+            _suppressGenSuperscripts = _c.Settings.SuppressGenNbrs;
+            _generationNumberPrefixes = _c.Settings.GenerationPrefix && _ancestryReport;
             _allowMultiple = _c.Settings.AllowMultipleAppearances;
+            _placeholders = _ancestryReport && _c.Settings.Placeholders;
+            _unknownName = _c.Settings.UnknownInReport;
+
+            _includeBackRefs = _ancestryReport && _c.Settings.IncludeBackRefs;
+            _includeSibsOfBackrefs = _includeBackRefs && _c.Settings.IncludeSiblings;
+
+            _allFamilies = !_c.Settings.AncestorsReport; // || _c.Settings.AllFamilies;
             _omitFocusSpouses = _c.Settings.OmitFocusSpouses;
             _minFromGen = _c.Settings.MinimizeFromGeneration;
-            _omitBackRefs = _c.Settings.OmitBackRefs && _ancestryReport;
+            _omitBackRefsLater = _c.Settings.OmitBackRefsLater && _ancestryReport;
             _maxLivingGenerations = _c.Settings.AssumedMaxLivingGenerations;
 
             
@@ -210,6 +224,9 @@ namespace Ged2Reg.Model
             }.Init();
 
             _currentGeneration = 0;
+            BigInteger genSize = new BigInteger(1);
+            //BigInteger multipli = 2;
+            BigInteger expectedNext = 1;
             foreach (ListOfReportEntry generation in Generations)
             {
                 _currentGeneration++;
@@ -217,9 +234,24 @@ namespace Ged2Reg.Model
                 Debug.WriteLine($"Generation {_currentGeneration} begins {DateTime.Now:G}");
                 if (_generationalReducePlaceNames)
                     _placeFormatter.Reset();
+                
                 if ((generation?.Count??0)==0)
-                    continue;
-                Model.PostProgress($"processing generation {_currentGeneration}");
+                    break;
+
+                string describe;
+                if (_ancestryReport)
+                {
+                    //double genPct = (double) (generation.Count / genSize);
+                    describe =  _currentGeneration < 31 
+                        ? $"{generation.Count} of {genSize} known ({generation.Count / (double)genSize:P1})"
+                        : $"{generation.Count} of {genSize} known";
+                }
+                else
+                {
+                    describe = $"{generation.Count} known";
+                }
+
+                Model.PostProgress($"processing generation {_currentGeneration} ({describe})");
 
                 if (_c.Settings.GenerationHeadings)
                     EmitDivider(doc, genDivider, genDivider3Plus);
@@ -228,8 +260,26 @@ namespace Ged2Reg.Model
                 {
                     if (_standardReducePlaceNames)
                         _placeFormatter.Reset();
-                    EmitMainPerson(doc, individual, _currentGeneration);
+
+                    if (_ancestryReport && _placeholders && (_minFromGen == 0 || _currentGeneration < _minFromGen))
+                    {
+                        if (individual.AssignedMainNumber != expectedNext)
+                        {
+                            EmitPlaceholder(doc, expectedNext, individual.AssignedMainNumber - 1);
+                        }
+                    }
+
+                    if (_ancestryReport && _allowMultiple && individual.IsRepeat)
+                        EmitRepeat(doc, individual, _currentGeneration);
+                    else
+                        EmitMainPerson(doc, individual, _currentGeneration);
+                    
+                    if (_ancestryReport && _placeholders)
+                        expectedNext = individual.AssignedMainNumber + 1;
                 }
+
+                if (_ancestryReport)  
+                    genSize *= 2; 
             }
 
             var didIx = ConditionallyEmitIndexField(doc, _c.Settings.NameIndexSettings);
@@ -306,6 +356,55 @@ namespace Ged2Reg.Model
             return ixf;
         }
 
+        private void EmitPlaceholder(IWpdDocument doc, BigInteger frum, BigInteger thru, int? g = null)
+        {
+            int gen = g ?? _currentGeneration;
+            IWpdParagraph p = doc.InsertParagraph();
+            p.StyleName = _styleMap[StyleSlots.MainPersonText].CharacterStyleName;
+            string slot = Prepare(frum, gen, _generationNumberPrefixes);
+            p.Append($"{slot}");
+            if (thru > frum)
+                p.Append($" - {Prepare(thru, gen, _generationNumberPrefixes)}");
+            p.Append($". {_unknownName} {_unknownName}.", false, _styleMap[StyleSlots.MainPerson]);
+        }
+
+        private void EmitRepeat(IWpdDocument doc, ReportEntry individual, int gen)
+        {
+            IWpdParagraph p = doc.InsertParagraph();
+            EmitMainPersonName(doc, p, individual, gen);
+            p.Append($". See {Prepare(individual.FirstAppearance, gen, _generationNumberPrefixes)}.");
+
+            // this allows for back references... which are distinct, even when the indi repeats
+            ConditionallyEmitChildren(doc, individual, gen, -1);
+        }
+
+        private void EmitMainPersonName(IWpdDocument doc, IWpdParagraph p, ReportEntry indi, int gen)
+        {
+            p.StyleName = _styleMap[StyleSlots.MainPersonText].CharacterStyleName;
+            p.Append($"{indi.GetNumber(_generationNumberPrefixes)}. ");
+            p.Append(indi.Individual.SafeGivenName, false, _styleMap[StyleSlots.MainPerson]);
+            if (!_suppressGenSuperscripts)
+                p.Append($"{gen}", false, _generationNumberFormatting);
+            if (!string.IsNullOrEmpty(indi.Individual.SafeSurname))
+                p.Append($" {indi.Individual.SafeSurname}", false, _styleMap[StyleSlots.MainPerson]);
+            ConditionallyEmitNameIndexEntry(doc, p, indi.Individual);
+            if (_c.Settings.DebuggingOutput)
+            {
+                p.Append($" [{indi.NaturalId}]");
+            }
+
+            MyReportStats.MainPerson++;
+            if (!indi.Individual.PresumedDeceased)
+                MyReportStats.MaybeLiving++;
+        }
+
+        private string Prepare(BigInteger bi, int gen, bool prefix)
+        {
+            return prefix
+                ? $"{gen:00}-{bi}"
+                : $"{bi}";
+        }
+
         private void EmitMainPerson(IWpdDocument doc, ReportEntry re, int gen)
         {
             if (_omitFocusSpouses && re.OutOfFocus) 
@@ -321,35 +420,20 @@ namespace Ged2Reg.Model
 
             // begin main person content
             IWpdParagraph p = doc.InsertParagraph();
-            p.StyleName = _styleMap[StyleSlots.MainPersonText].CharacterStyleName;
-            p.Append($"{re.GetNumber(_includeGenerationNumbers)}. ");
-            p.Append(re.Individual.SafeGivenName, false, _styleMap[StyleSlots.MainPerson]);
-            if (!_suppressGenNumbers)
-                p.Append($"{gen}", false, _generationNumberFormatting);
-            if (!string.IsNullOrEmpty(re.Individual.SafeSurname))
-                p.Append($" {re.Individual.SafeSurname}", false, _styleMap[StyleSlots.MainPerson]);
-            ConditionallyEmitNameIndexEntry(doc, p, re.Individual);
-            if (_c.Settings.DebuggingOutput)
-            {
-                p.Append($" [{re.NaturalId}]");
-            }
+            EmitMainPersonName(doc, p, re, gen);
 
-            MyReportStats.MainPerson++;
-            if (!re.Individual.PresumedDeceased)
-                MyReportStats.MaybeLiving++;
-            
             if (!_ancestryReport)
                 re.Ancestry?.Emit(p, lineageListNameFormatting, _styleMap[StyleSlots.GenerationNumber]);
 
             List<GedcomIndividual> noteworthy = AppendPersonDetails(p, re); //todo: ??
 
-            string tinue = re.GetContinuation(_includeGenerationNumbers);
+            string tinue = re.GetContinuation(_generationNumberPrefixes);
             if (tinue != null)
                 p.Append(" ").Append(tinue);
 
             if (timeToMinimize)
             {
-                if (_omitBackRefs)
+                if (_omitBackRefsLater || !_includeBackRefs)
                     return;
                 foreach (ReportFamilyEntry family in re.FindMainNumberedFamilies())
                 {
@@ -400,13 +484,18 @@ namespace Ged2Reg.Model
                 lastLineWasDivider = true;
             }
 
-            if (_ancestryReport && !re.EmitChildrenAfter)
+            ConditionallyEmitChildren(doc, re, gen, genNbrIncr);
+        }
+
+        private void ConditionallyEmitChildren(IWpdDocument doc, ReportEntry indi, int gen, int genNbrIncr)
+        {
+            if (_ancestryReport && (!indi.EmitChildrenAfter || !_includeBackRefs))
                 return;
 
             // list the children
-            foreach (ReportFamilyEntry family in re.FamilyEntries)  // todo:FamiliesToReport not populated?
+            foreach (ReportFamilyEntry family in indi.FamilyEntries) // todo:FamiliesToReport not populated?
             {
-                if ((family.Children?.Count??0) == 0)
+                if ((family.Children?.Count ?? 0) == 0)
                     continue;
 
                 if (!_allFamilies && !family.IsIncluded)
@@ -415,12 +504,21 @@ namespace Ged2Reg.Model
                 EmitFamilyIntroLine(doc, numberToList, family);
                 foreach (ReportEntry child in family.Children)
                 {
-                    if (child.ChildEntryEmitted) 
+                    if (child.ChildEntryEmitted)
+                        continue;
+                    if (_ancestryReport && !_includeSibsOfBackrefs && !Follows(child, indi))
                         continue;
                     child.ChildEntryEmitted = true;
                     EmitChildEntry(doc, gen + genNbrIncr, child);
                 }
             }
+        }
+
+        private bool Follows(ReportEntry child, ReportEntry parent)
+        {
+            var fatherAtThisPoint = child.AssignedMainNumber * 2;
+            return parent.AssignedMainNumber == fatherAtThisPoint
+                   || parent.AssignedMainNumber == fatherAtThisPoint + 1;
         }
 
         private void EmitFamilyIntroLine(IWpdDocument doc, int numberToList, ReportFamilyEntry family)
@@ -431,7 +529,8 @@ namespace Ged2Reg.Model
             p.Append(((numberToList > 1) ? "Children" : "Child"));
             //p.Append($" of {(family.Husband?.Individual?.SafeNameForward) ?? "unknown"}");
             p.Append($" of {(family.Husband?.Individual?.SafeGivenName) ?? "unknown"}");
-            p.Append($"{_currentGeneration}", false, _generationNumberFormatting);
+            if (!_suppressGenSuperscripts)
+                p.Append($"{_currentGeneration}", false, _generationNumberFormatting);
             //p.Append($" and {(family.Wife?.Individual?.SafeNameForward) ?? "unknown"}:");
             string s = family.ExtendedWifeName();
             if (!string.IsNullOrEmpty(s))
@@ -447,7 +546,7 @@ namespace Ged2Reg.Model
             p.StyleName = _styleMap[_ancestryReport ? StyleSlots.KidsAlt : StyleSlots.Kids].CharacterStyleName;
             char sp = child.AssignedMainNumber > 9999999 ? ' ' : '\t';
             string kidNbr = child.AssignedMainNumber > 0
-                ? $"{child.GetNumber(_includeGenerationNumbers)}.\t{child.ChildNumberRoman}.{sp}"
+                ? $"{child.GetNumber(_generationNumberPrefixes)}.\t{child.ChildNumberRoman}.{sp}"
                 : $"\t{child.ChildNumberRoman}.\t";
             p.Append(kidNbr);
             string childNameStyle = _styleMap[StyleSlots.ChildName].CharacterStyleName;
@@ -460,7 +559,7 @@ namespace Ged2Reg.Model
             {
                 // include the generation number
                 p.Append(child.Individual.SafeGivenName, false, _childNameFormatting);
-                bool dropNbr = _suppressGenNumbers || g < 1 || (_ancestryReport && child.AssignedMainNumber < 1);
+                bool dropNbr = _suppressGenSuperscripts || g < 1 || (_ancestryReport && child.AssignedMainNumber < 1);
                 if (!dropNbr)
                     p.Append($"{g}", false, _generationNumberFormatting);
                 if (!string.IsNullOrEmpty(child.Individual.SafeSurname))

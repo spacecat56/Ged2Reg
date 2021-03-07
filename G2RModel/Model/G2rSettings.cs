@@ -470,9 +470,11 @@ namespace Ged2Reg.Model
         #endregion
 
         #region persistent/bindable properties
-        private bool _allFamilies = true;
         private bool _suppressGenNbrs;
         private bool _gernerationPrefix;
+        private bool _placeholders;
+        private bool _backRefs;
+        private bool _includeSibs;
         private int _minFromGen;
         private bool _generationHeadings;
         private bool _allowMultiple = true;
@@ -485,8 +487,9 @@ namespace Ged2Reg.Model
         private string _focusId;
         private bool _omitFocusSpouses;
         private bool _findDuplicates;
-        private bool _omitBackrefs;
+        private bool _omitBackrefsLater;
 
+        private bool _allFamilies = true;
         #region AncestorReportOptions
         [DataMember]
         public bool AncestorsReport
@@ -494,19 +497,43 @@ namespace Ged2Reg.Model
             get { return _ancestorsReport; }
             set { _ancestorsReport = value; OnPropertyChanged(); }
         }
+
+        [DataMember]
+        public bool Placeholders
+        {
+            get { return _placeholders; }
+            set { _placeholders = value; OnPropertyChanged(); }
+        }
+
         [DataMember]
         public bool SuppressGenNbrs
         {
             get { return _suppressGenNbrs; }
             set { _suppressGenNbrs = value; OnPropertyChanged(); }
         }
+
         [DataMember]
+        public bool IncludeBackRefs
+        {
+            get { return _backRefs; }
+            set { _backRefs = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public bool IncludeSiblings
+        {
+            get { return _includeSibs; }
+            set { _includeSibs = value; OnPropertyChanged(); }
+        }
+
+        [DataMember][Obsolete]
          public bool AllFamilies
         {
             get { return _allFamilies; }
             set { _allFamilies = value; OnPropertyChanged(); }
         }
-         [DataMember]
+
+        [DataMember]
         public bool GenerationPrefix
         {
             get { return _gernerationPrefix; }
@@ -570,10 +597,10 @@ namespace Ged2Reg.Model
         }
 
         [DataMember]
-        public bool OmitBackRefs
+        public bool OmitBackRefsLater
         {
-            get { return _omitBackrefs; }
-            set { _omitBackrefs = value; OnPropertyChanged(); }
+            get { return _omitBackrefsLater; }
+            set { _omitBackrefsLater = value; OnPropertyChanged(); }
         }
 
         #endregion
@@ -1160,8 +1187,9 @@ namespace Ged2Reg.Model
                 InitPageMetrics();
         }
 
-        public void ConformToRegister()
+        public void ConformToRegister(bool registerReport = true)
         {
+            AncestorsReport = !registerReport;
             BaptismOption = BaptismOptions.Always;
             IncludeBurial = true;
             OmitBurialDate = false;
@@ -1179,12 +1207,24 @@ namespace Ged2Reg.Model
             UnknownInReport = "_____";
 
             SuppressGenNbrs = true;
-            AllFamilies = false;
+            AllFamilies = false; // option is defunct / not visible anyway
             AllowMultipleAppearances = true;
+            Placeholders = true;
+            IncludeBackRefs = false;
+            IncludeSiblings = false;
+            GenerationPrefix = false;
             Focus = false;
-            OmitBackRefs = true;
+            OmitFocusSpouses = false;
+            ContinuePastFocus = false;
+            OmitBackRefsLater = false;
+            MinimizeFromGeneration = 0;
+            GenerationHeadings = false;
 
             OmitCitesOnContinued = true;
+            Brackets = false;
+
+            MainPersonNotes = false;
+            SpousesNotes = false;
         }
         public string ReportConformanceSettings()
         {
@@ -1193,7 +1233,7 @@ namespace Ged2Reg.Model
             sb.AppendLine();
             sb.AppendLine("....Settings ('Register' conformance)");
 
-            Append(sb, $"Report type", AncestorsReport ? "Ancestors" : "Descendants");
+            Append(sb, $"Report type", $"Descendants{(AncestorsReport ? ' ' : '*')}");
             Append(sb, "Include baptism", this.BaptismOption.ToString());
             Append(sb, "Include burial events", this.IncludeBurial);
             Append(sb, "Omit burial date", this.OmitBurialDate);
@@ -1211,24 +1251,32 @@ namespace Ged2Reg.Model
             Append(sb, "Unknown name as output", this.UnknownInReport);
 
             sb.AppendLine();
-            sb.AppendLine("....Settings ('standard' Ancestry report)");
-
-            Append(sb, "Suppress Gen Nbrs", this.SuppressGenNbrs);
-            Append(sb, "All Families", this.AllFamilies);
+            sb.AppendLine("....Settings ('Ancestry' report conformance)");
+            Append(sb, $"Report type", $"Ancestors{(AncestorsReport ? '*' : ' ')}" );
+            Append(sb, "Suppress gen. superscripts", this.SuppressGenNbrs);
+            //Append(sb, "All Families", this.AllFamilies);
             Append(sb, "Allow Multiple Appearances", this.AllowMultipleAppearances);
+            Append(sb, "Placeholders for unknowns", Placeholders);
+            Append(sb, "Include back references", this.IncludeBackRefs);
+            //Append(sb, "Also include siblings", this.IncludeSiblings);
             Append(sb, "Focus", this.Focus);
-            Append(sb, "Omit Back Refs", this.OmitBackRefs);
-            Append(sb, "Placeholders for unknowns", "pending");
+            //Append(sb, "Drop Back Refs", this.OmitBackRefsLater);
 
             sb.AppendLine();
             sb.AppendLine("....Settings (citation conformance) (incomplete)");
             Append(sb, "Omit On Continued", this.OmitCitesOnContinued);
+            Append(sb, "Brackets on footnote nbrs", this.Brackets);
             Append(sb, "Cite each fact separately", "pending");
             Append(sb, "Compound cites at para end", "pending");
 
             sb.AppendLine();
             sb.AppendLine("....Settings (index conformance)");
             Append(sb, "Also index married names", "pending");
+
+            sb.AppendLine();
+            sb.AppendLine("....Settings (notes conformance)");
+            Append(sb, "Notes / main persons", this.MainPersonNotes);
+            Append(sb, "Notes / spouses", this.SpousesNotes);
 
             return sb.ToString();
         }
@@ -1246,8 +1294,12 @@ namespace Ged2Reg.Model
             Append(sb, $"Report type", AncestorsReport?"Ancestors" : "Descendants");
             if (AncestorsReport)
             {
-                Append(sb, "All families", this.AllFamilies);
-                Append(sb, "Allow multiple appearances", this.AllFamilies);
+                //Append(sb, "All families", this.AllFamilies);
+                Append(sb, "Allow multiple appearances", this.AllowMultipleAppearances);
+                Append(sb, "Suppress gen. superscripts", this.SuppressGenNbrs);
+                Append(sb, "Placeholders for unknowns", Placeholders);
+                Append(sb, "Include back references", this.IncludeBackRefs);
+                Append(sb, "Also include siblings", this.IncludeSiblings);
                 Append(sb, "Minimize from generation", this.MinimizeFromGeneration);
                 Append(sb, "Focused on one ancestor", this.Focus);
                 if (Focus)
@@ -1255,7 +1307,7 @@ namespace Ged2Reg.Model
                     Append(sb, "Selected ancestor", this.FocusName);
                     Append(sb, "Continue past focus", this.ContinuePastFocus);
                     Append(sb, "Omit focus spouses", this.OmitFocusSpouses);
-                    Append(sb, "Omit back-references", this.OmitBackRefs);
+                    Append(sb, "Omit back-references", this.OmitBackRefsLater);
                 }
             }
             Append(sb, "Obscure living", this.ObscureLiving);

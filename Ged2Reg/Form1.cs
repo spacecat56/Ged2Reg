@@ -39,6 +39,7 @@ namespace Ged2Reg
         Label lbAncestry;
         private Button pbListAncestors;
         private Button pbConform;
+        private Button pbConformAncestry;
         private ComboBox cbAncestorChoices;
         private Button pbPickFocus;
         private Button pbTest;
@@ -77,7 +78,7 @@ namespace Ged2Reg
             kbStdBriefContd.Top += 6;  // sigh.  not sure why.
 
             yPos = label45.Bottom + 36;
-            pbConform = AddButton(tpContentOptions, "Conform to 'Register'", 180, label45.Left);
+            pbConform = AddButton(tpContentOptions, "Conform settings", 180, label45.Left);
             pbConform.Click += pbConform_Click;
 
             // extra copy of this setting, not needed
@@ -107,26 +108,40 @@ namespace Ged2Reg
             AddLabel(tpAncestry, "Options unique to Ancestry report:", xOffset: -20);
             yPos += rowStep;
             AddBoundCheckBox(tpAncestry, "Output Ancestors Report", nameof(G2RSettings.AncestorsReport));
-            AddBoundCheckBox(tpAncestry, "Suppress generation superscripts", nameof(G2RSettings.SuppressGenNbrs));
-            AddBoundCheckBox(tpAncestry, "All families of ancestors (non-standard)", nameof(G2RSettings.AllFamilies));
-            AddBoundCheckBox(tpAncestry, "Generation prefix numbers", nameof(G2RSettings.GenerationPrefix));
+            AddBoundCheckBox(tpAncestry, "Omit generation superscripts", nameof(G2RSettings.SuppressGenNbrs));
             AddBoundCheckBox(tpAncestry, "Allow multiple appearances", nameof(G2RSettings.AllowMultipleAppearances));
+            AddBoundCheckBox(tpAncestry, "Placeholders for unknowns", nameof(G2RSettings.Placeholders));
+            yPos += rowStep / 4;
+
+            AddBoundCheckBox(tpAncestry, "Include back references", nameof(G2RSettings.IncludeBackRefs));
+            AddBoundCheckBox(tpAncestry, "    Also list siblings", nameof(G2RSettings.IncludeSiblings));
+
+            //AddBoundCheckBox(tpAncestry, "All families of ancestors (non-standard)", nameof(G2RSettings.AllFamilies));
+            AddBoundCheckBox(tpAncestry, "Generation prefix numbers", nameof(G2RSettings.GenerationPrefix));
             AddBoundCheckBox(tpAncestry, "Focus on one ancestor (see below*)", nameof(G2RSettings.Focus));
             AddBoundCheckBox(tpAncestry, "Omit focus spouse(s)", nameof(G2RSettings.OmitFocusSpouses));
             AddBoundCheckBox(tpAncestry, "Continue past focal ancestor", nameof(G2RSettings.ContinuePastFocus));
             AddBoundCheckBox(tpAncestry, "'Merge' duplicate ancestors", nameof(G2RSettings.FindDuplicates));
             AddBoundTextBox(tpAncestry, "Minimize from generation", nameof(G2RSettings.MinimizeFromGeneration));
             yPos += rowStep / 4;
-            AddBoundCheckBox(tpAncestry, "    Also omit back-references", nameof(G2RSettings.OmitBackRefs));
+            AddBoundCheckBox(tpAncestry, "    Also drop back-references", nameof(G2RSettings.OmitBackRefsLater));
 
-            yPos += rowStep;
+            int yPosLater = yPos + rowStep;
+            int lbPosLater = lbColPos;
+            int kbPosLater = kbColPos;
+            yPos = 32;
+            lbColPos = kbPosLater + 96;
+            kbColPos = lbColPos + 280;
+
             AddLabel(tpAncestry, "Options that also affect Register report:", xOffset: -20);
             yPos += rowStep;
             AddBoundCheckBox(tpAncestry, "Generation headings", nameof(G2RSettings.GenerationHeadings));
             AddBoundCheckBox(tpAncestry, "Reduced margins", nameof(G2RSettings.ReducedMargins));
             AddBoundCheckBox(tpAncestry, "Use host name for link text", nameof(G2RSettings.UseHostName));
 
-            yPos += rowStep;
+            yPos = yPosLater;
+            lbColPos = lbPosLater;
+            kbColPos = kbPosLater;
             AddLabel(tpAncestry, "*Focused ancestor", xOffset: -20);
             yPos += rowStep;
             var tb = AddBoundTextBox(tpAncestry, "Currently selected ancestor", nameof(G2RSettings.FocusName), 320, RightToLeft.No);
@@ -142,11 +157,10 @@ namespace Ged2Reg
             yPos += 4;
             cbAncestorChoices = AddComboBox(tpAncestry, nameof(cbAncestorChoices), 320);
             cbAncestorChoices.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            //yPos += pbListAncestors.Height;
 
-            //yPos += pbListAncestors.Height;
-            //pbTest = AddButton(tpAncestry, "Test Focus", 120);
-            //pbTest.Click += pbTestFocus_Click;
+            yPos = pbListAncestors.Bottom + pbListAncestors.Height;
+            pbConformAncestry = AddButton(tpAncestry, "Conform settings", 180);
+            pbConformAncestry.Click += pbConform_Click;
 
             tpAncestry.Location = new Point(4, 35);
             tpAncestry.Margin = new Padding(2);
@@ -723,8 +737,8 @@ namespace Ged2Reg
         {
             try
             {
-                Log("Conforming settings to 'Register' conventions...");
-                _rrm.Settings.ConformToRegister();
+                Log("Conforming settings to conventions...");
+                _rrm.Settings.ConformToRegister(sender == pbConform);
                 Log(_rrm.Settings.ReportConformanceSettings(), false);
                 Log("...best conforming settings applied, see Log for details");
             }
