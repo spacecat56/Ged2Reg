@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SimpleGedcomLib" Version="1.0.0.6-beta" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\G2RModel\G2RModel.csproj" />
+  </ItemGroup>
+
+</Project>

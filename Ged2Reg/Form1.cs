@@ -9,6 +9,7 @@ using CommonClassesLib;
 using DocxAdapterLib;
 using G2RModel.Model;
 using Ged2Reg.Model;
+using GedcomObfuscationLib;
 using OdtAdapterLib;
 
 namespace Ged2Reg
@@ -49,7 +50,8 @@ namespace Ged2Reg
         private int kbColPos = 320;
         private CheckBox kbItalicsLineage;
         private CheckBox kbStdBriefContd;
-
+        private ToolStripMenuItem miTools;
+        private ToolStripMenuItem miObfuscate;
 
         private void AdjustForm ()
         {
@@ -173,6 +175,24 @@ namespace Ged2Reg
 
             tpAncestry.PerformLayout();
             tpAncestry.ResumeLayout(false);
+
+
+            miTools = new ToolStripMenuItem()
+            {
+                Name = nameof(miTools),
+                Size = new Size(65, 29),
+                Text = "Tools"
+            };
+            menuStrip1.Items.Insert(1, miTools);
+            miObfuscate = new ToolStripMenuItem()
+            {
+                Name = nameof(miObfuscate),
+                Size = new Size(150, 29),
+                Text = "Create Obscured GEDCOM...",
+                Enabled = false
+            };
+            miTools.DropDownItems.Add(miObfuscate);
+            miObfuscate.Click += miObfuscate_Click;
         }
 
         private ComboBox AddComboBox(TabPage tp, string name, int w = 200, int x = -1)
@@ -994,6 +1014,32 @@ namespace Ged2Reg
             //_rrm.SettingsSets.LastActiveSet = _rrm.Settings.SetName;
         }
 
+        private void miObfuscate_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SaveFileDialog sfd = new SaveFileDialog()
+                {
+                    Title = "Save obscured GEDCOM",
+                    DefaultExt = ".ged",
+                    AddExtension = true
+                };
+                if (sfd.ShowDialog() != DialogResult.OK)
+                    return;
+                _obfu = new GedcomObfuscator()
+                {
+                    FileNameOut = sfd.FileName,
+                };
+                if (_obfu.Init(_rrm))
+                    _obfu.Exec();
+            }
+            catch (Exception ex)
+            {
+                Log(ex);
+                MessageBox.Show($"Exception:{ex}");
+            }
+        }
+
         #endregion
 
         #region Implementation of ILocalLogger
@@ -1101,13 +1147,14 @@ namespace Ged2Reg
 
             dgvStartPerson.FirstDisplayedScrollingRowIndex = toSelect;
             dgvStartPerson.Rows[toSelect].Selected = true;
-            pbGo.Enabled = true;
+            pbGo.Enabled = miObfuscate.Enabled = true;
         }
         #endregion
 
         #region FormDataErrorHandlers
         private int _dataerrortries;
         private List<ReportEntry> _ancestorChoices;
+        private GedcomObfuscator _obfu;
 
         private void dgTitleCleaners_DataError(object sender, DataGridViewDataErrorEventArgs e)
         {

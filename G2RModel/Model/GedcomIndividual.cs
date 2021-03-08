@@ -368,6 +368,9 @@ namespace Ged2Reg.Model
             }
         }
 
+        public int? IntYearBorn => int.TryParse(YearBorn, out int y) && y > 0 ? y : (int?)null;
+        public int? IntYearDied => int.TryParse(YearDied, out int y) && y > 0 ? y : (int?)null;
+
         public void Expand()
         {
             // if we already have families, stop
