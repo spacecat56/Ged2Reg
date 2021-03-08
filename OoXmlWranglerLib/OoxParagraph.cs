@@ -9,6 +9,8 @@ namespace DocxAdapterLib
 {
     public class OoxParagraph : IWpdParagraph
     {
+        public IWpdDocument Document { get; set; }
+
         public OoxParagraph(Paragraph myParagraph)
         {
             MyParagraph = myParagraph;

@@ -73,7 +73,11 @@ namespace OdtAdapterLib
 
         public IWpdParagraph InsertParagraph(string text = null)
         {
-            return new OalParagraph() {Paragraph = Document.AppendParagraph(text)};
+            return new OalParagraph()
+            {
+                Paragraph = Document.AppendParagraph(text),
+                Document = this
+            };
         }
 
         public WpdNoteRefField BuildNoteRef(WpdFootnoteBase fn)

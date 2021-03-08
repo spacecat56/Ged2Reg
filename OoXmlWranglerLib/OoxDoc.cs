@@ -262,7 +262,7 @@ namespace DocxAdapterLib
 
         public IWpdParagraph InsertParagraph(string text = null)
         {
-            _para = new OoxParagraph(_body.AppendChild(new Paragraph()));
+            _para = new OoxParagraph(_body.AppendChild(new Paragraph())){Document = this};
 
             return _para.Append(text);
         }

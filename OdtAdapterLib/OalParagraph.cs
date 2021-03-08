@@ -7,6 +7,7 @@ namespace OdtAdapterLib
     public class OalParagraph : IWpdParagraph
     {
         public OdtParagraph Paragraph { get; internal set; }
+        public IWpdDocument Document { get; set; }
 
         private static Formatting _emptyFormatting = new Formatting();
         #region Implementation of IWpdParagraph

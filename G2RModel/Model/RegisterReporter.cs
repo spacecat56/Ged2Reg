@@ -667,7 +667,7 @@ namespace Ged2Reg.Model
 
             // and we can detect and optimize out consecutive repeats of the same citation
             // NB this list is ORDERED by the appearance of the cited facts
-            LocalCitationCoordinator cp = new LocalCitationCoordinator();
+            LocalCitationCoordinator cp = new LocalCitationCoordinator() {DoCite = doCite}; // hmm. if 'false', why do we build this?
             bool gotBapt = false;
             if (doCite)
             {
@@ -683,7 +683,6 @@ namespace Ged2Reg.Model
                 }
             }
             LocalCitationCoordinator localCitations = CitationCoordinator.Optimize(cp);
-            localCitations.DoCite = doCite;
 
             string comma = null;
             if (!isChild && _ancestryReport && re.HasParents)
@@ -701,139 +700,66 @@ namespace Ged2Reg.Model
                     p.Append(conjunction);
                     p.Append(re.ChildhoodFamily.Wife.Individual.SafeNameForward);
                 }
-
-                //p.Append(",");
                 comma = ",";
             }
 
             // to position footnote superscripts in the running text correctly (especially,
             // in relation to punctuation), we need to know IN ADVANCE all of the pieces that 
             // will be emitted.  So, figure all that out FIRST and then start outputting it
-            FormattedEvent p1_birt = new FormattedEvent(){EventTagCode = TagCode.BIRT}.Init("was born", re.Individual.Born, 
-                re.Individual.PlaceBorn, reduced ? null : re.Individual.BirthDescription);
+            FormattedEvent p1_birt = new FormattedEvent(){EventTagCode = TagCode.BIRT}
+                .Init("was born", re.Individual.Born, re.Individual.PlaceBorn, reduced ? null : re.Individual.BirthDescription);
             // list the baptism for non-reduced output OR if there is no birth and option set to substitute it
             // note: CHR and BAPM are treated as equivalent in layer(s) below 
             FormattedEvent p2_bapt = (_listBapt && !reduced) || (_c.Settings.BaptIfNoBirt && p1_birt == null)
-                ? new FormattedEvent() { EventTagCode = TagCode.BAPM }.Init("baptized", re.Individual.Baptized, re.Individual.PlaceBaptized, 
-                    reduced ? null : re.Individual.BaptizedDescription)
+                ? new FormattedEvent() { EventTagCode = re.Individual.BaptismTagCode }
+                    .Init("baptized", re.Individual.Baptized, re.Individual.PlaceBaptized, reduced ? null : re.Individual.BaptizedDescription)
                 : null;
-            FormattedEvent p3_deat = new FormattedEvent() { EventTagCode = TagCode.DEAT }.Init("died", re.Individual.Died, re.Individual.PlaceDied, 
-                reduced ? null : re.Individual.DeathDescription);
+            FormattedEvent p3_deat = new FormattedEvent() { EventTagCode = TagCode.DEAT }
+                .Init("died", re.Individual.Died, re.Individual.PlaceDied, reduced ? null : re.Individual.DeathDescription);
             FormattedEvent p4_buri = (!reduced && _listBuri) 
-                ? new FormattedEvent() { EventTagCode = TagCode.BURI }.Init("was buried", re.Individual.Buried, re.Individual.PlaceBuried, re.Individual.BurialDescription, _c.Settings.OmitBurialDate)
+                ? new FormattedEvent() { EventTagCode = TagCode.BURI }
+                    .Init("was buried", re.Individual.Buried, re.Individual.PlaceBuried, re.Individual.BurialDescription, _c.Settings.OmitBurialDate)
                 : null;
 
-            if (comma != null && !(p1_birt is null && p2_bapt is null && p3_deat is null && p4_buri is null))
+            if (comma != null && (p1_birt ?? p2_bapt ?? p3_deat ?? p4_buri) != null)
             {
                 p.Append(comma);
                 comma = null; // in case we need this again
             }
-            // knowing all the pieces, we can add the conjunctions, [NOT commas], pronouns needed to the text
-            if (p2_bapt != null)
-            {
-                if (p1_birt == null)
-                {
-                    if (null == p3_deat && null == p4_buri)
-                        p2_bapt.EventString = $" and was{p2_bapt.EventString}";
-                    else
-                        p2_bapt.EventString = $" was{p2_bapt.EventString}";
-                } 
-                else if (null == p3_deat && null == p4_buri)
-                    p2_bapt.EventString = $" and was{p2_bapt.EventString}";
-            }
 
-            if (p3_deat!=null && (p1_birt != null || p2_bapt !=null))
-            {
-                p3_deat.EventString = $" and {re.Individual.Pronoun.ToLower()}{p3_deat.EventString}"; // remove pendingPunctuation
-            }
-
-            if (p3_deat != null)
-                p3_deat.EventString = $"{p3_deat.EventString}.";
-            else if (p2_bapt != null)
-                p2_bapt.EventString = $"{p2_bapt.EventString}.";
-            else if (p1_birt != null)
-                p1_birt.EventString = $"{p1_birt.EventString}.";
-            else
+            // close the name if no BBD to follow
+            if ((p3_deat ?? p2_bapt ?? p1_birt) == null)
                 p.Append(".");
-
-
-            if (p4_buri != null)
-            {
-                // style choice: always saying burial as a separate sentence
-                p4_buri.EventString = $" {re.Individual.Pronoun}{p4_buri.EventString}.";
-            }
             
-            if (!string.IsNullOrEmpty(p1_birt?.EventString))
-            {
-                p.Append(p1_birt.EventString);
-                if (!reduced && p2_bapt != null && p3_deat != null)
-                    p.Append(",");
-                if (doCite)
-                {
-                    EventCitations ec = localCitations[TagCode.BIRT.ToString()];
-                    if (ec?.SelectedItem != null)
-                    {
-                        MyReportStats.Citations++;
-                        if (!ec.SelectedItem.IsEmitted)
-                            MyReportStats.DistinctCitations++;
-                        ec.EmitNote(doc, p);
-                    }
-                }
-                ConditionallyEmitPlaceIndexEntry(doc, p, p1_birt);
-            }
+            // BIRT event
+            string clauseOpener = null;
+            string clauseEnder = (!reduced && (p2_bapt ?? p3_deat) != null) ? "," : ".";
+            EmitEvent(p, p1_birt, localCitations, clauseEnder, clauseOpener);
 
-            if (p2_bapt != null)
-            {
-                p.Append(p2_bapt.EventString);
-                if (doCite)
-                {
-                    EventCitations ec = localCitations[re.Individual.BaptismTagCode.ToString()];
-                    if (ec?.SelectedItem != null)
-                    {
-                        MyReportStats.Citations++;
-                        if (!ec.SelectedItem.IsEmitted)
-                            MyReportStats.DistinctCitations++;
-                        ec.EmitNote(doc, p);
-                    }
-                }
-                ConditionallyEmitPlaceIndexEntry(doc, p, p2_bapt);
-            }
+            // BAPM event;
+            // note that deferring the 'was' to this point allows the variation
+            // "...was born xxx, baptized xxx, and died xxx."
+            clauseOpener = (p1_birt == null) 
+                ? " was" 
+                : (p3_deat == null) ? " and was" : null;
+            clauseEnder = (p3_deat != null) ? "," : ".";
+            EmitEvent(p, p2_bapt, localCitations, clauseEnder, clauseOpener);
 
-            if (!string.IsNullOrEmpty(p3_deat?.EventString))
-            {
-                p.Append(p3_deat.EventString);
-                if (doCite)
-                {
-                    EventCitations ec = localCitations[TagCode.DEAT.ToString()];
-                    if (ec?.SelectedItem != null)
-                    {
-                        MyReportStats.Citations++;
-                        if (!ec.SelectedItem.IsEmitted)
-                            MyReportStats.DistinctCitations++;
-                        ec.EmitNote(doc, p);
-                    }
-                }
-                ConditionallyEmitPlaceIndexEntry(doc, p, p3_deat);
-            }
+            // DEAT event
+            clauseOpener = ((p1_birt ?? p2_bapt) != null)
+                ? $" and {re.Individual.Pronoun.ToLower()}"
+                : null;
+            clauseEnder = ".";
+            EmitEvent(p, p3_deat, localCitations, clauseEnder, clauseOpener);
 
-            if (p4_buri != null)
-            {
-                p.Append(p4_buri.EventString);
-                if (doCite)
-                {
-                    EventCitations ec = localCitations[TagCode.BURI.ToString()];
-                    if (ec?.SelectedItem != null)
-                    {
-                        MyReportStats.Citations++;
-                        if (!ec.SelectedItem.IsEmitted)
-                            MyReportStats.DistinctCitations++;
-                        ec.EmitNote(doc, p);
-                    }
-                }
-                ConditionallyEmitPlaceIndexEntry(doc, p, p4_buri);
-            }
-
-            if (reduced) return toDoNotes;
+            // BURI event
+            // style choice: always saying burial as a separate sentence
+            clauseOpener = $" {re.Individual.Pronoun}";
+            clauseEnder = ".";
+            EmitEvent(p, p4_buri, localCitations, clauseEnder, clauseOpener);
+            
+            if (reduced) 
+                return toDoNotes;
 
             if (_c.Settings.MainPersonNotes)
                 toDoNotes.Add(re.Individual);
@@ -844,23 +770,24 @@ namespace Ged2Reg.Model
             return toDoNotes;
         }
 
-        private void EmitEvent(IWpdDocument doc, IWpdParagraph p, FormattedEvent ev, LocalCitationCoordinator lcc, TagCode evTag)
+        private void EmitEvent(IWpdParagraph p, FormattedEvent ev,
+            LocalCitationCoordinator lcc, string clauseEnder = null, string clauseOpener = null)
         {
             if (ev == null || string.IsNullOrEmpty(ev.EventString)) return;
 
-            p.Append(ev.EventString);
+            p.Append($"{clauseOpener}{ev.EventString}{clauseEnder}");
             if (lcc.DoCite)
             {
-                EventCitations ec = lcc[evTag.ToString()];
+                EventCitations ec = lcc[ev.EventTagCode.ToString()];
                 if (ec?.SelectedItem != null)
                 {
                     MyReportStats.Citations++;
                     if (!ec.SelectedItem.IsEmitted)
                         MyReportStats.DistinctCitations++;
-                    ec.EmitNote(doc, p);
+                    ec.EmitNote(p.Document, p);
                 }
             }
-            ConditionallyEmitPlaceIndexEntry(doc, p, ev);
+            ConditionallyEmitPlaceIndexEntry(p.Document, p, ev);
         }
 
         private List<GedcomIndividual> EmitStandardBriefChildLine(IWpdParagraph p, ReportEntry re)
@@ -871,7 +798,7 @@ namespace Ged2Reg.Model
             if (string.IsNullOrEmpty(p0_bbp?.EventString))
             {
                 // note: CHR and BAPM are treated as equivalent in layer(s) below 
-                p0_bbp = new FormattedEvent() { EventTagCode = TagCode.BAPM }.Init(", bp.", re.Individual.Baptized, re.Individual.PlaceBaptized);
+                p0_bbp = new FormattedEvent() { EventTagCode = re.Individual.BaptismTagCode }.Init(", bp.", re.Individual.Baptized, re.Individual.PlaceBaptized);
             }
 
             if (!string.IsNullOrEmpty(p0_bbp?.EventString))
@@ -1010,7 +937,7 @@ namespace Ged2Reg.Model
             // here we will list the baptism iff there is no birth 
             FormattedEvent p1_birt = new FormattedEvent() { EventTagCode = TagCode.BIRT }.Init("born", spouse.Individual.Born, spouse.Individual.PlaceBorn, spouse.Individual.BirthDescription);
             FormattedEvent p2_bapt = p1_birt == null
-                ? new FormattedEvent() { EventTagCode = TagCode.BAPM }.Init("baptized", spouse.Individual.Baptized, spouse.Individual.PlaceBaptized, spouse.Individual.BaptizedDescription)
+                ? new FormattedEvent() { EventTagCode = spouse.Individual.BaptismTagCode }.Init("baptized", spouse.Individual.Baptized, spouse.Individual.PlaceBaptized, spouse.Individual.BaptizedDescription)
                 : null;
 
             // here we will list the burial iff there is no death

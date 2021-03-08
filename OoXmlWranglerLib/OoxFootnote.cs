@@ -89,7 +89,7 @@ namespace DocxAdapterLib
             AssignNextId();
 
             FootnoteEndnoteType f = CreateNoteInstance();
-            OoxParagraph footPara = new OoxParagraph(f.AppendChild(new Paragraph()));
+            OoxParagraph footPara = new OoxParagraph(f.AppendChild(new Paragraph())) { Document = doc };
             footPara.StyleName = NoteTextStyle;
             //footPara.Append(BuildNoteRefMark());
             // do this instead, to get the number at te foot in 10pt instead of in superscript
