@@ -45,8 +45,10 @@ namespace Ged2Reg.Model
         /// </summary>
         /// <param name="doc"></param>
         /// <param name="p"></param>
+        /// <param name="citedFor">extra info when the citation addresses more than just the
+        /// immediate fact to which it is appended</param>
         /// <returns></returns>
-        public bool EmitNote(IWpdDocument doc, IWpdParagraph p)
+        public bool EmitNote(IWpdDocument doc, IWpdParagraph p, string citedFor)
         {
             if (SelectedItem == null)
                 return false;
@@ -87,6 +89,8 @@ namespace Ged2Reg.Model
                     ? doc.BuildEndNote(noteText, settings.BracketArray) 
                     : doc.BuildFootNote(noteText, settings.BracketArray);
                 laterNote.AppendText("(see note ").AppendNoteRef(SelectedItem.FirstFootnote).AppendText(").");
+                if (!string.IsNullOrEmpty(citedFor))
+                    laterNote.AppendText($" ({citedFor})");
                 laterNote.Apply(p);
                 return true;
             }
@@ -97,7 +101,7 @@ namespace Ged2Reg.Model
             WpdFootnoteBase f = settings.AsEndnotes
                 ? doc.BuildEndNote(brackets: settings.BracketArray)
                 : doc.BuildFootNote(brackets: settings.BracketArray);
-            CitationResult c = BestCitation(settings.SummarizeAdditionalCitations, settings.CitationFormatter);
+            CitationResult c = BestCitation(settings.SummarizeAdditionalCitations, settings.CitationFormatter, citedFor);
             if (ReportContext.Instance.Settings.DebuggingOutput)
             {
                 f.AppendText($" [{c.SourceId}]");
@@ -114,7 +118,7 @@ namespace Ged2Reg.Model
                         {
                             f.AppendHyperlink(piece.Text);
                         }
-                        catch (System.UriFormatException ufx)
+                        catch (UriFormatException ufx)
                         {
                             f.AppendText($"[{piece.Text}]");
                             System.Diagnostics.Debug.WriteLine($"Emit invalid URI as plain text:{piece.Text} in {c.SourceId}");
@@ -124,6 +128,7 @@ namespace Ged2Reg.Model
                         throw new ArgumentOutOfRangeException();
                 }
             }
+
             // bookmark not needed if this is used only once
             // use 0 (SB 1) to workaround a bug: SelectedItem.SelectedCount not working for this anymore
             // always bookmark, some (many/most) will not be used.
@@ -140,13 +145,16 @@ namespace Ged2Reg.Model
             return true;
         }
 
-        public CitationResult BestCitation(bool appendSummary, CitationFormatter citationFormatter)
+        public CitationResult BestCitation(bool appendSummary, CitationFormatter citationFormatter, string citedFor)
         {
             CitationView forExample = SelectedItem?.CitationViews[0];
             if (forExample == null) return null;
 
             CitationResult cr = citationFormatter.Apply(SelectedItem.CitationViews?[0]);
-            //string content = $"{cr.Text}{cr.URL}"; // todo: library and this app to support hyperlinks within footnotes.
+
+            if (!string.IsNullOrEmpty(citedFor))
+                cr.AppendText($" ({citedFor})");
+            
             string extra = null;
             if (appendSummary && DistinctCitations.Count > 1)
             {
@@ -162,7 +170,6 @@ namespace Ged2Reg.Model
                 cr.AppendText(extra);
             }
 
-            //return $"{content}{extra}";
             return cr;
         }
 

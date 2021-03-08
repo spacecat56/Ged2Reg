@@ -380,7 +380,8 @@ namespace Ged2Reg.Model
             for (int i = 1; i < coordinator.Count; i++)
             {
                 if (coordinator[i].Matches(candidateProposal))
-                {
+                { // push the name of the vanishing event(s) to the survivor 
+                    coordinator[i].AddApplicableEvents(candidateProposal);
                     candidateProposal = coordinator[i];
                     continue;
                 }
@@ -392,16 +393,6 @@ namespace Ged2Reg.Model
             return rvl;
         }
     }
-
-    //public class CitationUsage // merged into DistinctCitations
-    //{
-    //    public string SourceId { get; set; }
-    //    public string FullText { get; set; }
-    //    public string ShortText { get; set; }
-    //    public int ReferenceCount { get; set; }
-    //    public bool IsEmitted { get; set; }
-    //    public int FirstUse { get; set; }
-    //}
 
 
     public enum CitationStrategy

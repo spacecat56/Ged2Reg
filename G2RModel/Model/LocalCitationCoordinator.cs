@@ -10,28 +10,28 @@ namespace Ged2Reg.Model
             if (ec == null)
                 return false;
             
-            Add(new CitationProposal(){Citation = ec, EventId = ec.TagCode.ToString(), InstanceId = iid});
+            Add(new CitationProposal(){Citation = ec, EventTagCode = ec.TagCode, EventId = ec.TagCode.ToString(), InstanceId = iid});
             return true;
         }
 
-        private Dictionary<string, EventCitations> _m;
-        private Dictionary<string, EventCitations> _map => _m ?? (_m = ToMap());
+        private Dictionary<string, CitationProposal> _m;
+        private Dictionary<string, CitationProposal> _map => _m ??= ToMap();
 
         public bool DoCite { get; set; }
 
 
-        public EventCitations this[string s]
+        public CitationProposal this[string s]
         {
             get
             {
-                _map.TryGetValue(s, out EventCitations rv);
+                _map.TryGetValue(s, out CitationProposal rv);
                 return rv;
             }
         }
 
-        public Dictionary<string, EventCitations> ToMap()
+        public Dictionary<string, CitationProposal> ToMap()
         {
-            return this.ToDictionary(citationProposal => citationProposal.Id, citationProposal => citationProposal.Citation);
+            return this.ToDictionary(citationProposal => citationProposal.Id, citationProposal => citationProposal);
         }
     }
 }
