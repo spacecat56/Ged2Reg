@@ -359,31 +359,31 @@ namespace Ged2Reg.Model
                 _allEntityEventCitations.Add(indi.CitableEvents);
         }
 
-        public static CitationProposals Optimize(CitationProposals props)
+        public static LocalCitationCoordinator Optimize(LocalCitationCoordinator props)
         {
-            CitationProposals rvl = new CitationProposals();
-            CitationProposals proposals = new CitationProposals();
+            LocalCitationCoordinator rvl = new LocalCitationCoordinator();
+            LocalCitationCoordinator coordinator = new LocalCitationCoordinator();
             
             // get rid of nulls.  be SURE to preserve the ordering!
             foreach (CitationProposal prop in props)
             {
                 if (prop == null) continue;
-                proposals.Add(prop);
+                coordinator.Add(prop);
             }
 
-            if (proposals.Count < 2)
-                return proposals;
+            if (coordinator.Count < 2)
+                return coordinator;
 
-            CitationProposal candidateProposal = proposals[0];
-            for (int i = 1; i < proposals.Count; i++)
+            CitationProposal candidateProposal = coordinator[0];
+            for (int i = 1; i < coordinator.Count; i++)
             {
-                if (proposals[i].Matches(candidateProposal))
+                if (coordinator[i].Matches(candidateProposal))
                 {
-                    candidateProposal = proposals[i];
+                    candidateProposal = coordinator[i];
                     continue;
                 }
                 rvl.Add(candidateProposal);
-                candidateProposal = proposals[i];
+                candidateProposal = coordinator[i];
             }
             rvl.Add(candidateProposal);
 
@@ -468,49 +468,6 @@ namespace Ged2Reg.Model
         public static Tag GetEvent(this CitationView cv)
         {
             return cv.SourceTag?.ParentTag;
-        }
-    }
-
-    public class CitationProposal
-    {
-        public string InstanceId { get; set; }
-        public EventCitations Citation { get; set; }
-        public string EventId { get; set; }
-        public string Id => $"{EventId}{InstanceId}";
-
-        public bool Matches(CitationProposal other)
-        {
-            return Citation?.Matches(other.Citation) ?? false;
-        }
-    }
-
-    public class CitationProposals : List<CitationProposal>
-    {
-        public bool AddNonNull(EventCitations ec, string iid = null)
-        {
-            if (ec == null)
-                return false;
-            
-            Add(new CitationProposal(){Citation = ec, EventId = ec.TagCode.ToString(), InstanceId = iid});
-            return true;
-        }
-
-        private Dictionary<string, EventCitations> _m;
-        private Dictionary<string, EventCitations> _map => _m ?? (_m = ToMap());
-
-
-        public EventCitations this[string s]
-        {
-            get
-            {
-                _map.TryGetValue(s, out EventCitations rv);
-                return rv;
-            }
-        }
-
-        public Dictionary<string, EventCitations> ToMap()
-        {
-            return this.ToDictionary(citationProposal => citationProposal.Id, citationProposal => citationProposal.Citation);
         }
     }
 }

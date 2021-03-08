@@ -8,6 +8,22 @@ namespace Ged2Reg.Model
 {
     public class GenealogicalPlaceFormatter
     {
+        private static GenealogicalPlaceFormatter _instance;
+
+        /// <summary>
+        /// this will self-initialize if null, and/or can be set
+        /// with a custom-configured instance by any class that thinks
+        /// it has the right to decide the options
+        /// </summary>
+        public static GenealogicalPlaceFormatter Instance
+        {
+            get => _instance 
+                ??= new GenealogicalPlaceFormatter()
+                {DropUSA = true, InjectWordCounty = true, ReduceOnRepetition = true}
+                .Init();
+            set => _instance = value;
+        }
+
         internal static readonly FormattedPlaceName EmptyPlace = new FormattedPlaceName(){LongName = ""};
         public bool InjectWordCounty { get; set; } = true;
         public bool DropUSA { get; set; } = true;

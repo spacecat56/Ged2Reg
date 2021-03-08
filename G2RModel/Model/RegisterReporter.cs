@@ -68,8 +68,12 @@ namespace Ged2Reg.Model
 
 
         private ReportTreeBuilder _tree;
+
         private Formatting _childNameFormatting;
-        Formatting _generationNumberFormatting;
+        private Formatting _generationNumberFormatting;
+        private Formatting _introFormatting;
+        private Formatting _lineageListNameFormatting;
+
         public RegisterReportModel Model { get; set; }
 
         public RegisterReporter Init(GedcomIndividual root, TimeSpan prep)
@@ -77,13 +81,14 @@ namespace Ged2Reg.Model
             MyReportStats = new ReportStats().Init(prep);
             _c = ReportContext.Instance;
 
-            _factDesc = _c.Settings.IncludeFactDescriptions;
+            // as a side-effect, inform the FormattedEvent of the choice re: descriptions
+            FormattedEvent.IncludeFactDescription = _factDesc = _c.Settings.IncludeFactDescriptions;
             _reduceChild = _c.Settings.ReduceContinuedChildren;
             _listBapt = _c.Settings.IncludeBaptism;
             _listBuri = _c.Settings.IncludeBurial;
 
             _ancestryReport = _c.Settings.AncestorsReport;
-            _suppressGenSuperscripts = _c.Settings.SuppressGenNbrs;
+            _suppressGenSuperscripts = _c.Settings.SuppressGenNbrs && _ancestryReport;
             _generationNumberPrefixes = _c.Settings.GenerationPrefix && _ancestryReport;
             _allowMultiple = _c.Settings.AllowMultipleAppearances;
             _placeholders = _ancestryReport && _c.Settings.Placeholders;
@@ -214,9 +219,15 @@ namespace Ged2Reg.Model
             _styleMap.TryGetValue(StyleSlots.GenerationDivider, out Formatting genDivider);
             _styleMap.TryGetValue(StyleSlots.GenerationDivider3Plus, out Formatting genDivider3Plus);
             _styleMap.TryGetValue(StyleSlots.ChildName, out _childNameFormatting);
+            _generationNumberFormatting = new Formatting() { CharacterStyleName = _styleMap[StyleSlots.GenerationNumber].CharacterStyleName };
+            _introFormatting = new Formatting() { Bold = _c.Settings.IntroBold, Italic = _c.Settings.IntroItalic };
+            _lineageListNameFormatting = new Formatting() { Italic = _c.Settings.ItalicsNamesInLineageList, CharacterStyleName = _styleMap[StyleSlots.MainPersonText].CharacterStyleName };
 
-            _dateFormatter = new GenealogicalDateFormatter();
-            _placeFormatter = new GenealogicalPlaceFormatter()
+            _dateFormatter = GenealogicalDateFormatter.Instance;
+
+            // as a side effect, we make the instance with option settings known here
+            // available to others via the optional-singleton Instance
+            GenealogicalPlaceFormatter.Instance = _placeFormatter = new GenealogicalPlaceFormatter()
             {
                 DropUSA = _c.Settings.DropUsa, 
                 InjectWordCounty = _c.Settings.InjectCounty,
@@ -405,27 +416,23 @@ namespace Ged2Reg.Model
                 : $"{bi}";
         }
 
+
         private void EmitMainPerson(IWpdDocument doc, ReportEntry re, int gen)
         {
             if (_omitFocusSpouses && re.OutOfFocus) 
                 return;
 
             bool timeToMinimize = _ancestryReport && _minFromGen > 0 && _minFromGen <= gen;
-
-            //  switched this to the style
-            _generationNumberFormatting = new Formatting() { CharacterStyleName = _styleMap[StyleSlots.GenerationNumber].CharacterStyleName };
             int genNbrIncr = _ancestryReport ? -1 : 1;
-            Formatting introFormatting = new Formatting(){Bold = _c.Settings.IntroBold, Italic = _c.Settings.IntroItalic};
-            Formatting lineageListNameFormatting = new Formatting() { Italic = _c.Settings.ItalicsNamesInLineageList, CharacterStyleName = _styleMap[StyleSlots.MainPersonText].CharacterStyleName };
 
             // begin main person content
             IWpdParagraph p = doc.InsertParagraph();
             EmitMainPersonName(doc, p, re, gen);
 
             if (!_ancestryReport)
-                re.Ancestry?.Emit(p, lineageListNameFormatting, _styleMap[StyleSlots.GenerationNumber]);
+                re.Ancestry?.Emit(p, _lineageListNameFormatting, _styleMap[StyleSlots.GenerationNumber]);
 
-            List<GedcomIndividual> noteworthy = AppendPersonDetails(p, re); //todo: ??
+            List<GedcomIndividual> noteworthy = AppendPersonDetails(doc, p, re); 
 
             string tinue = re.GetContinuation(_generationNumberPrefixes);
             if (tinue != null)
@@ -447,6 +454,13 @@ namespace Ged2Reg.Model
                 return;
             }
 
+            EmitNotes(doc, p, noteworthy);
+
+            ConditionallyEmitChildren(doc, re, gen, genNbrIncr);
+        }
+
+        private void EmitNotes(IWpdDocument doc, IWpdParagraph p, List<GedcomIndividual> noteworthy)
+        {
             bool lastLineWasDivider = false;
             bool dividersApplied = false;
             foreach (GedcomIndividual indiNotes in noteworthy)
@@ -456,14 +470,17 @@ namespace Ged2Reg.Model
                 if (string.IsNullOrEmpty(s)) continue;
                 p = doc.InsertParagraph();
                 p = doc.InsertParagraph();
-                p.StyleName = _styleMap[StyleSlots.BodyTextIndent].CharacterStyleName; // trick/quirk: line may change the style, this must be done first
+                p.StyleName =
+                    _styleMap[StyleSlots.BodyTextIndent]
+                        .CharacterStyleName; // trick/quirk: line may change the style, this must be done first
                 if (!lastLineWasDivider && _c.Settings.NotesDividers)
                 {
-                    p.InsertHorizontalLine(lineType:"single", position:"top");
+                    p.InsertHorizontalLine(lineType: "single", position: "top");
                     dividersApplied = true;
                 }
+
                 string intro = string.Format(_c.Settings.NoteIntro, indiNotes.SafeNameForward);
-                p.Append(intro, false, introFormatting);
+                p.Append(intro, false, _introFormatting);
                 string[] paras = s.Split('\n');
                 foreach (string para in paras)
                 {
@@ -483,8 +500,6 @@ namespace Ged2Reg.Model
                 p.InsertHorizontalLine(lineType: "single");
                 lastLineWasDivider = true;
             }
-
-            ConditionallyEmitChildren(doc, re, gen, genNbrIncr);
         }
 
         private void ConditionallyEmitChildren(IWpdDocument doc, ReportEntry indi, int gen, int genNbrIncr)
@@ -578,7 +593,7 @@ namespace Ged2Reg.Model
                 p.Append($" [{child.NaturalId}]");
             }
 
-            AppendPersonDetails(p, child, true);
+            AppendPersonDetails(doc, p, child, true);
         }
 
         private bool AppliesAsDivider(IWpdParagraph p, string s)
@@ -618,41 +633,16 @@ namespace Ged2Reg.Model
             return true;
         }
 
-        private List<GedcomIndividual> AppendPersonDetails(IWpdParagraph p, ReportEntry re, bool isChild = false)
+        private List<GedcomIndividual> AppendPersonDetails(IWpdDocument doc, IWpdParagraph p, ReportEntry re, bool isChild = false)
         {
-            List<GedcomIndividual> toDoNotes = new List<GedcomIndividual>();
 
             // short-stop: optional standard / brief child line if so configured and the child is continued
             if (isChild && _standardBriefContdChild && re.AssignedMainNumber > 0)
             {
-                string conn = ", m.";
-                FormattedEvent p0_bbp = ConditionalEvent(", b.", re.Individual.Born, re.Individual.PlaceBorn);
-                if (string.IsNullOrEmpty(p0_bbp?.EventString))
-                {
-                    p0_bbp = ConditionalEvent(", bp.", re.Individual.Baptized, re.Individual.PlaceBaptized);
-                }
-                if (!string.IsNullOrEmpty(p0_bbp?.EventString))
-                {
-                    p.Append(p0_bbp.EventString.TrimStart().Replace(" on ", " "));  // ugly little tweaks; this needs to all be smarter
-                    ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p0_bbp);
-                    conn = "; m.";
-                }
-
-                string mnbr = re.SafeFamilies.Count > 1 ? $" {_wordsForNumbers[1]}" : "";
-                for (int i = 0; i < re.SafeFamilies.Count; i++)
-                {
-                    GedcomIndividual spouze = re.SafeFamilies[i].Family.SpouseOf(re.Individual);
-                    string s = $"{conn}{mnbr} {spouze?.SafeNameForward??GedcomIndividual.UnknownName}";
-                    p.Append(s);
-                    ConditionallyEmitNameIndexEntry(_c.Model.Doc, p, spouze);
-                    conn = ", ";
-                    mnbr = $"{_wordsForNumbers[i + 2]}";
-                }
-
-                p.Append(".");
-                return toDoNotes;
+                return EmitStandardBriefChildLine(p, re);
             }
 
+            List<GedcomIndividual> toDoNotes = new List<GedcomIndividual>();
 
             // optional minimized or reduced output for child listing if there are descendants, except for the last reported generation
             bool minimized = isChild && _c.Settings.MinimizeContinuedChildren && re.HasDescendants && _currentGeneration < _c.Settings.Generations;
@@ -671,12 +661,13 @@ namespace Ged2Reg.Model
             reduced &= !_ancestryReport || re.AssignedMainNumber > 0;
             doNotCite &= !_ancestryReport || re.AssignedMainNumber > 0;
 
-            bool doCite = _c.Settings.Citations && !doNotCite
-                                                && (!_c.Settings.ObscureLiving || !_c.Settings.OmitLivingCitations || re.Individual.PresumedDeceased);
+            bool doCite = _c.Settings.Citations 
+                          && !doNotCite
+                          && (!_c.Settings.ObscureLiving || !_c.Settings.OmitLivingCitations || re.Individual.PresumedDeceased);
 
             // and we can detect and optimize out consecutive repeats of the same citation
             // NB this list is ORDERED by the appearance of the cited facts
-            CitationProposals cp = new CitationProposals();
+            LocalCitationCoordinator cp = new LocalCitationCoordinator();
             bool gotBapt = false;
             if (doCite)
             {
@@ -691,7 +682,8 @@ namespace Ged2Reg.Model
                     cp.AddNonNull(ec, family.Family.FamilyView.Id);
                 }
             }
-            CitationProposals chosenCitations = CitationCoordinator.Optimize(cp);
+            LocalCitationCoordinator localCitations = CitationCoordinator.Optimize(cp);
+            localCitations.DoCite = doCite;
 
             string comma = null;
             if (!isChild && _ancestryReport && re.HasParents)
@@ -717,17 +709,18 @@ namespace Ged2Reg.Model
             // to position footnote superscripts in the running text correctly (especially,
             // in relation to punctuation), we need to know IN ADVANCE all of the pieces that 
             // will be emitted.  So, figure all that out FIRST and then start outputting it
-            FormattedEvent p1_birt = ConditionalEvent("was born", re.Individual.Born, 
+            FormattedEvent p1_birt = new FormattedEvent(){EventTagCode = TagCode.BIRT}.Init("was born", re.Individual.Born, 
                 re.Individual.PlaceBorn, reduced ? null : re.Individual.BirthDescription);
             // list the baptism for non-reduced output OR if there is no birth and option set to substitute it
+            // note: CHR and BAPM are treated as equivalent in layer(s) below 
             FormattedEvent p2_bapt = (_listBapt && !reduced) || (_c.Settings.BaptIfNoBirt && p1_birt == null)
-                ? ConditionalEvent("baptized", re.Individual.Baptized, re.Individual.PlaceBaptized, 
+                ? new FormattedEvent() { EventTagCode = TagCode.BAPM }.Init("baptized", re.Individual.Baptized, re.Individual.PlaceBaptized, 
                     reduced ? null : re.Individual.BaptizedDescription)
                 : null;
-            FormattedEvent p3_deat = ConditionalEvent("died", re.Individual.Died, re.Individual.PlaceDied, 
+            FormattedEvent p3_deat = new FormattedEvent() { EventTagCode = TagCode.DEAT }.Init("died", re.Individual.Died, re.Individual.PlaceDied, 
                 reduced ? null : re.Individual.DeathDescription);
             FormattedEvent p4_buri = (!reduced && _listBuri) 
-                ? ConditionalEvent("was buried", re.Individual.Buried, re.Individual.PlaceBuried, re.Individual.BurialDescription, _c.Settings.OmitBurialDate)
+                ? new FormattedEvent() { EventTagCode = TagCode.BURI }.Init("was buried", re.Individual.Buried, re.Individual.PlaceBuried, re.Individual.BurialDescription, _c.Settings.OmitBurialDate)
                 : null;
 
             if (comma != null && !(p1_birt is null && p2_bapt is null && p3_deat is null && p4_buri is null))
@@ -777,16 +770,16 @@ namespace Ged2Reg.Model
                     p.Append(",");
                 if (doCite)
                 {
-                    EventCitations ec = chosenCitations[TagCode.BIRT.ToString()];
+                    EventCitations ec = localCitations[TagCode.BIRT.ToString()];
                     if (ec?.SelectedItem != null)
                     {
                         MyReportStats.Citations++;
                         if (!ec.SelectedItem.IsEmitted)
                             MyReportStats.DistinctCitations++;
-                        ec.EmitNote(_c.Model.Doc, p);
+                        ec.EmitNote(doc, p);
                     }
                 }
-                ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p1_birt);
+                ConditionallyEmitPlaceIndexEntry(doc, p, p1_birt);
             }
 
             if (p2_bapt != null)
@@ -794,16 +787,16 @@ namespace Ged2Reg.Model
                 p.Append(p2_bapt.EventString);
                 if (doCite)
                 {
-                    EventCitations ec = chosenCitations[re.Individual.BaptismTagCode.ToString()];
+                    EventCitations ec = localCitations[re.Individual.BaptismTagCode.ToString()];
                     if (ec?.SelectedItem != null)
                     {
                         MyReportStats.Citations++;
                         if (!ec.SelectedItem.IsEmitted)
                             MyReportStats.DistinctCitations++;
-                        ec.EmitNote(_c.Model.Doc, p);
+                        ec.EmitNote(doc, p);
                     }
                 }
-                ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p2_bapt);
+                ConditionallyEmitPlaceIndexEntry(doc, p, p2_bapt);
             }
 
             if (!string.IsNullOrEmpty(p3_deat?.EventString))
@@ -811,16 +804,16 @@ namespace Ged2Reg.Model
                 p.Append(p3_deat.EventString);
                 if (doCite)
                 {
-                    EventCitations ec = chosenCitations[TagCode.DEAT.ToString()];
+                    EventCitations ec = localCitations[TagCode.DEAT.ToString()];
                     if (ec?.SelectedItem != null)
                     {
                         MyReportStats.Citations++;
                         if (!ec.SelectedItem.IsEmitted)
                             MyReportStats.DistinctCitations++;
-                        ec.EmitNote(_c.Model.Doc, p);
+                        ec.EmitNote(doc, p);
                     }
                 }
-                ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p3_deat);
+                ConditionallyEmitPlaceIndexEntry(doc, p, p3_deat);
             }
 
             if (p4_buri != null)
@@ -828,16 +821,16 @@ namespace Ged2Reg.Model
                 p.Append(p4_buri.EventString);
                 if (doCite)
                 {
-                    EventCitations ec = chosenCitations[TagCode.BURI.ToString()];
+                    EventCitations ec = localCitations[TagCode.BURI.ToString()];
                     if (ec?.SelectedItem != null)
                     {
                         MyReportStats.Citations++;
                         if (!ec.SelectedItem.IsEmitted)
                             MyReportStats.DistinctCitations++;
-                        ec.EmitNote(_c.Model.Doc, p);
+                        ec.EmitNote(doc, p);
                     }
                 }
-                ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p4_buri);
+                ConditionallyEmitPlaceIndexEntry(doc, p, p4_buri);
             }
 
             if (reduced) return toDoNotes;
@@ -846,13 +839,66 @@ namespace Ged2Reg.Model
                 toDoNotes.Add(re.Individual);
             
             if (!re.SuppressSpouseInfo)
-                AppendMarriagesSentences(p, re, isChild, toDoNotes, reduced, doCite, chosenCitations);
+                AppendMarriagesSentences(p, re, isChild, toDoNotes, reduced, doCite, localCitations);
 
             return toDoNotes;
         }
 
+        private void EmitEvent(IWpdDocument doc, IWpdParagraph p, FormattedEvent ev, LocalCitationCoordinator lcc, TagCode evTag)
+        {
+            if (ev == null || string.IsNullOrEmpty(ev.EventString)) return;
+
+            p.Append(ev.EventString);
+            if (lcc.DoCite)
+            {
+                EventCitations ec = lcc[evTag.ToString()];
+                if (ec?.SelectedItem != null)
+                {
+                    MyReportStats.Citations++;
+                    if (!ec.SelectedItem.IsEmitted)
+                        MyReportStats.DistinctCitations++;
+                    ec.EmitNote(doc, p);
+                }
+            }
+            ConditionallyEmitPlaceIndexEntry(doc, p, ev);
+        }
+
+        private List<GedcomIndividual> EmitStandardBriefChildLine(IWpdParagraph p, ReportEntry re)
+        {
+            List<GedcomIndividual> toDoNotes = new List<GedcomIndividual>();
+            string conn = ", m.";
+            FormattedEvent p0_bbp = new FormattedEvent() { EventTagCode = TagCode.BIRT }.Init(", b.", re.Individual.Born, re.Individual.PlaceBorn);
+            if (string.IsNullOrEmpty(p0_bbp?.EventString))
+            {
+                // note: CHR and BAPM are treated as equivalent in layer(s) below 
+                p0_bbp = new FormattedEvent() { EventTagCode = TagCode.BAPM }.Init(", bp.", re.Individual.Baptized, re.Individual.PlaceBaptized);
+            }
+
+            if (!string.IsNullOrEmpty(p0_bbp?.EventString))
+            {
+                p.Append(p0_bbp.EventString.TrimStart()
+                    .Replace(" on ", " ")); // ugly little tweaks; this needs to all be smarter
+                ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p0_bbp);
+                conn = "; m.";
+            }
+
+            string mnbr = re.SafeFamilies.Count > 1 ? $" {_wordsForNumbers[1]}" : "";
+            for (int i = 0; i < re.SafeFamilies.Count; i++)
+            {
+                GedcomIndividual spouze = re.SafeFamilies[i].Family.SpouseOf(re.Individual);
+                string s = $"{conn}{mnbr} {spouze?.SafeNameForward ?? GedcomIndividual.UnknownName}";
+                p.Append(s);
+                ConditionallyEmitNameIndexEntry(_c.Model.Doc, p, spouze);
+                conn = ", ";
+                mnbr = $"{_wordsForNumbers[i + 2]}";
+            }
+
+            p.Append(".");
+            return toDoNotes;
+        }
+
         private void AppendMarriagesSentences(IWpdParagraph p, ReportEntry re, bool isChild, List<GedcomIndividual> toDoNotes,
-            bool reduced, bool doCite, CitationProposals chosenCitations)
+            bool reduced, bool doCite, LocalCitationCoordinator chosenLocalCitations)
         {
             bool storyAppended = false;
             for (int mnbr = 0; mnbr < re.SafeFamilies.Count; mnbr++)
@@ -912,7 +958,7 @@ namespace Ged2Reg.Model
                     p.Append(" (unknown)");
                 }
 
-                FormattedEvent p5_marr = ConditionalEvent("", family.Family.DateMarried, family.Family.PlaceMarried,
+                FormattedEvent p5_marr = new FormattedEvent() { EventTagCode = TagCode.MARR }.Init("", family.Family.DateMarried, family.Family.PlaceMarried,
                     reduced ? null : family.Family.MarriageDescription);
                 if (!string.IsNullOrEmpty(p5_marr?.EventString))
                 {
@@ -924,7 +970,7 @@ namespace Ged2Reg.Model
                 p.Append(".");
                 if (doCite)
                 {
-                    EventCitations ec = chosenCitations[TagCode.MARR.ToString() + family.Family.FamilyView.Id];
+                    EventCitations ec = chosenLocalCitations[TagCode.MARR.ToString() + family.Family.FamilyView.Id];
                     if (ec?.SelectedItem != null)
                     {
                         MyReportStats.Citations++;
@@ -962,15 +1008,15 @@ namespace Ged2Reg.Model
             if (spousesChildhoodFamily == null) return false;
 
             // here we will list the baptism iff there is no birth 
-            FormattedEvent p1_birt = ConditionalEvent("born", spouse.Individual.Born, spouse.Individual.PlaceBorn, spouse.Individual.BirthDescription);
+            FormattedEvent p1_birt = new FormattedEvent() { EventTagCode = TagCode.BIRT }.Init("born", spouse.Individual.Born, spouse.Individual.PlaceBorn, spouse.Individual.BirthDescription);
             FormattedEvent p2_bapt = p1_birt == null
-                ? ConditionalEvent("baptized", spouse.Individual.Baptized, spouse.Individual.PlaceBaptized, spouse.Individual.BaptizedDescription)
+                ? new FormattedEvent() { EventTagCode = TagCode.BAPM }.Init("baptized", spouse.Individual.Baptized, spouse.Individual.PlaceBaptized, spouse.Individual.BaptizedDescription)
                 : null;
 
             // here we will list the burial iff there is no death
-            FormattedEvent p3_deat = ConditionalEvent("died", spouse.Individual.Died, spouse.Individual.PlaceDied, spouse.Individual.DeathDescription);
+            FormattedEvent p3_deat = new FormattedEvent() { EventTagCode = TagCode.DEAT }.Init("died", spouse.Individual.Died, spouse.Individual.PlaceDied, spouse.Individual.DeathDescription);
             FormattedEvent p4_buri = p3_deat == null
-                ? ConditionalEvent("buried", spouse.Individual.Buried, spouse.Individual.PlaceBuried, spouse.Individual.BurialDescription, _c.Settings.OmitBurialDate)
+                ? new FormattedEvent() { EventTagCode = TagCode.BURI }.Init("buried", spouse.Individual.Buried, spouse.Individual.PlaceBuried, spouse.Individual.BurialDescription, _c.Settings.OmitBurialDate)
                 : null;
 
             // to reduce the number of cites and get the minimal case... b&d same source... down to one
@@ -1104,107 +1150,6 @@ namespace Ged2Reg.Model
             if (closer!=null)
                 p.Append(closer);
             return true;
-        }
-
-        private FormattedEvent ConditionalEvent(string ev, string dayt, string place, string detail = null, bool omitDate = false)
-        {
-            if (string.IsNullOrEmpty(dayt) && string.IsNullOrEmpty(place))
-                return null;
-            FormattedEvent fe = new FormattedEvent();
-            StringBuilder sb = new StringBuilder();
-            if (!string.IsNullOrEmpty(ev))
-                sb.Append(" ").Append(ev);
-
-            if (!omitDate && !string.IsNullOrEmpty(dayt))
-                sb.Append(' ').Append(_dateFormatter.Reformat(dayt));
-            if (!string.IsNullOrEmpty(place))
-            {
-                FormattedPlaceName fpn = _placeFormatter.Reformat(place);
-                
-                sb.Append($" {fpn.Preposition} ").Append(fpn.PreferredName);
-                fe.PlaceIndexIndex = sb.Length;
-                fe.PlaceIndexEntry = fpn.IndexEntry;
-            }
-
-            if (_factDesc && !string.IsNullOrEmpty(detail))
-            {
-                string det = OptimizeEventDetail(detail);
-                if (!string.IsNullOrEmpty(det))
-                    sb.Append(" ").Append(det);
-            }
-
-            string rv = sb.ToString().Trim();
-            if (rv.Equals(ev?.Trim() ?? "")) return null;
-            fe.EventString = sb.ToString();
-
-            return fe;
-        }
-
-        internal class FormattedEvent
-        {
-            public string EventString { get; set; }
-            public string PlaceIndexEntry { get; set; }
-            public int PlaceIndexIndex { get; set; }
-        }
-
-        private string OptimizeEventDetail(string detail)
-        {
-            detail = detail?.Trim();
-            if (string.IsNullOrEmpty(detail) || detail.Length < 2)
-                return null;
-            
-            // don't end with a period
-            if (detail.EndsWith("."))
-                detail = detail.Substring(0, detail.Length - 1);
-
-            string[] ss = detail.Split(_splitSpace, StringSplitOptions.RemoveEmptyEntries);
-
-            // don't start with a capital letter
-            // unless it is apparently part of a name (next word also caps)
-            // or an abbreviated name (one letter)
-            if (EvalForInitialLowercase(ss[0], ss.Length > 1 ? ss[1] : null))
-                ss[0] = ss[0].Substring(0, 1).ToLower() + ss[0].Substring(1);
-
-
-            // don't end sentences in the body of this text, make them ; clauses
-            // single letter with a . do not change.  The word after any . -> ; change
-            // is also a candidate to lowercase
-            for (int i = 1; i < ss.Length; i++)
-            {
-                if (!ss[i].EndsWith(".")) continue;
-                if (ss[i].Length < 3) continue;
-                // remove the '.'; todo: what about abbreviations like "St."
-                ss[i] = ss[i].Substring(0, ss[i].Length - 1) + ";";
-                if (i+2 >= ss.Length) continue; // need two more words to evaluate for lc
-                if (!EvalForInitialLowercase(ss[i+1], ss[i+2])) continue;
-                ss[i+1] = ss[i+1].Substring(0, 1).ToLower() + ss[i+1].Substring(1);
-            }
-
-            // reassemble, wrapped in ()s
-            StringBuilder sb = new StringBuilder(detail.Length + 2);
-            sb.Append('(');
-            for (int i = 0; i < ss.Length-1; i++)
-            {
-                sb.Append(ss[i]).Append(' ');
-            }
-
-            sb.Append(ss[ss.Length - 1]).Append(')');
-            return sb.ToString();
-        }
-
-        public bool EvalForInitialLowercase(string x1, string x2)
-        {
-            if (NameConstants.CommonGivenNames.Contains(x1.ToUpper())) return false;
-            if (NameConstants.CommonSurnames.Contains(x1.ToUpper())) return false;
-
-            if (LanguageElementConstants.CommonPrepositions.Contains(x1.ToLower())) return true;
-            if (LanguageElementConstants.Determiners.Contains(x1.ToLower())) return true;
-            if (LanguageElementConstants.Pronouns.Contains(x1.ToLower())) return true;
-
-            bool initialLowercase = x1.Length > 1 && char.IsUpper(x1.ToCharArray()[0]);
-            initialLowercase = initialLowercase && (x1.Length > 2 || (x1.Length == 2 && x1.ToCharArray()[1] != '.'));
-            initialLowercase = initialLowercase && (x2 == null || !char.IsUpper(x2.ToCharArray()[0]));
-            return initialLowercase;
         }
     }
 }

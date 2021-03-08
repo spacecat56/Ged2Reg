@@ -20,6 +20,14 @@ namespace Ged2Reg.Model
 
     public class GenealogicalDateFormatter
     {
+        private static GenealogicalDateFormatter _instance;
+
+        public static GenealogicalDateFormatter Instance
+        {
+            get => _instance ??= new GenealogicalDateFormatter();
+            set => _instance = value;
+        }
+
         public static int ParseYear(string y, int defalt = 9999)
         {
             if (!int.TryParse(y, out int rv))
