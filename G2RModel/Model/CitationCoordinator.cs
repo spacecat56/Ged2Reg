@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using CommonClassesLib;
 using G2RModel.Model;
 using SimpleGedcomLib;
@@ -22,11 +19,6 @@ namespace Ged2Reg.Model
     {
         public static bool DeferConsecutiveRepeats { get; set; }
         public int Deferred { get; set; }
-
-        //private List<CitationUsage> _usages = new List<CitationUsage>();
-
-        //private Dictionary<string, Dictionary<string, CitationUsage>> SourceUsagesMap
-        //    = new Dictionary<string, Dictionary<string, CitationUsage>>();
 
         private List<DistinctCitation> _distinctCitations;
         private Dictionary<Tag, DistinctCitation> _distinctCitationsMap = new Dictionary<Tag, DistinctCitation>();
@@ -86,7 +78,7 @@ namespace Ged2Reg.Model
 
         public int Process(CitationStrategy strategy, CitationStrategy? secondary)
         {
-            // todo: apply policies to select the winners among citations
+            // apply policies to select the winners among citations
             // curious: how many events to be cited?
             int citedEvents = 0;
             foreach (CitableEntityEvents eec in _allEntityEventCitations)
@@ -363,7 +355,7 @@ namespace Ged2Reg.Model
                 _allEntityEventCitations.Add(indi.CitableEvents);
         }
 
-        public static LocalCitationCoordinator Optimize(LocalCitationCoordinator props)
+        public LocalCitationCoordinator Optimize(LocalCitationCoordinator props)
         {
             LocalCitationCoordinator rvl = new LocalCitationCoordinator()
                 {DoCite = props.DoCite};
@@ -392,6 +384,7 @@ namespace Ged2Reg.Model
                 { // push the name of the vanishing event(s) to the survivor 
                     coordinator[i].AddApplicableEvents(candidateProposal);
                     candidateProposal = coordinator[i];
+                    Deferred++;
                     continue;
                 }
                 rvl.Add(candidateProposal);
