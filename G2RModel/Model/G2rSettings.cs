@@ -242,6 +242,8 @@ namespace Ged2Reg.Model
         private bool _omitBackrefsLater;
 
         private bool _allFamilies = true;
+
+        private bool _GenNbrAllChildren;
         #endregion
 
         #region initializations
@@ -617,6 +619,13 @@ namespace Ged2Reg.Model
                 OnPropertyChanged();
                 ApplyMarginOption();
             }
+        }
+
+        [DataMember]
+        public bool GenNbrAllChildren
+        {
+            get { return _GenNbrAllChildren; }
+            set { _GenNbrAllChildren = value; OnPropertyChanged(); }
         }
 
         [DataMember]
@@ -1209,6 +1218,7 @@ namespace Ged2Reg.Model
             ReduceContinuedChildren = false;
             MinimizeContinuedChildren = false;
             StandardBriefContinued = true;
+            GenNbrAllChildren = false;
 
             HandleUnknownNames = true;
             UnknownInReport = "_____";
@@ -1229,6 +1239,7 @@ namespace Ged2Reg.Model
 
             OmitCitesOnContinued = true;
             Brackets = false;
+            DeferConsecutiveRepeats = false;
 
             MainPersonNotes = false;
             SpousesNotes = false;
@@ -1245,6 +1256,8 @@ namespace Ged2Reg.Model
             Append(sb, "Include burial events", this.IncludeBurial);
             Append(sb, "Omit burial date", this.OmitBurialDate);
             Append(sb, "Reduce place names", this.ReducePlaceNames);
+            sb.AppendLine("NB - REVIEW THIS SETTING:");
+            Append(sb, "Generation nbr on all children", this.GenNbrAllChildren);
             Append(sb, "Full place name/gen", this.FullPlaceOncePerGen);
             Append(sb, "Inject county", this.InjectCounty);
             Append(sb, "Drop USA", this.DropUsa);
@@ -1273,6 +1286,7 @@ namespace Ged2Reg.Model
             sb.AppendLine("....Settings (citation conformance) (incomplete)");
             Append(sb, "Omit On Continued", this.OmitCitesOnContinued);
             Append(sb, "Brackets on footnote nbrs", this.Brackets);
+            sb.AppendLine("NB - REVIEW THIS SETTING:");
             Append(sb, "Defer consecutive repeats", this.DeferConsecutiveRepeats);
 
             sb.AppendLine();

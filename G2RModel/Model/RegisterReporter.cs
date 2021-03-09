@@ -49,8 +49,10 @@ namespace Ged2Reg.Model
         private bool _generationalReducePlaceNames;
         private bool _standardReducePlaceNames;
         private bool _standardBriefContdChild;
+        private bool _genNbrAllChildren;
 
         private bool _ancestryReport;
+        private bool _registerReport => !_ancestryReport;
         private bool _suppressGenSuperscripts;
         private bool _allowMultiple;
         private bool _generationNumberPrefixes;
@@ -93,6 +95,7 @@ namespace Ged2Reg.Model
             _ancestryReport = _c.Settings.AncestorsReport;
             _suppressGenSuperscripts = _c.Settings.SuppressGenNbrs && _ancestryReport;
             _generationNumberPrefixes = _c.Settings.GenerationPrefix && _ancestryReport;
+            _genNbrAllChildren = _c.Settings.GenNbrAllChildren;
             _allowMultiple = _c.Settings.AllowMultipleAppearances;
             _placeholders = _ancestryReport && _c.Settings.Placeholders;
             _unknownName = _c.Settings.UnknownInReport;
@@ -568,19 +571,25 @@ namespace Ged2Reg.Model
                 ? $"{child.GetNumber(_generationNumberPrefixes)}.\t{child.ChildNumberRoman}.{sp}"
                 : $"\t{child.ChildNumberRoman}.\t";
             p.Append(kidNbr);
+
             string childNameStyle = _styleMap[StyleSlots.ChildName].CharacterStyleName;
-            if (child.AssignedChildNumber > 1)
+            // conditions to turn off the generation number:
+            bool dropNbr = _suppressGenSuperscripts
+                           || g < 1
+                           || (_ancestryReport && child.AssignedMainNumber < 1);
+            // but those do not apply for a register report with 'on all children' set:
+            dropNbr &= !(_registerReport && _genNbrAllChildren);
+            if (dropNbr || (!_genNbrAllChildren && child.AssignedChildNumber > 1))
             {
-                // just the name please: standard applies
+                // just the name please: convention applies
                 p.Append(child.Individual.SafeNameForward, false, _childNameFormatting);
             }
             else
             {
                 // include the generation number
                 p.Append(child.Individual.SafeGivenName, false, _childNameFormatting);
-                bool dropNbr = _suppressGenSuperscripts || g < 1 || (_ancestryReport && child.AssignedMainNumber < 1);
-                if (!dropNbr)
-                    p.Append($"{g}", false, _generationNumberFormatting);
+                //if (!dropNbr)
+                p.Append($"{g}", false, _generationNumberFormatting);
                 if (!string.IsNullOrEmpty(child.Individual.SafeSurname))
                     p.Append($" {child.Individual.SafeSurname}", false, _childNameFormatting);
             }

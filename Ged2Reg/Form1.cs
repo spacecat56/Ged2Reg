@@ -50,6 +50,7 @@ namespace Ged2Reg
         private int kbColPos = 320;
         private CheckBox kbItalicsLineage;
         private CheckBox kbStdBriefContd;
+        private CheckBox kbGenNbrAll;
         private ToolStripMenuItem miTools;
         private ToolStripMenuItem miObfuscate;
 
@@ -59,8 +60,9 @@ namespace Ged2Reg
 
             tabControl1.TabPages.Remove(tabPage4);
 
-
-            // add the option to Content tab
+            //
+            // CHANGES TO the Content tab
+            //
             TabPage tpContentOptions = tabPage2;
             yPos = label30.Top - 6;
             lbColPos = label9.Left;
@@ -69,19 +71,27 @@ namespace Ged2Reg
             kbItalicsLineage = AddBoundCheckBox(tpContentOptions, 
                 "Italicize names in lineage list", 
                 nameof(G2RSettings.ItalicsNamesInLineageList));
-            kbItalicsLineage.Top += 10;  // sigh.  not sure why.
+            //kbItalicsLineage.Top += 20;  // sigh.  not sure why.
 
-            yPos = label61.Top;
+            yPos = label61.Top + 4;
             lbColPos = label61.Left;
             kbColPos = kbIncludeEvents.Left;
             kbStdBriefContd = AddBoundCheckBox(tpContentOptions,
                 "Brief (standard) output for continued",
                 nameof(G2RSettings.StandardBriefContinued));
-            kbStdBriefContd.Top += 6;  // sigh.  not sure why.
+            //kbStdBriefContd.Top += 10;  // sigh.  not sure why.
 
             yPos = label45.Bottom + 36;
             pbConform = AddButton(tpContentOptions, "Conform settings", 180, label45.Left);
             pbConform.Click += pbConform_Click;
+
+
+            yPos = (int) (label7.Bottom + (1.5 * rowStep));
+            lbColPos = label7.Left;
+            kbColPos = checkBox2.Left;
+            kbGenNbrAll = AddBoundCheckBox(tpContentOptions,
+                "Generation numbers on all children",
+                nameof(G2RSettings.GenNbrAllChildren));
 
             // extra copy of this setting, not needed
             kbAncestorsReport.Visible = label65.Visible = false;
@@ -91,7 +101,9 @@ namespace Ged2Reg
             label61.Visible = kbIncludeEvents.Visible = false;
             tpContentOptions.ResumeLayout();
 
-
+            //
+            // ADDED TAB for ancestry report settings
+            //
             tpAncestry = new TabPage("Ancestry Report");
             tpAncestry.SuspendLayout();
             yPos = 32;
@@ -177,6 +189,9 @@ namespace Ged2Reg
             tpAncestry.ResumeLayout(false);
 
 
+            //
+            // CHANGES TO the menu
+            //
             miTools = new ToolStripMenuItem()
             {
                 Name = nameof(miTools),
