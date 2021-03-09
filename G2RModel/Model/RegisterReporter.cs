@@ -979,46 +979,21 @@ namespace Ged2Reg.Model
             FormattedEvent p1BirtBapm = new FormattedEvent() { EventTagCode = TagCode.BIRT }.Init("born", spouse.Individual.Born, spouse.Individual.PlaceBorn, spouse.Individual.BirthDescription);
             p1BirtBapm ??= new FormattedEvent() {EventTagCode = spouse.Individual.BaptismTagCode}.Init("baptized",
                 spouse.Individual.Baptized, spouse.Individual.PlaceBaptized, spouse.Individual.BaptizedDescription);
-            //FormattedEvent p2_bapt = p1_birt == null
-            //    ? new FormattedEvent() { EventTagCode = spouse.Individual.BaptismTagCode }.Init("baptized", spouse.Individual.Baptized, spouse.Individual.PlaceBaptized, spouse.Individual.BaptizedDescription)
-            //    : null;
 
             // here we will list the burial iff there is no death
             FormattedEvent p3DeatBuri = new FormattedEvent() { EventTagCode = TagCode.DEAT }.Init("died", spouse.Individual.Died, spouse.Individual.PlaceDied, spouse.Individual.DeathDescription);
             p3DeatBuri ??= new FormattedEvent() { EventTagCode = TagCode.BURI }.Init("buried", spouse.Individual.Buried, spouse.Individual.PlaceBuried, spouse.Individual.BurialDescription, _c.Settings.OmitBurialDate);
             
-            //FormattedEvent p4_buri = p3_deat == null
-            //    ? new FormattedEvent() { EventTagCode = TagCode.BURI }.Init("buried", spouse.Individual.Buried, spouse.Individual.PlaceBuried, spouse.Individual.BurialDescription, _c.Settings.OmitBurialDate)
-            //    : null;
-
-            // TODO: use a LocalCitationCoordinator
-            // TODO: use a LocalCitationCoordinator
-            // TODO: use a LocalCitationCoordinator
-            // TODO: use a LocalCitationCoordinator
-            // TODO: use a LocalCitationCoordinator
-            // TODO: use a LocalCitationCoordinator... limited to the events we are emitting
-
             List<TagCode> eventsToCiteFor = new List<TagCode>();
             if (p1BirtBapm != null) eventsToCiteFor.Add(p1BirtBapm.EventTagCode);
             if (p3DeatBuri != null) eventsToCiteFor.Add(p3DeatBuri.EventTagCode);
             LocalCitationCoordinator localCitations 
                 = BuildLocalCitationCoordinator(spouse, _c.Settings.Citations, eventsToCiteFor, false);
 
-
-            // to reduce the number of cites and get the minimal case... b&d same source... down to one
-            // note that birt/bapm and deat/buri are natural synonyms, and 
-            // we are listing only one from each pair here, so, we have at most two citations
-            //EventCitations ec_bb = spouse.Individual.CitableEvents?.Find(spouse.Individual.EventTag(p1BirtBapm == null ? spouse.Individual.BaptismTagCode : TagCode.BIRT));
-            //EventCitations ec_di = spouse.Individual.CitableEvents?.Find(spouse.Individual.EventTag(p3DeatBuri == null ? TagCode.BURI : TagCode.DEAT));
-
-            // and if they are the same, drop the earlier one
-            //if (ec_di?.SelectedItem == ec_bb?.SelectedItem)
-            //    ec_bb = null;
-
-
             bool hasBb = p1BirtBapm != null;
             bool hasDb = p3DeatBuri != null;
             bool hasContent = hasBb || hasDb;
+
             bool hasPere = !string.IsNullOrEmpty(spousesChildhoodFamily.Husband?.SafeNameForward);
             bool hasMere = !string.IsNullOrEmpty(spousesChildhoodFamily.Wife?.SafeNameForward);
             bool hasRents = hasMere || hasPere;
@@ -1037,6 +1012,7 @@ namespace Ged2Reg.Model
 
             if (hasRents)
             {
+                // todo: we NEED a mechanism to do this stuff in a generalized way
                 p.Append($" was the {spouse.Individual.NounAsChild.ToLower()} of");
                 string conj = null;
                 if (hasPere)
@@ -1075,7 +1051,6 @@ namespace Ged2Reg.Model
                 isOpen = true;
             }
 
-            // todo: we NEED a mechanism to do this stuff in a generalized way
             if (hasBb)
             {
                 if (isOpen)
@@ -1092,51 +1067,12 @@ namespace Ged2Reg.Model
 
                 EmitEvent(p, p1BirtBapm, localCitations, hasDb?null:closer, connector);
                 connector = $" and {spouse.Individual.Pronoun.ToLower()}";
-                //p.Append($"{connector}{p1BirtBapm?.EventString}{(hasDb?",":null)}");
-                //ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p1BirtBapm);
-                //if (hasDb)
-                //{
-                //    connector = $" and {spouse.Individual.Pronoun.ToLower()}";
-                //    isOpen = true;
-                //}
-                //else
-                //{
-                //    p.Append(closer);
-                //    closer = null;
-                //}
-                //if (doCite)
-                //{
-                //    if (ec_bb?.SelectedItem != null)
-                //    {
-                //        MyReportStats.Citations++;
-                //        if (!ec_bb.SelectedItem.IsEmitted)
-                //            MyReportStats.DistinctCitations++;
-                //        ec_bb.EmitNote(_c.Model.Doc, p, null); 
-                //    }
-                //}
             }
-
-            //if (!hasBb && isOpen)
-            //    connector = $" and {spouse.Individual.Pronoun.ToLower()}";
 
             if (hasDb)
             {
                 EmitEvent(p, p3DeatBuri, localCitations, closer, connector);
                 closer = null;
-                //p.Append($"{connector}{p3DeatBuri?.EventString}");
-                //ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p3DeatBuri);
-                //p.Append(closer);
-                //closer = null;
-                //if (doCite)
-                //{
-                //    if (ec_di?.SelectedItem != null)
-                //    {
-                //        MyReportStats.Citations++;
-                //        if (!ec_di.SelectedItem.IsEmitted)
-                //            MyReportStats.DistinctCitations++;
-                //        ec_di.EmitNote(_c.Model.Doc, p, null); 
-                //    }
-                //}
             }
             if (closer!=null)
                 p.Append(closer);
