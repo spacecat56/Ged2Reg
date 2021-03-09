@@ -37,6 +37,7 @@ namespace Ged2Reg
         // GenerationHeadings
 
         TabPage tpAncestry;
+        private TabPage tpIndexes;
         Label lbAncestry;
         private Button pbListAncestors;
         private Button pbConform;
@@ -51,6 +52,7 @@ namespace Ged2Reg
         private CheckBox kbItalicsLineage;
         private CheckBox kbStdBriefContd;
         private CheckBox kbGenNbrAll;
+        private CheckBox kbIndexMarriedNames;
         private ToolStripMenuItem miTools;
         private ToolStripMenuItem miObfuscate;
 
@@ -100,6 +102,21 @@ namespace Ged2Reg
             // additional events - not implemented
             label61.Visible = kbIncludeEvents.Visible = false;
             tpContentOptions.ResumeLayout();
+
+            //
+            // CHANGES TO the Indexes tab
+            //
+            tpIndexes = tabPage6;
+            tpIndexes.SuspendLayout();
+
+            yPos = pbDefaultNameIndex.Bottom + rowStep / 2;
+            lbColPos = label44.Left;
+            kbColPos = pbDefaultNameIndex.Left;
+            kbIndexMarriedNames = AddBoundCheckBox(tpIndexes,
+                "+ married names",
+                nameof(G2RSettings.IndexMarriedNames));
+
+            tpIndexes.ResumeLayout();
 
             //
             // ADDED TAB for ancestry report settings

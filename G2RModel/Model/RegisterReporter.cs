@@ -244,7 +244,6 @@ namespace Ged2Reg.Model
 
             _currentGeneration = 0;
             BigInteger genSize = new BigInteger(1);
-            //BigInteger multipli = 2;
             BigInteger expectedNext = 1;
             foreach (ListOfReportEntry generation in Generations)
             {
@@ -408,9 +407,6 @@ namespace Ged2Reg.Model
             if (!string.IsNullOrEmpty(indi.Individual.SafeSurname))
                 p.Append($" {indi.Individual.SafeSurname}", false, _styleMap[StyleSlots.MainPerson]);
 
-            // for future consideration: is this a better place to emit index entries for 
-            // married names? we would need to loop them...
-            //ConditionallyEmitNameIndexEntry(doc, p, indi.Individual);
             EmitNameIndexEntries(p, indi);
 
             if (_c.Settings.DebuggingOutput)
@@ -681,27 +677,6 @@ namespace Ged2Reg.Model
             return true;
         }
 
-        //internal bool ConditionallyEmitNameIndexEntry(IWpdDocument doc, IWpdParagraph p, 
-        //    GedcomIndividual indi, ReportFamilyEntry f = null, bool marriedNameOnly = false)
-        //{
-        //    if (!_c.Settings.NameIndexSettings.Enabled || indi == null) return false;
-        //    string ixn = _c.Settings.NameIndexSettings.IndexName;
-        //    if (string.IsNullOrEmpty(ixn))
-        //        ixn = null;
-        //    WpdFieldBase ex;
-        //    if (!marriedNameOnly)
-        //    {
-        //        ex = doc.BuildIndexEntryField(ixn, $"{indi.IndexableSurname}:{indi.SafeGivenName}").Build();
-        //        p.AppendField(ex);
-        //    }
-        //    string altName; 
-        //    if (_indexMarriedNames && indi.Gender == "F" && (altName = f?.IndexableExtendedWifeForeName) != null)
-        //    {
-        //        ex = doc.BuildIndexEntryField(ixn, $"{f.Husband.Individual.IndexableSurname}:{altName}").Build();
-        //        p.AppendField(ex);
-        //    }
-        //    return true;
-        //}
         internal bool ConditionallyEmitPlaceIndexEntry(IWpdDocument doc, IWpdParagraph p, FormattedEvent fe)
         {
             if (!_c.Settings.PlaceIndexSettings.Enabled || string.IsNullOrEmpty(fe?.PlaceIndexEntry)) return false;
@@ -715,7 +690,6 @@ namespace Ged2Reg.Model
 
         private List<GedcomIndividual> AppendPersonDetails(IWpdDocument doc, IWpdParagraph p, ReportEntry re, bool isChild = false)
         {
-
             // short-stop: optional standard / brief child line if so configured and the child is continued
             if (isChild && _standardBriefContdChild && re.AssignedMainNumber > 0)
             {
@@ -795,11 +769,6 @@ namespace Ged2Reg.Model
 
             // we can detect and optimize out consecutive repeats of the same citation
             // NB this list is ORDERED by the appearance of the cited facts
-
-            //cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(TagCode.BIRT)));
-            //cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(re.Individual.BaptismTagCode)));
-            //cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(TagCode.DEAT)));
-            //cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(TagCode.BURI)));
             eventsToCiteFor ??= new List<TagCode>()
             {
                 TagCode.BIRT,
@@ -935,7 +904,6 @@ namespace Ged2Reg.Model
                 GedcomIndividual spouze = re.SafeFamilies[i].Family.SpouseOf(re.Individual);
                 string s = $"{conn}{mnbr} {spouze?.SafeNameForward ?? GedcomIndividual.UnknownName}";
                 p.Append(s);
-                //ConditionallyEmitNameIndexEntry(_c.Model.Doc, p, spouze, re.SafeFamilies[i]);
                 EmitNameIndexEntries(p, spouze);
                 conn = ", ";
                 mnbr = $"{_wordsForNumbers[i + 2]}";
@@ -971,15 +939,6 @@ namespace Ged2Reg.Model
                     if (_c.Settings.SpousesNotes && !_ancestryReport)  // prevent duplication when both are handled as mains
                         toDoNotes.Add(spouse.Individual);
 
-                    // if this spouse is male, i.e. the main is a female descendant, we
-                    // (optionally) want to index her married name(s).
-                    // we choose to do it here, positioned in the text along with the spouse, 
-                    // so that if there is a page break it goes with.  is this the best choice?
-                    //if (_indexMarriedNames && main.IsFemale)
-                    //{
-                    //    ConditionallyEmitNameIndexEntry(_c.Model.Doc, p, main.Individual, family, true);
-                    //}
-
                     p.Append(spouse.Individual.SafeNameForward);
                     if (isChild && re.AssignedMainNumber == 0)
                     {
@@ -994,9 +953,6 @@ namespace Ged2Reg.Model
                             MyReportStats.MaybeLiving++;
                     }
 
-                    // hmmm... this will only yield indexed married names... of spouses of
-                    // male descendants, not of the female descendants....
-                    //ConditionallyEmitNameIndexEntry(_c.Model.Doc, p, spouse.Individual, family);
                     EmitNameIndexEntries(p, spouse);
                     if (_c.Settings.DebuggingOutput)
                     {
@@ -1121,7 +1077,6 @@ namespace Ged2Reg.Model
                     MyReportStats.SpouseParents++;
                     if (!spousesChildhoodFamily.Husband.PresumedDeceased)
                         MyReportStats.MaybeLiving++;
-                    //ConditionallyEmitNameIndexEntry(_c.Model.Doc, p, spousesChildhoodFamily.Husband);
                     EmitNameIndexEntries(p, spousesChildhoodFamily.Husband);
                     if (_c.Settings.DebuggingOutput)
                     {
@@ -1135,7 +1090,6 @@ namespace Ged2Reg.Model
                     MyReportStats.SpouseParents++;
                     if (!spousesChildhoodFamily.Wife.PresumedDeceased)
                         MyReportStats.MaybeLiving++;
-                    //ConditionallyEmitNameIndexEntry(_c.Model.Doc, p, spousesChildhoodFamily.Wife); // todo: cannot ix married name, wrong object (level)
                     EmitNameIndexEntries(p, spousesChildhoodFamily.Wife);
                     if (_c.Settings.DebuggingOutput)
                     {

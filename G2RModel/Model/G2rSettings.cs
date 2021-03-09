@@ -1361,6 +1361,7 @@ namespace Ged2Reg.Model
             Append(sb, "Notes / spouses", this.SpousesNotes);
             Append(sb, "Convert dividers", this.ConvertDividers);
             Append(sb, "Name index", this.NameIndexSettings?.Enabled??false);
+            Append(sb, " + married names", IndexMarriedNames);
             Append(sb, "Place index", this.PlaceIndexSettings?.Enabled ?? false);
             Append(sb, "Input file", Path.GetFileName(GedcomFile));
             Append(sb, "Output file", Path.GetFileName(OutFile));
