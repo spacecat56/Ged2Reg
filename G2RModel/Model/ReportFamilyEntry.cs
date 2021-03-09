@@ -21,9 +21,62 @@ namespace G2RModel.Model
             
             StringBuilder sb = new StringBuilder();
 
-            // start with given name and maiden name
+            // start with given name 
             sb.Append(Wife.Individual.SafeGivenName);
-            sb.Append(" (").Append(Wife.Individual.SafeSurname).Append(')');
+
+            // extend with names up to this marriage
+            sb.Append(' ').Append(ExtendedWifeSurname(placeholder));
+
+            //sb.Append(" (").Append(Wife.Individual.SafeSurname).Append(')');
+
+            //// add the surnames of all prior marriages
+            //int ix = Wife.Families.IndexOf(Family);
+            //for (int i = 0; i < ix; i++)
+            //{
+            //    sb.Append(" (").Append(SafeSurname(Wife?.Individual?.Families[i].Husband?.SafeSurname, placeholder)).Append(')');
+            //}
+
+            //sb.Append(' ').Append(SafeSurname(Husband?.Individual?.SafeSurname, placeholder));
+
+            return sb.ToString();
+        }
+        public string IndexableExtendedWifeForeName
+        {
+            get
+            {
+                if (Wife == null)
+                {
+                    return null;
+                }
+
+                // are we in the era of non-binary names? or, husband unknown?
+                if (string.IsNullOrEmpty(Husband?.Individual?.Surname))
+                    return null;
+
+                if (Wife.NameIsUnknown())
+                    return null;
+
+                StringBuilder sb = new StringBuilder();
+
+                // start with the given name and add the maiden name and all PRIOR marriages
+                sb.Append(Wife.Individual.SafeGivenName).Append(' ')
+                    .Append(ExtendedWifeSurname(includeHusbandSurname: false));
+
+                return sb.ToString();
+            }
+        }
+
+        public string ExtendedWifeSurname(string placeholder = "_____", bool includeHusbandSurname = true)
+        {
+            if (Wife == null)
+            {
+                return null;
+            }
+
+            StringBuilder sb = new StringBuilder();
+
+            // start with the maiden name
+            sb.Append("(").Append(Wife.Individual.SafeSurname).Append(')');
 
             // add the surnames of all prior marriages
             int ix = Wife.Families.IndexOf(Family);
@@ -32,7 +85,11 @@ namespace G2RModel.Model
                 sb.Append(" (").Append(SafeSurname(Wife?.Individual?.Families[i].Husband?.SafeSurname, placeholder)).Append(')');
             }
 
-            sb.Append(' ').Append(SafeSurname(Husband?.Individual?.SafeSurname, placeholder));
+            if (includeHusbandSurname)
+            {
+                // add the husband's surname, as an assumption!  user beware of modern couples
+                sb.Append(' ').Append(SafeSurname(Husband?.Individual?.SafeSurname, placeholder));
+            }
 
             return sb.ToString();
         }

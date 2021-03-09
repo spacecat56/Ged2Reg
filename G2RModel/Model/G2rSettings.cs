@@ -208,6 +208,7 @@ namespace Ged2Reg.Model
         private IndexSettings _nameIndexSettings;
         private IndexSettings _placeIndexSettings;
         private DocumentType _documentType;
+        private bool _indexMarriedNames;
 
         private bool _reportSummary;
         private DateTime? _lastRun;
@@ -626,6 +627,13 @@ namespace Ged2Reg.Model
         {
             get { return _GenNbrAllChildren; }
             set { _GenNbrAllChildren = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public bool IndexMarriedNames
+        {
+            get { return _indexMarriedNames; }
+            set { _indexMarriedNames = value; OnPropertyChanged(); }
         }
 
         [DataMember]
@@ -1243,6 +1251,8 @@ namespace Ged2Reg.Model
 
             MainPersonNotes = false;
             SpousesNotes = false;
+
+            IndexMarriedNames = true;
         }
         public string ReportConformanceSettings()
         {
@@ -1291,7 +1301,7 @@ namespace Ged2Reg.Model
 
             sb.AppendLine();
             sb.AppendLine("....Settings (index conformance)");
-            Append(sb, "Also index married names", "pending");
+            Append(sb, "Also index married names", IndexMarriedNames);
 
             sb.AppendLine();
             sb.AppendLine("....Settings (notes conformance)");

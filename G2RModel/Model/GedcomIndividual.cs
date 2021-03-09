@@ -48,6 +48,8 @@ namespace Ged2Reg.Model
             return true;
         }
 
+        public bool NameIsUnknown => IsUnknown(IndividualView?.Surname, IndividualView?.GivenName);
+
         //public string SafeName => IsUnknown(IndividualView?.GivenName, IndividualView?.Surname)
         //    ? Settings.UnknownInReport
         //    : $"{SafeSurname}, {SafeGivenName}";

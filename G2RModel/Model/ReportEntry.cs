@@ -90,6 +90,8 @@ namespace G2RModel.Model
             set => _emitChildrenAfter = value;
         }
 
+        public bool DidInit { get; set; }
+
         public bool FamiliesAreSorted => Individual?.FamiliesAreSorted ?? false;
 
         public ListOfReportFamilyEntries FamilyEntries { get; set; }
@@ -134,6 +136,8 @@ namespace G2RModel.Model
         public BigInteger FirstAppearance => (Individual.FirstReportEntry?.AssignedMainNumber 
                                               ?? AssignedMainNumber);
 
+        public bool IsFemale => Individual?.Gender == "F";
+
         public string GetNumber(bool withGeneration) => withGeneration
             ? $"{Generation:00}-{AssignedMainNumber}"
             : $"{AssignedMainNumber}";
@@ -162,6 +166,11 @@ namespace G2RModel.Model
             ChildhoodFamily = ReportEntryFactory.Instance.GetReportFamily(Individual.ChildhoodFamily);
             // we need to link across generations when doing multi-occurence
             // this does not accomplish the task ChildhoodFamily?.Link(this);
+
+            // we're not going to REFUSE to run Init() again...
+            // ... but we will let the caller find out if we already did it
+            DidInit = true;
+
             return this;
         }
 
@@ -264,6 +273,8 @@ namespace G2RModel.Model
             int ix = Individual.SpouseIndex(re.Individual);
             return ix;
         }
+
+        public bool NameIsUnknown() => Individual?.NameIsUnknown ?? true;
     }
 
     public class ListOfReportEntry : List<ReportEntry>
