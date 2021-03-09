@@ -81,6 +81,9 @@ namespace Ged2Reg.Model
             MyReportStats = new ReportStats().Init(prep);
             _c = ReportContext.Instance;
 
+            // configure policies that are held in statics
+            CitationCoordinator.DeferConsecutiveRepeats = _c.Settings.DeferConsecutiveRepeats;
+
             // as a side-effect, inform the FormattedEvent of the choice re: descriptions
             FormattedEvent.IncludeFactDescription = _factDesc = _c.Settings.IncludeFactDescriptions;
             _reduceChild = _c.Settings.ReduceContinuedChildren;
@@ -338,18 +341,19 @@ namespace Ged2Reg.Model
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Summary of report processing");
-            sb.AppendLine($"\tMain/continued persons.....{MyReportStats.MainPerson,8:N0}");
-            sb.AppendLine($"\tNon-continued children.....{MyReportStats.NonContinuedPerson,8:N0}");
-            sb.AppendLine($"\tMain spouses...............{MyReportStats.MainSpouse,8:N0}");
-            sb.AppendLine($"\tSpouses of non-continued...{MyReportStats.NonContinuedSpouses,8:N0}");
-            sb.AppendLine($"\tParents of spouses.........{MyReportStats.SpouseParents,8:N0}");
-            sb.AppendLine($"\tPersons possibly living....{MyReportStats.MaybeLiving,8:N0}");
-            sb.AppendLine($"\tCitations..................{MyReportStats.Citations,8:N0}");
-            sb.AppendLine($"\tDistinct citations.........{MyReportStats.DistinctCitations,8:N0}");
+            sb.AppendLine($"\tMain/continued persons.......{MyReportStats.MainPerson,8:N0}");
+            sb.AppendLine($"\tNon-continued children.......{MyReportStats.NonContinuedPerson,8:N0}");
+            sb.AppendLine($"\tMain spouses.................{MyReportStats.MainSpouse,8:N0}");
+            sb.AppendLine($"\tSpouses of non-continued.....{MyReportStats.NonContinuedSpouses,8:N0}");
+            sb.AppendLine($"\tParents of spouses...........{MyReportStats.SpouseParents,8:N0}");
+            sb.AppendLine($"\tPersons possibly living......{MyReportStats.MaybeLiving,8:N0}");
+            sb.AppendLine($"\tCitations....................{MyReportStats.Citations,8:N0}");
+            sb.AppendLine($"\tDistinct citations...........{MyReportStats.DistinctCitations,8:N0}");
+            sb.AppendLine($"\tDeferred/combined citations..{CitationCoordinator.Deferred,8:N0}");
             //sb.AppendLine($"\tPrep time...................{MyReportStats.PrepTime:h\\:mm\\:ss\\.fff}");
             //sb.AppendLine($"\tRun time....................{MyReportStats.ReportTime:h\\:mm\\:ss\\.fff}");
-            sb.AppendLine($"\tTotal execution time........{MyReportStats.ReportTime.Add(MyReportStats.PrepTime):h\\:mm\\:ss\\.fff}");
-            sb.Append($"\tDate/time completed.........{MyReportStats.EndTime}");
+            sb.AppendLine($"\tReport preparation time.......{MyReportStats.ReportTime.Add(MyReportStats.PrepTime):h\\:mm\\:ss\\.fff}");
+            sb.Append($"\tDate/time completed...........{MyReportStats.EndTime}");
             return sb.ToString();
         }
 

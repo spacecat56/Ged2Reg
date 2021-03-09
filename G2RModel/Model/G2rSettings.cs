@@ -174,6 +174,8 @@ namespace Ged2Reg.Model
         private int _numberCitesToSummarize = 2;
         private bool _useSeeNote = true;
         private bool _asEndnotes;
+        private bool _repeatInline;
+        private bool _deferConsecutive;
 
         private bool _mainPersonNotes;
         private bool _spousesNotes;
@@ -220,6 +222,26 @@ namespace Ged2Reg.Model
         private bool _lastActive;
         private bool _ancestorsReport;
 
+        private bool _suppressGenNbrs;
+        private bool _gernerationPrefix;
+        private bool _placeholders;
+        private bool _backRefs;
+        private bool _includeSibs;
+        private int _minFromGen;
+        private bool _generationHeadings;
+        private bool _allowMultiple = true;
+        private bool _reduceMargins;
+        private bool _useHostName;
+
+        private bool _focus;
+        private bool _continue;
+        private string _focusName;
+        private string _focusId;
+        private bool _omitFocusSpouses;
+        private bool _findDuplicates;
+        private bool _omitBackrefsLater;
+
+        private bool _allFamilies = true;
         #endregion
 
         #region initializations
@@ -470,26 +492,6 @@ namespace Ged2Reg.Model
         #endregion
 
         #region persistent/bindable properties
-        private bool _suppressGenNbrs;
-        private bool _gernerationPrefix;
-        private bool _placeholders;
-        private bool _backRefs;
-        private bool _includeSibs;
-        private int _minFromGen;
-        private bool _generationHeadings;
-        private bool _allowMultiple = true;
-        private bool _reduceMargins;
-        private bool _useHostName;
-
-        private bool _focus;
-        private bool _continue;
-        private string _focusName;
-        private string _focusId;
-        private bool _omitFocusSpouses;
-        private bool _findDuplicates;
-        private bool _omitBackrefsLater;
-
-        private bool _allFamilies = true;
         #region AncestorReportOptions
         [DataMember]
         public bool AncestorsReport
@@ -972,7 +974,6 @@ namespace Ged2Reg.Model
             get { return _useSeeNote; }
             set { _useSeeNote = value; OnPropertyChanged(); }
         }
-        private bool _repeatInline;
 
         [DataMember]
         public bool RepeatNoteRefInline
@@ -981,6 +982,12 @@ namespace Ged2Reg.Model
             set { _repeatInline = value; OnPropertyChanged(); }
         }
 
+        [DataMember]
+        public bool DeferConsecutiveRepeats
+        {
+            get { return _deferConsecutive; }
+            set { _deferConsecutive = value; OnPropertyChanged(); }
+        }
 
         [DataMember]
         public bool OmitCitesOnContinued
@@ -1266,8 +1273,7 @@ namespace Ged2Reg.Model
             sb.AppendLine("....Settings (citation conformance) (incomplete)");
             Append(sb, "Omit On Continued", this.OmitCitesOnContinued);
             Append(sb, "Brackets on footnote nbrs", this.Brackets);
-            Append(sb, "Cite each fact separately", "pending");
-            Append(sb, "Compound cites at para end", "pending");
+            Append(sb, "Defer consecutive repeats", this.DeferConsecutiveRepeats);
 
             sb.AppendLine();
             sb.AppendLine("....Settings (index conformance)");
@@ -1324,6 +1330,7 @@ namespace Ged2Reg.Model
             Append(sb, "Max in summary", this.NumberCitesToSumamrize);
             Append(sb, "Use 'see note'", this.UseSeeNote);
             Append(sb, "Repeat ref inline", this.RepeatNoteRefInline);
+            Append(sb, "Defer consecutive repeats", this.DeferConsecutiveRepeats);
             Append(sb, "Brackets", this.Brackets);
             Append(sb, "Omit on continued", this.OmitCitesOnContinued);
             Append(sb, "Notes / main persons", this.MainPersonNotes);

@@ -20,6 +20,9 @@ namespace Ged2Reg.Model
     /// </summary>
     public class CitationCoordinator
     {
+        public static bool DeferConsecutiveRepeats { get; set; }
+        public int Deferred { get; set; }
+
         //private List<CitationUsage> _usages = new List<CitationUsage>();
 
         //private Dictionary<string, Dictionary<string, CitationUsage>> SourceUsagesMap
@@ -66,6 +69,7 @@ namespace Ged2Reg.Model
 
         public CitationCoordinator(List<CitationView> allCitationViews)
         {
+            Deferred = 0;
             _allCodes = new List<TagCode>(PersonEventsToCite);
             _allCodes.AddRange(FamilyEventsToCite);
 
@@ -373,9 +377,14 @@ namespace Ged2Reg.Model
                 coordinator.Add(prop);
             }
 
-            if (coordinator.Count < 2)
+            // if there's only one, or the global policy is not to defer (combine)
+            // or the local policy has an override not to combine, then we are done
+            if (coordinator.Count < 2 
+                || (props.OverrideDeferRepeats == null && !DeferConsecutiveRepeats)
+                || (props.OverrideDeferRepeats.HasValue && props.OverrideDeferRepeats.Value))
                 return coordinator;
 
+            // find and combine consecutive repeats of the same citation
             CitationProposal candidateProposal = coordinator[0];
             for (int i = 1; i < coordinator.Count; i++)
             {

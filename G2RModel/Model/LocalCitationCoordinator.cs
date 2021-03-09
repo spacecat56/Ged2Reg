@@ -5,6 +5,11 @@ namespace Ged2Reg.Model
 {
     public class LocalCitationCoordinator : List<CitationProposal>
     {
+        /// <summary>
+        /// iff not null, this setting (true OR false) overrides the global setting
+        /// in CitationCoordinator.
+        /// </summary>
+        public bool? OverrideDeferRepeats { get; set; }
         public bool AddNonNull(EventCitations ec, string iid = null)
         {
             if (ec == null)
