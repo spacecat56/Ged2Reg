@@ -60,6 +60,7 @@ namespace G2RModel.Model
 
         public ReportTreeBuilder Exec()
         {
+            ReportEntryFactory.Reset();
             switch (Mode)
             {
                 case TreeMode.Ancestors:

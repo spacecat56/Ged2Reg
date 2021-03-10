@@ -596,7 +596,6 @@ namespace Ged2Reg.Model
             {
                 // include the generation number
                 p.Append(child.Individual.SafeGivenName, false, _childNameFormatting);
-                //if (!dropNbr)
                 p.Append($"{_gnMapper.GenerationNumberFor(g)}", false, _generationNumberFormatting);
                 if (!string.IsNullOrEmpty(child.Individual.SafeSurname))
                     p.Append($" {child.Individual.SafeSurname}", false, _childNameFormatting);
@@ -608,7 +607,6 @@ namespace Ged2Reg.Model
                     MyReportStats.MaybeLiving++;
             }
 
-            //ConditionallyEmitNameIndexEntry(doc, p, child.Individual);
             EmitNameIndexEntries(p, child);
             if (_c.Settings.DebuggingOutput)
             {

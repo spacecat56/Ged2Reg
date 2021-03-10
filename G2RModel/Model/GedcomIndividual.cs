@@ -191,6 +191,7 @@ namespace Ged2Reg.Model
             //GenerationInCurrentReport = 0;
             ChildEntryEmitted = false;
             DidEvaluateLivingStatus = false;
+            // = null;
             SortFamilies();
         }
 

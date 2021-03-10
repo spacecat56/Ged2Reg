@@ -7,6 +7,12 @@ namespace G2RModel.Model
     {
         private static ReportEntryFactory _instance;
 
+        /// <summary>
+        /// "Somehow", state such as the ancestornamelist is surviving from one
+        /// run to the next... this needs to be tracked down and fixed...
+        /// </summary>
+        /// <param name="unique"></param>
+        /// <returns></returns>
         public static ReportEntryFactory Init(bool unique = false)
         {
             return _instance = new ReportEntryFactory(unique);
@@ -61,5 +67,14 @@ namespace G2RModel.Model
         private Dictionary<GedcomIndividual, ReportEntry> KnownEntries = new Dictionary<GedcomIndividual, ReportEntry>();
         private Dictionary<GedcomFamily, ReportFamilyEntry> KnownFamilies = new Dictionary<GedcomFamily, ReportFamilyEntry>();
         public bool Unique { get; }
+
+        /// <summary>
+        /// "Somehow", state such as the ancestor name list is surviving from one
+        /// run to the next... this needs to be tracked down and fixed...
+        /// </summary>
+        public static void Reset()
+        {
+            Init(); // other code suggests this is not enough...
+        }
     }
 }
