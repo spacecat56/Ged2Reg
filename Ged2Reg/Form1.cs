@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -26,8 +27,7 @@ namespace Ged2Reg
         #region WinformsDesigner Fails - Workaround 
 
         // the dotnet core / dotnet5 winforms designer is unusable
-        // so we are stuck.  here we fight with it to add the needed content at 
-        // runtime
+        // so we are stuck.  here we bypass it to add the needed changes at runtime
 
         // new bound bools in settings:
         // AncestorsReport
@@ -36,9 +36,10 @@ namespace Ged2Reg
         // GenerationPrefix
         // GenerationHeadings
 
-        TabPage tpAncestry;
+        private TabPage tpAncestry;
         private TabPage tpIndexes;
-        Label lbAncestry;
+        private TabPage tpIo;
+        private Label lbAncestry;
         private Button pbListAncestors;
         private Button pbConform;
         private Button pbConformAncestry;
@@ -57,12 +58,28 @@ namespace Ged2Reg
         private TextBox teFirstGen;
         private ToolStripMenuItem miTools;
         private ToolStripMenuItem miObfuscate;
+        private CheckBox kbOpenAfter;
 
         private void AdjustForm ()
         {
             nudGenerations.Maximum = 999;
 
             tabControl1.TabPages.Remove(tabPage4);
+
+
+            //
+            // CHANGES TO the Input/Output tab
+            //
+            tpIo = tabPage1;
+            tpIo.SuspendLayout();
+            //sigh.  this works...
+            yPos = label5.Bottom + 20;
+            kbColPos = lbColPos = pbGo.Left;
+            // ...this fails.  being dull today, I guess.
+            //yPos = label5.Location.Y;
+            //kbColPos = lbColPos = nudGenerations.Right + 16;
+            kbOpenAfter = AddUnboundCheckbox(tpIo, "Open After Create", nameof(kbOpenAfter));
+            tpIo.ResumeLayout();
 
             //
             // CHANGES TO the Content tab
@@ -106,8 +123,9 @@ namespace Ged2Reg
                 nameof(G2RSettings.PlaceFirst));
 
             //yPos += 2;
+            yPos--;
             teFirstGen = AddBoundTextBox(tpContentOptions, 
-                "First generation 'number' (optional)", 
+                "Starter generation 'number' (optional)", 
                 nameof(G2RSettings.FirstGenNbr), 60, RightToLeft.No);
 
 
@@ -276,6 +294,24 @@ namespace Ged2Reg
             return pb;
         }
 
+        private CheckBox AddUnboundCheckbox(TabPage tp, string lbl, string name = null)
+        {
+            CheckBox kb = new CheckBox
+            {
+                AutoSize = true,
+                Checked = false,
+                CheckState = CheckState.Unchecked,
+                Location = new Point(kbColPos, yPos),
+                Margin = new Padding(2),
+                Name = name ?? $"kb{lbl.Replace(" ", "")}",
+                RightToLeft = RightToLeft.Yes,
+                Size = new Size(120, 21),
+                Text = lbl,
+                UseVisualStyleBackColor = true,
+            };
+            tp.Controls.Add(kb);
+            return kb;
+        }
         private CheckBox AddBoundCheckBox(TabPage tp, string lbl, string boundSetting)
         {
             AddLabel(tp, lbl);
@@ -633,6 +669,26 @@ namespace Ged2Reg
                     TimeSpan elapsed = DateTime.Now.Subtract(start);
                     Log($"Report created ({_rrm.Settings.OutFile} in {elapsed:g})");
                     Log("completed processing; see Log for details");
+                    if (kbOpenAfter.Checked && File.Exists(_rrm.Settings.OutFile))
+                    {
+                        try
+                        {
+                            Process p = new Process ()
+                            { StartInfo =
+                                {
+                                    FileName = _rrm.Settings.OutFile,
+                                    UseShellExecute = true
+                                }
+                            };
+                            p.Start();
+                        }
+                        catch (Exception ex)
+                        {
+                            string msg = $"Failed to open the output file ({ex.Message}).";
+                            Log(msg);
+                            MessageBox.Show(msg);
+                        }
+                    }
                 }
                 else
                 {

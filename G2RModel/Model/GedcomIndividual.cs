@@ -17,7 +17,7 @@ namespace Ged2Reg.Model
         public static string UnknownName => ReportContext.Instance.Settings.UnknownInReport;
 
         private static G2RSettings _settings;
-        internal static G2RSettings Settings => _settings ?? (_settings = ReportContext.Instance.Settings);
+        internal static G2RSettings Settings => _settings ?? (_settings = ReportContext.Instance?.Settings);
 
         public string Name => $"{Surname}, {GivenName}";
         public string NameForward => string.IsNullOrEmpty(Surname) ? GivenName : $"{GivenName} {Surname}";
@@ -28,10 +28,12 @@ namespace Ged2Reg.Model
         /// <summary>
         /// If we fail to consider the given name here we wind up with nonsense
         /// such as Charlemagne (Unknown) in the output
+        /// Heh.  this can be called when there IS NO 'report context"
+        /// making rather a mess for the grid... todo make better sense of this...
         /// </summary>
         public string Surname => 
-            IsUnknown(IndividualView?.Surname, IndividualView?.GivenName) || IndividualView?.Surname == Settings.UnknownInSource
-            ? Settings.UnknownInReport 
+            IsUnknown(IndividualView?.Surname, IndividualView?.GivenName) || IndividualView?.Surname == Settings?.UnknownInSource
+            ? Settings?.UnknownInReport ?? $"{IndividualView?.Surname}"
             : $"{IndividualView?.Surname}";
 
         internal bool IsUnknown(params string[] s)
