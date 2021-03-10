@@ -25,6 +25,7 @@ namespace Ged2Reg.Model
         private Dictionary<StyleSlots, Formatting> _styleMap;
         private GenealogicalDateFormatter _dateFormatter;
         private GenealogicalPlaceFormatter _placeFormatter;
+        private GenerationNumberMapper _gnMapper;
 
         private string[] _wordsForNumbers =
         {
@@ -69,6 +70,7 @@ namespace Ged2Reg.Model
         private int _maxLivingGenerations;
 
         private bool _indexMarriedNames;
+        private bool _placeFirst;
 
         private ReportTreeBuilder _tree;
 
@@ -86,9 +88,9 @@ namespace Ged2Reg.Model
 
             // configure policies that are held in statics
             CitationCoordinator.DeferConsecutiveRepeats = _c.Settings.DeferConsecutiveRepeats;
-
-            // as a side-effect, inform the FormattedEvent of the choice re: descriptions
             FormattedEvent.IncludeFactDescription = _factDesc = _c.Settings.IncludeFactDescriptions;
+            FormattedEvent.PlaceBeforeDate = _placeFirst = _c.Settings.PlaceFirst;
+
             _reduceChild = _c.Settings.ReduceContinuedChildren;
             _listBapt = _c.Settings.IncludeBaptism;
             _listBuri = _c.Settings.IncludeBurial;
@@ -138,6 +140,9 @@ namespace Ged2Reg.Model
                 Root = root
             };
             _tree.Init().Exec();
+
+            _gnMapper = GenerationNumberMapper.Instance
+                .Init(Generations.Length, _ancestryReport ? null : _c.Settings.FirstGenNbr);
 
             if (_c.Settings.Focus && _ancestryReport)
             {
@@ -403,7 +408,7 @@ namespace Ged2Reg.Model
             p.Append($"{indi.GetNumber(_generationNumberPrefixes)}. ");
             p.Append(indi.Individual.SafeGivenName, false, _styleMap[StyleSlots.MainPerson]);
             if (!_suppressGenSuperscripts)
-                p.Append($"{gen}", false, _generationNumberFormatting);
+                p.Append($"{_gnMapper.GenerationNumberFor(gen)}", false, _generationNumberFormatting);
             if (!string.IsNullOrEmpty(indi.Individual.SafeSurname))
                 p.Append($" {indi.Individual.SafeSurname}", false, _styleMap[StyleSlots.MainPerson]);
 
@@ -555,7 +560,7 @@ namespace Ged2Reg.Model
             //p.Append($" of {(family.Husband?.Individual?.SafeNameForward) ?? "unknown"}");
             p.Append($" of {(family.Husband?.Individual?.SafeGivenName) ?? "unknown"}");
             if (!_suppressGenSuperscripts)
-                p.Append($"{_currentGeneration}", false, _generationNumberFormatting);
+                p.Append($"{_gnMapper.GenerationNumberFor(_currentGeneration)}", false, _generationNumberFormatting);
             //p.Append($" and {(family.Wife?.Individual?.SafeNameForward) ?? "unknown"}:");
             string s = family.ExtendedWifeName();
             if (!string.IsNullOrEmpty(s))
@@ -592,7 +597,7 @@ namespace Ged2Reg.Model
                 // include the generation number
                 p.Append(child.Individual.SafeGivenName, false, _childNameFormatting);
                 //if (!dropNbr)
-                p.Append($"{g}", false, _generationNumberFormatting);
+                p.Append($"{_gnMapper.GenerationNumberFor(g)}", false, _generationNumberFormatting);
                 if (!string.IsNullOrEmpty(child.Individual.SafeSurname))
                     p.Append($" {child.Individual.SafeSurname}", false, _childNameFormatting);
             }
@@ -1115,6 +1120,8 @@ namespace Ged2Reg.Model
                 }
 
                 EmitEvent(p, p1BirtBapm, localCitations, hasDb?null:closer, connector);
+                if (!hasDb)
+                    closer = null;
                 connector = $" and {spouse.Individual.Pronoun.ToLower()}";
             }
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using G2RModel.Model;
 using WpdInterfaceLib;
 
 
@@ -28,6 +29,7 @@ namespace Ged2Reg.Model
 
         public void Emit(IWpdParagraph p, Formatting fmtName, Formatting fmtNumber)
         {
+            GenerationNumberMapper gm = GenerationNumberMapper.Instance;
             p.Append(" (");
             bool furst = true;
             int gen = _ancestors.Count;
@@ -36,7 +38,7 @@ namespace Ged2Reg.Model
                 if (!furst) p.Append(", ", false, fmtName);
                 furst = false;
                 p.Append(name.GivenNames, false, fmtName);
-                p.Append($"{gen--}", false, fmtNumber);
+                p.Append($"{gm.GenerationNumberFor(gen--)}", false, fmtNumber);
             }
             p.Append(")");
         }

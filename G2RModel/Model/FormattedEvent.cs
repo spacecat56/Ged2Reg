@@ -7,6 +7,7 @@ namespace Ged2Reg.Model
     public class FormattedEvent
     {
         public static bool IncludeFactDescription { get; set; } = true;
+        public static bool PlaceBeforeDate { get; set; }
 
         public string EventString { get; set; }
         public string PlaceIndexEntry { get; set; }
@@ -22,6 +23,24 @@ namespace Ged2Reg.Model
 
         public FormattedEvent Init(string ev, string dayt, string place, string detail = null, bool omitDate = false)
         {
+            void ApplyNonEmptyPlace(StringBuilder sb1)
+            {
+                if (!string.IsNullOrEmpty(place))
+                {
+                    FormattedPlaceName fpn = GenealogicalPlaceFormatter.Instance.Reformat(place);
+
+                    sb1.Append($" {fpn.Preposition} ").Append(fpn.PreferredName);
+                    PlaceIndexIndex = sb1.Length;
+                    PlaceIndexEntry = fpn.IndexEntry;
+                }
+            }
+
+            void ApplyNonEmptyDate(StringBuilder stringBuilder)
+            {
+                if (!omitDate && !string.IsNullOrEmpty(dayt))
+                    stringBuilder.Append(' ').Append(GenealogicalDateFormatter.Instance.Reformat(dayt));
+            }
+
             if (string.IsNullOrEmpty(dayt) && string.IsNullOrEmpty(place))
                 return null;
 
@@ -29,15 +48,15 @@ namespace Ged2Reg.Model
             if (!string.IsNullOrEmpty(ev))
                 sb.Append(" ").Append(ev);
 
-            if (!omitDate && !string.IsNullOrEmpty(dayt))
-                sb.Append(' ').Append(GenealogicalDateFormatter.Instance.Reformat(dayt));
-            if (!string.IsNullOrEmpty(place))
+            if (PlaceBeforeDate)
             {
-                FormattedPlaceName fpn = GenealogicalPlaceFormatter.Instance.Reformat(place);
-
-                sb.Append($" {fpn.Preposition} ").Append(fpn.PreferredName);
-                PlaceIndexIndex = sb.Length;
-                PlaceIndexEntry = fpn.IndexEntry;
+                ApplyNonEmptyPlace(sb);
+                ApplyNonEmptyDate(sb);
+            }
+            else
+            {
+                ApplyNonEmptyDate(sb);
+                ApplyNonEmptyPlace(sb);
             }
 
             if (IncludeFactDescription && !string.IsNullOrEmpty(detail))

@@ -53,6 +53,8 @@ namespace Ged2Reg
         private CheckBox kbStdBriefContd;
         private CheckBox kbGenNbrAll;
         private CheckBox kbIndexMarriedNames;
+        private CheckBox kbPlaceFirst;
+        private TextBox teFirstGen;
         private ToolStripMenuItem miTools;
         private ToolStripMenuItem miObfuscate;
 
@@ -94,6 +96,20 @@ namespace Ged2Reg
             kbGenNbrAll = AddBoundCheckBox(tpContentOptions,
                 "Generation numbers on all children",
                 nameof(G2RSettings.GenNbrAllChildren));
+
+
+            lbColPos = label18.Left;
+            kbColPos = checkBox13.Left;
+            yPos = label19.Top + (label19.Top - label18.Top) + 4;
+            kbPlaceFirst = AddBoundCheckBox(tpContentOptions,
+                "Place before Date",
+                nameof(G2RSettings.PlaceFirst));
+
+            //yPos += 2;
+            teFirstGen = AddBoundTextBox(tpContentOptions, 
+                "First generation 'number' (optional)", 
+                nameof(G2RSettings.FirstGenNbr), 60, RightToLeft.No);
+
 
             // extra copy of this setting, not needed
             kbAncestorsReport.Visible = label65.Visible = false;
@@ -600,21 +616,35 @@ namespace Ged2Reg
 
                 // last chance:
                 SetDocFactory();
-                
+
+                bool result = false;
                 DateTime start = DateTime.Now;
                 if (_debugging)
                     _rrm.Exec(o, _aad);
                 else
-                    await Task.Run(() => _rrm.Exec(o, _aad));
+                    await Task.Run(() => result = _rrm.Exec(o, _aad));
 
                 // NB only save ONCE; save a second time RELOADS THE EFFING FILE FIRST!
-                _rrm.Doc.Save();
-                _rrm.Doc.Dispose();
-                _rrm.Doc = null;
-                TimeSpan elapsed = DateTime.Now.Subtract(start);
-                Log($"Report created ({_rrm.Settings.OutFile} in {elapsed:g})");
-                Log(_rrm.Reporter.GetStatsSummary(), false);
-                Log("completed processing; see Log for details");
+                if (result)
+                {
+                    _rrm.Doc.Save();
+                    _rrm.Doc.Dispose();
+                    _rrm.Doc = null;
+                    TimeSpan elapsed = DateTime.Now.Subtract(start);
+                    Log($"Report created ({_rrm.Settings.OutFile} in {elapsed:g})");
+                    Log("completed processing; see Log for details");
+                }
+                else
+                {
+                    try
+                    {
+                        _rrm.Doc.Dispose();
+                    }
+                    catch { }
+                    finally{_rrm.Doc = null; }
+                    Log(_rrm.Reporter.GetStatsSummary(), false);
+                    Log("Report creation failed");
+                }
                 // do this here, hoping the property change events will propagate....
                 // but that results in inaccurate reports
                 //_rrm.Settings.LastRun = _rrm.Reporter.MyReportStats.EndTime = DateTime.Now;

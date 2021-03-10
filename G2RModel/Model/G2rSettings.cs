@@ -245,6 +245,8 @@ namespace Ged2Reg.Model
         private bool _allFamilies = true;
 
         private bool _GenNbrAllChildren;
+        private bool _placeFirst;
+        private string _firstGenNbr;
         #endregion
 
         #region initializations
@@ -627,6 +629,20 @@ namespace Ged2Reg.Model
         {
             get { return _GenNbrAllChildren; }
             set { _GenNbrAllChildren = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public bool PlaceFirst
+        {
+            get { return _placeFirst; }
+            set { _placeFirst = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public string FirstGenNbr
+        {
+            get { return _firstGenNbr; }
+            set { _firstGenNbr = value; OnPropertyChanged(); }
         }
 
         [DataMember]
@@ -1253,6 +1269,8 @@ namespace Ged2Reg.Model
             SpousesNotes = false;
 
             IndexMarriedNames = true;
+            PlaceFirst = true;
+            FirstGenNbr = null;
         }
         public string ReportConformanceSettings()
         {
@@ -1269,8 +1287,9 @@ namespace Ged2Reg.Model
             sb.AppendLine("NB - REVIEW THIS SETTING:");
             Append(sb, "Generation nbr on all children", this.GenNbrAllChildren);
             Append(sb, "Full place name/gen", this.FullPlaceOncePerGen);
-            Append(sb, "Inject county", this.InjectCounty);
             Append(sb, "Drop USA", this.DropUsa);
+            Append(sb, "Inject county", this.InjectCounty);
+            Append(sb, "Place before Date", this.PlaceFirst);
             Append(sb, "Italics Names In Lineage List", this.ItalicsNamesInLineageList);
 
             Append(sb, "Reduce continued", this.ReduceContinuedChildren);
@@ -1279,6 +1298,7 @@ namespace Ged2Reg.Model
 
             Append(sb, "Reformat unknowns", this.HandleUnknownNames);
             Append(sb, "Unknown name as output", this.UnknownInReport);
+            Append(sb, "First Generation Number", this.FirstGenNbr);
 
             sb.AppendLine();
             sb.AppendLine("....Settings ('Ancestry' report conformance)");
@@ -1342,8 +1362,10 @@ namespace Ged2Reg.Model
             }
             Append(sb, "Obscure living", this.ObscureLiving);
             Append(sb, "Reduce place names", this.ReducePlaceNames);
-            Append(sb, "Inject county", this.InjectCounty);
             Append(sb, "Drop USA", this.DropUsa);
+            Append(sb, "Inject county", this.InjectCounty);
+            Append(sb, "Place before Date", this.PlaceFirst);
+            Append(sb, "First Generation Number", this.FirstGenNbr);
             Append(sb, "Reformat unknowns", this.HandleUnknownNames);
             Append(sb, "Unknown input", this.UnknownInSource);
             Append(sb, "Unknown output", this.UnknownInReport);
