@@ -14,18 +14,19 @@ namespace Ged2Reg.Model
     {
         public CitationCoordinator CitationCoordinator { get; internal set; }
         public ReportStats MyReportStats { get; set; }
+        public RegisterReportModel Model { get; set; }
+
+        private ReportTreeBuilder _tree;
+        private ReportContext _c;
+        private CitationsMap _cm;
+        private GenealogicalDateFormatter _dateFormatter;
+        private GenealogicalPlaceFormatter _placeFormatter;
+        private GenerationNumberMapper _gnMapper;
 
         // former fields, retargeted to the new tree builder
         public ListOfReportEntry[] Generations => _tree?.Generations;
         private int _lastSlotWithPeople => _tree?.LastSlotWithPeople ?? 0;
         private List<GedcomIndividual> _nonContinued => _tree?.NonContinued;
-
-        private ReportContext _c;
-        private CitationsMap _cm;
-        private Dictionary<StyleSlots, Formatting> _styleMap;
-        private GenealogicalDateFormatter _dateFormatter;
-        private GenealogicalPlaceFormatter _placeFormatter;
-        private GenerationNumberMapper _gnMapper;
 
         private string[] _wordsForNumbers =
         {
@@ -37,6 +38,9 @@ namespace Ged2Reg.Model
             "fifth",
             // yeah, right. way to go, mon!
         };
+
+        #region Fields to internalize settings/policies
+        private Dictionary<StyleSlots, Formatting> _styleMap;
         private char[] _splitSpace = { ' ' };
         private int _currentGeneration;
         private Regex _rexDivider1 = new Regex(@"^[\-_]+$");
@@ -73,15 +77,13 @@ namespace Ged2Reg.Model
         private bool _placeFirst;
         private bool _insertUncitedNotes;
 
-        private ReportTreeBuilder _tree;
-
         private Formatting _childNameFormatting;
         private Formatting _generationNumberFormatting;
         private Formatting _introFormatting;
         private Formatting _lineageListNameFormatting;
+        #endregion
 
-        public RegisterReportModel Model { get; set; }
-
+        #region Initialization
         public RegisterReporter Init(GedcomIndividual root, TimeSpan prep)
         {
             MyReportStats = new ReportStats().Init(prep);
@@ -223,7 +225,9 @@ namespace Ged2Reg.Model
                 }
             }
         }
+        #endregion
 
+        #region Execution
         public void Exec(IWpdDocument doc)
         {
             _styleMap = new Dictionary<StyleSlots, Formatting>();
@@ -330,25 +334,6 @@ namespace Ged2Reg.Model
             p.Append(GetStatsSummary().Replace("\t", ""));
         }
 
-        private void EmitDivider(IWpdDocument doc, Formatting genDivider, Formatting genDivider3Plus)
-        {
-            IWpdParagraph para;
-            switch (_currentGeneration)
-            {
-                case 0:
-                case 1:
-                    break;
-                case 2:
-                    para = doc.InsertParagraph($"Generation {_currentGeneration}");
-                    para.StyleName = genDivider?.CharacterStyleName;
-                    break;
-                default:
-                    para = doc.InsertParagraph($"Generation {_currentGeneration}");
-                    para.StyleName = genDivider3Plus?.CharacterStyleName;
-                    break;
-            }
-        }
-
         public string GetStatsSummary()
         {
             StringBuilder sb = new StringBuilder();
@@ -369,8 +354,30 @@ namespace Ged2Reg.Model
             sb.Append($"\tDate/time completed...........{MyReportStats.EndTime}");
             return sb.ToString();
         }
+        #endregion
 
-        private WpdIndexField ConditionallyEmitIndexField(IWpdDocument doc, IndexSettings ixs)
+        #region Specialized emitters - indexes, dividers, notes, ...
+ 
+        private void EmitDivider(IWpdDocument doc, Formatting genDivider, Formatting genDivider3Plus)
+        {
+            IWpdParagraph para;
+            switch (_currentGeneration)
+            {
+                case 0:
+                case 1:
+                    break;
+                case 2:
+                    para = doc.InsertParagraph($"Generation {_currentGeneration}");
+                    para.StyleName = genDivider?.CharacterStyleName;
+                    break;
+                default:
+                    para = doc.InsertParagraph($"Generation {_currentGeneration}");
+                    para.StyleName = genDivider3Plus?.CharacterStyleName;
+                    break;
+            }
+        }
+
+       private WpdIndexField ConditionallyEmitIndexField(IWpdDocument doc, IndexSettings ixs)
         {
             if (!ixs.Enabled) return null;
             doc.BreakForIndex();
@@ -383,99 +390,63 @@ namespace Ged2Reg.Model
             p.AppendField(ixf.Build());
             return ixf;
         }
-
-        private void EmitAncestorsPlaceholder(IWpdDocument doc, BigInteger frum, BigInteger thru, int? g = null)
+        /// <summary>
+        /// Convenience / accommodation for points in the code that
+        /// don't have the ReportEntry in hand... that is a poor
+        /// condition, but, we can get around it for the purpose of
+        /// emitting the index entries...
+        /// </summary>
+        /// <param name="p"></param>
+        /// <param name="indi"></param>
+        /// <returns></returns>
+        internal bool EmitNameIndexEntries(IWpdParagraph p, GedcomIndividual indi)
         {
-            int gen = g ?? _currentGeneration;
-            IWpdParagraph p = doc.InsertParagraph();
-            p.StyleName = _styleMap[StyleSlots.MainPersonText].CharacterStyleName;
-            string slot = FormatAncestorNumber(frum, gen, _generationNumberPrefixes);
-            p.Append($"{slot}");
-            if (thru > frum)
-                p.Append($" - {FormatAncestorNumber(thru, gen, _generationNumberPrefixes)}");
-            p.Append($". {_unknownName} {_unknownName}.", false, _styleMap[StyleSlots.MainPerson]);
+            ReportEntry re = ReportEntryFactory.Instance.GetReportEntry(indi);
+            return re != null && EmitNameIndexEntries(p, re);
         }
 
-        private void EmitRepeatedAncestor(IWpdDocument doc, ReportEntry individual, int gen)
+        internal bool EmitNameIndexEntries(IWpdParagraph p, ReportEntry re)
         {
-            IWpdParagraph p = doc.InsertParagraph();
-            EmitMainPersonName(doc, p, individual, gen);
-            p.Append($". See {FormatAncestorNumber(individual.FirstAppearance, gen, _generationNumberPrefixes)}.");
+            GedcomIndividual indi = re?.Individual;
+            if (!_c.Settings.NameIndexSettings.Enabled || indi == null) return false;
+            IWpdDocument doc = p.Document;
+            WpdFieldBase ex;
+            string ixn = _c.Settings.NameIndexSettings.IndexName;
 
-            // this allows for back references... which are distinct, even when the indi repeats
-            ConditionallyEmitChildren(doc, individual, gen, -1);
-        }
+            ex = doc.BuildIndexEntryField(ixn, $"{indi.IndexableSurname}:{indi.SafeGivenName}").Build();
+            p.AppendField(ex);
 
-        private void EmitMainPersonName(IWpdDocument doc, IWpdParagraph p, ReportEntry indi, int gen)
-        {
-            p.StyleName = _styleMap[StyleSlots.MainPersonText].CharacterStyleName;
-            p.Append($"{indi.GetNumber(_generationNumberPrefixes)}. ");
-            p.Append(indi.Individual.SafeGivenName, false, _styleMap[StyleSlots.MainPerson]);
-            if (!_suppressGenSuperscripts)
-                p.Append($"{_gnMapper.GenerationNumberFor(gen)}", false, _generationNumberFormatting);
-            if (!string.IsNullOrEmpty(indi.Individual.SafeSurname))
-                p.Append($" {indi.Individual.SafeSurname}", false, _styleMap[StyleSlots.MainPerson]);
+            if (!_indexMarriedNames || indi.Gender != "F")
+                return true;
 
-            EmitNameIndexEntries(p, indi);
+            // heh.  I guess we can call this "lazy".
+            if (re.FamilyEntries == null && !re.DidInit)
+                re.Init();
 
-            if (_c.Settings.DebuggingOutput)
+            if (re.FamilyEntries == null)
+                return true;
+
+            foreach (ReportFamilyEntry fre in re.FamilyEntries)
             {
-                p.Append($" [{indi.NaturalId}]");
+                string altName;
+                if ((altName = fre?.IndexableExtendedWifeForeName) == null)
+                    continue;
+                ex = doc.BuildIndexEntryField(ixn, $"{fre.Husband.Individual.IndexableSurname}:{altName}").Build();
+                p.AppendField(ex);
             }
 
-            MyReportStats.MainPerson++;
-            if (!indi.Individual.PresumedDeceased)
-                MyReportStats.MaybeLiving++;
+            return true;
         }
 
-        private string FormatAncestorNumber(BigInteger bi, int gen, bool prefix)
+        internal bool ConditionallyEmitPlaceIndexEntry(IWpdDocument doc, IWpdParagraph p, FormattedEvent fe)
         {
-            return prefix
-                ? $"{gen:00}-{bi}"
-                : $"{bi}";
-        }
-
-
-        private void EmitMainPerson(IWpdDocument doc, ReportEntry re, int gen)
-        {
-            if (_omitFocusSpouses && re.OutOfFocus) 
-                return;
-
-            bool timeToMinimize = _ancestryReport && _minFromGen > 0 && _minFromGen <= gen;
-            int genNbrIncr = _ancestryReport ? -1 : 1;
-
-            // begin main person content
-            IWpdParagraph p = doc.InsertParagraph();
-            EmitMainPersonName(doc, p, re, gen);
-
-            if (!_ancestryReport)
-                re.Ancestry?.Emit(p, _lineageListNameFormatting, _styleMap[StyleSlots.GenerationNumber]);
-
-            List<GedcomIndividual> noteworthy = AppendPersonDetails(doc, p, re); 
-
-            string tinue = re.GetContinuation(_generationNumberPrefixes);
-            if (tinue != null)
-                p.Append(" ").Append(tinue);
-
-            if (timeToMinimize)
-            {
-                if (_omitBackRefsLater || !_includeBackRefs)
-                    return;
-                foreach (ReportFamilyEntry family in re.FindMainNumberedFamilies())
-                {
-                    List<ReportEntry> numbered = family.FindMainNumberedChildren();
-                    EmitFamilyIntroLine(doc, numbered.Count, family);
-                    foreach (ReportEntry child in numbered)
-                    {
-                        EmitChildEntry(doc, gen + genNbrIncr, child);
-                    }
-                }
-                return;
-            }
-
-            EmitNotes(doc, p, noteworthy);
-
-            ConditionallyEmitChildren(doc, re, gen, genNbrIncr);
+            if (!_c.Settings.PlaceIndexSettings.Enabled || string.IsNullOrEmpty(fe?.PlaceIndexEntry)) return false;
+            string ixn = _c.Settings.PlaceIndexSettings.IndexName;
+            if (string.IsNullOrEmpty(ixn))
+                ixn = null;
+            var ex = doc.BuildIndexEntryField(ixn, fe.PlaceIndexEntry).Build();
+            p.AppendField(ex); 
+            return true;
         }
 
         private void EmitNotes(IWpdDocument doc, IWpdParagraph p, List<GedcomIndividual> noteworthy)
@@ -520,8 +491,143 @@ namespace Ged2Reg.Model
                 lastLineWasDivider = true;
             }
         }
+        private bool AppliesAsDivider(IWpdParagraph p, string s)
+        {
+            if (string.IsNullOrEmpty(s)) return false;
+            if (_rexDivider1.IsMatch(s))
+            {
+                p.InsertHorizontalLine(lineType: "single");
+                return true;
+            }
 
-        private void ConditionallyEmitChildren(IWpdDocument doc, ReportEntry indi, int gen, int genNbrIncr)
+            if (!_rexDivider2.IsMatch(s))
+                return false;
+
+            p.InsertHorizontalLine(lineType: "double");
+            return true;
+        }
+
+        #endregion
+
+        #region Specialized emitters - Ancestry report
+
+        private void EmitAncestorsPlaceholder(IWpdDocument doc, BigInteger frum, BigInteger thru, int? g = null)
+        {
+            int gen = g ?? _currentGeneration;
+            IWpdParagraph p = doc.InsertParagraph();
+            p.StyleName = _styleMap[StyleSlots.MainPersonText].CharacterStyleName;
+            string slot = FormatAncestorNumber(frum, gen, _generationNumberPrefixes);
+            p.Append($"{slot}");
+            if (thru > frum)
+                p.Append($" - {FormatAncestorNumber(thru, gen, _generationNumberPrefixes)}");
+            p.Append($". {_unknownName} {_unknownName}.", false, _styleMap[StyleSlots.MainPerson]);
+        }
+
+        private void EmitRepeatedAncestor(IWpdDocument doc, ReportEntry individual, int gen)
+        {
+            IWpdParagraph p = doc.InsertParagraph();
+            EmitMainPersonName(doc, p, individual, gen);
+            p.Append($". See {FormatAncestorNumber(individual.FirstAppearance, gen, _generationNumberPrefixes)}.");
+
+            // this allows for back references... which are distinct, even when the indi repeats
+            ConditionallyEmitFamily(doc, individual, gen, -1);
+        }
+        private string FormatAncestorNumber(BigInteger bi, int gen, bool prefix)
+        {
+            return prefix
+                ? $"{gen:00}-{bi}"
+                : $"{bi}";
+        }
+        private static string EmitChildOfClause(IWpdParagraph p, ReportEntry re)
+        {
+            p.Append(", ").Append(re.Individual.NounAsChild.ToLower()).Append(" of ");
+            string conjunction = " ";
+            if (re.ChildhoodFamily.Husband != null)
+            {
+                p.Append(re.ChildhoodFamily.Husband.Individual.SafeNameForward);
+                conjunction = " and ";
+            }
+
+            if (re.ChildhoodFamily.Wife != null)
+            {
+                p.Append(conjunction);
+                p.Append(re.ChildhoodFamily.Wife.Individual.SafeNameForward);
+            }
+
+            return ",";
+        }
+
+        #endregion
+
+        #region Main person output
+        private void EmitMainPerson(IWpdDocument doc, ReportEntry re, int gen)
+        {
+            if (_omitFocusSpouses && re.OutOfFocus) 
+                return;
+
+            bool timeToMinimize = _ancestryReport && _minFromGen > 0 && _minFromGen <= gen;
+            int genNbrIncr = _ancestryReport ? -1 : 1;
+
+            // begin main person content
+            IWpdParagraph p = doc.InsertParagraph();
+            EmitMainPersonName(doc, p, re, gen);
+
+            if (!_ancestryReport)
+                re.Ancestry?.Emit(p, _lineageListNameFormatting, _styleMap[StyleSlots.GenerationNumber]);
+
+            List<GedcomIndividual> noteworthy = AppendPersonDetails(doc, p, re); 
+
+            string tinue = re.GetContinuation(_generationNumberPrefixes);
+            if (tinue != null)
+                p.Append(" ").Append(tinue);
+
+            if (timeToMinimize)
+            {
+                if (_omitBackRefsLater || !_includeBackRefs)
+                    return;
+                foreach (ReportFamilyEntry family in re.FindMainNumberedFamilies())
+                {
+                    List<ReportEntry> numbered = family.FindMainNumberedChildren();
+                    EmitFamilyIntroLine(doc, numbered.Count, family);
+                    foreach (ReportEntry child in numbered)
+                    {
+                        EmitChildEntry(doc, gen + genNbrIncr, child);
+                    }
+                }
+                return;
+            }
+
+            EmitNotes(doc, p, noteworthy);
+
+            ConditionallyEmitFamily(doc, re, gen, genNbrIncr);
+        }
+        private void EmitMainPersonName(IWpdDocument doc, IWpdParagraph p, ReportEntry indi, int gen)
+        {
+            p.StyleName = _styleMap[StyleSlots.MainPersonText].CharacterStyleName;
+            p.Append($"{indi.GetNumber(_generationNumberPrefixes)}. ");
+            p.Append(indi.Individual.SafeGivenName, false, _styleMap[StyleSlots.MainPerson]);
+            if (!_suppressGenSuperscripts)
+                p.Append($"{_gnMapper.GenerationNumberFor(gen)}", false, _generationNumberFormatting);
+            if (!string.IsNullOrEmpty(indi.Individual.SafeSurname))
+                p.Append($" {indi.Individual.SafeSurname}", false, _styleMap[StyleSlots.MainPerson]);
+
+            EmitNameIndexEntries(p, indi);
+
+            if (_c.Settings.DebuggingOutput)
+            {
+                p.Append($" [{indi.NaturalId}]");
+            }
+
+            MyReportStats.MainPerson++;
+            if (!indi.Individual.PresumedDeceased)
+                MyReportStats.MaybeLiving++;
+        }
+
+
+        #endregion
+
+        #region Family Output
+        private void ConditionallyEmitFamily(IWpdDocument doc, ReportEntry indi, int gen, int genNbrIncr)
         {
             if (_ancestryReport && (!indi.EmitChildrenAfter || !_includeBackRefs))
                 return;
@@ -617,82 +723,10 @@ namespace Ged2Reg.Model
 
             AppendPersonDetails(doc, p, child, true);
         }
+        #endregion
 
-        private bool AppliesAsDivider(IWpdParagraph p, string s)
-        {
-            if (string.IsNullOrEmpty(s)) return false;
-            if (_rexDivider1.IsMatch(s))
-            {
-                p.InsertHorizontalLine(lineType: "single");
-                return true;
-            }
-
-            if (!_rexDivider2.IsMatch(s))
-                return false;
-
-            p.InsertHorizontalLine(lineType: "double");
-            return true;
-        }
-
-        /// <summary>
-        /// Convenience / accommodation for points in the code that
-        /// don't have the ReportEntry in hand... that is a poor
-        /// condition, but, we can get around it for the purpose of
-        /// emitting the index entries...
-        /// </summary>
-        /// <param name="p"></param>
-        /// <param name="indi"></param>
-        /// <returns></returns>
-        internal bool EmitNameIndexEntries(IWpdParagraph p, GedcomIndividual indi)
-        {
-            ReportEntry re = ReportEntryFactory.Instance.GetReportEntry(indi);
-            return re != null && EmitNameIndexEntries(p, re);
-        }
-
-        internal bool EmitNameIndexEntries(IWpdParagraph p, ReportEntry re)
-        {
-            GedcomIndividual indi = re?.Individual;
-            if (!_c.Settings.NameIndexSettings.Enabled || indi == null) return false;
-            IWpdDocument doc = p.Document;
-            WpdFieldBase ex;
-            string ixn = _c.Settings.NameIndexSettings.IndexName;
-
-            ex = doc.BuildIndexEntryField(ixn, $"{indi.IndexableSurname}:{indi.SafeGivenName}").Build();
-            p.AppendField(ex);
-
-            if (!_indexMarriedNames || indi.Gender != "F")
-                return true;
-
-            // heh.  I guess we can call this "lazy".
-            if (re.FamilyEntries == null && !re.DidInit)
-                re.Init();
-
-            if (re.FamilyEntries == null)
-                return true;
-
-            foreach (ReportFamilyEntry fre in re.FamilyEntries)
-            {
-                string altName;
-                if ((altName = fre?.IndexableExtendedWifeForeName) == null)
-                    continue;
-                ex = doc.BuildIndexEntryField(ixn, $"{fre.Husband.Individual.IndexableSurname}:{altName}").Build();
-                p.AppendField(ex);
-            }
-
-            return true;
-        }
-
-        internal bool ConditionallyEmitPlaceIndexEntry(IWpdDocument doc, IWpdParagraph p, FormattedEvent fe)
-        {
-            if (!_c.Settings.PlaceIndexSettings.Enabled || string.IsNullOrEmpty(fe?.PlaceIndexEntry)) return false;
-            string ixn = _c.Settings.PlaceIndexSettings.IndexName;
-            if (string.IsNullOrEmpty(ixn))
-                ixn = null;
-            var ex = doc.BuildIndexEntryField(ixn, fe.PlaceIndexEntry).Build();
-            p.AppendField(ex); 
-            return true;
-        }
-
+        #region Person content emitters 
+        
         private List<GedcomIndividual> AppendPersonDetails(IWpdDocument doc, IWpdParagraph p, ReportEntry re, bool isChild = false)
         {
             // short-stop: optional standard / brief child line if so configured and the child is continued
@@ -745,59 +779,6 @@ namespace Ged2Reg.Model
                 AppendMarriagesSentences(p, re, isChild, toDoNotes, reduced, doCite, localCitations);
 
             return toDoNotes;
-        }
-
-        private static string EmitChildOfClause(IWpdParagraph p, ReportEntry re)
-        {
-            p.Append(", ").Append(re.Individual.NounAsChild.ToLower()).Append(" of ");
-            string conjunction = " ";
-            if (re.ChildhoodFamily.Husband != null)
-            {
-                p.Append(re.ChildhoodFamily.Husband.Individual.SafeNameForward);
-                conjunction = " and ";
-            }
-
-            if (re.ChildhoodFamily.Wife != null)
-            {
-                p.Append(conjunction);
-                p.Append(re.ChildhoodFamily.Wife.Individual.SafeNameForward);
-            }
-
-            return ",";
-        }
-
-        internal LocalCitationCoordinator BuildLocalCitationCoordinator(ReportEntry re, bool doCite, List<TagCode> eventsToCiteFor = null, bool doFamily = true)
-        {
-            LocalCitationCoordinator lcc = new LocalCitationCoordinator() {DoCite = doCite};
-            if (!doCite)
-                return lcc;
-
-            // we can detect and optimize out consecutive repeats of the same citation
-            // NB this list is ORDERED by the appearance of the cited facts
-            eventsToCiteFor ??= new List<TagCode>()
-            {
-                TagCode.BIRT,
-                re.Individual.BaptismTagCode,
-                TagCode.DEAT,
-                TagCode.BURI
-            };
-            foreach (TagCode tc in eventsToCiteFor)
-            {
-                if (!lcc.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(tc))))
-                    lcc.NoteUncited(re.InternalId, tc);
-            }
-
-            if (doFamily) 
-            {
-                foreach (ReportFamilyEntry family in re.SafeFamilies)
-                {
-                    EventCitations ec = family.Family.CitableEvents?.Find(family.Family.EventTag(TagCode.MARR));
-                    lcc.AddNonNull(ec, family.Family.FamilyView.Id);
-                }
-            }
-
-            LocalCitationCoordinator localCitations = CitationCoordinator.Optimize(lcc);
-            return localCitations;
         }
 
         private void EmitVitalEvents(IWpdParagraph p, ReportEntry re, bool reduced, LocalCitationCoordinator lCite, string conn)
@@ -890,7 +871,6 @@ namespace Ged2Reg.Model
             }
             ConditionallyEmitPlaceIndexEntry(p.Document, p, ev);
         }
-
         private List<GedcomIndividual> EmitStandardBriefChildLine(IWpdParagraph p, ReportEntry re)
         {
             List<GedcomIndividual> toDoNotes = new List<GedcomIndividual>();
@@ -1147,5 +1127,43 @@ namespace Ged2Reg.Model
                 p.Append(closer);
             return true;
         }
-    }
+        #endregion
+
+        #region Citation coordinator
+        internal LocalCitationCoordinator BuildLocalCitationCoordinator(ReportEntry re, bool doCite, List<TagCode> eventsToCiteFor = null, bool doFamily = true)
+        {
+            LocalCitationCoordinator lcc = new LocalCitationCoordinator() {DoCite = doCite};
+            if (!doCite)
+                return lcc;
+
+            // we can detect and optimize out consecutive repeats of the same citation
+            // NB this list is ORDERED by the appearance of the cited facts
+            eventsToCiteFor ??= new List<TagCode>()
+            {
+                TagCode.BIRT,
+                re.Individual.BaptismTagCode,
+                TagCode.DEAT,
+                TagCode.BURI
+            };
+            foreach (TagCode tc in eventsToCiteFor)
+            {
+                if (!lcc.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(tc))))
+                    lcc.NoteUncited(re.InternalId, tc);
+            }
+
+            if (doFamily) 
+            {
+                foreach (ReportFamilyEntry family in re.SafeFamilies)
+                {
+                    EventCitations ec = family.Family.CitableEvents?.Find(family.Family.EventTag(TagCode.MARR));
+                    lcc.AddNonNull(ec, family.Family.FamilyView.Id);
+                }
+            }
+
+            LocalCitationCoordinator localCitations = CitationCoordinator.Optimize(lcc);
+            return localCitations;
+        }
+        #endregion
+
+   }
 }
