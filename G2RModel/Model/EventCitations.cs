@@ -12,6 +12,8 @@ namespace Ged2Reg.Model
 {
     public class EventCitations
     {
+        public static string CitationNeededEyecatcher { get; set; } = "***Citation needed*** for:";
+
         public TagCode TagCode => this.Tag?.Code ?? TagCode.UNK;
         public DistinctCitation SelectedItem { get; set; }
         public List<DistinctCitation> DistinctCitations { get; set; } = new List<DistinctCitation>();
@@ -88,7 +90,9 @@ namespace Ged2Reg.Model
                 WpdFootnoteBase laterNote = settings.AsEndnotes 
                     ? doc.BuildEndNote(noteText, settings.BracketArray) 
                     : doc.BuildFootNote(noteText, settings.BracketArray);
-                laterNote.AppendText("(see note ").AppendNoteRef(SelectedItem.FirstFootnote).AppendText(").");
+                string space = " ";
+                if (noteText.EndsWith(space)) space = null;
+                laterNote.AppendText($"{space}(see note ").AppendNoteRef(SelectedItem.FirstFootnote).AppendText(").");
                 if (!string.IsNullOrEmpty(citedFor))
                     laterNote.AppendText($" ({citedFor})");
                 laterNote.Apply(p);
@@ -207,6 +211,16 @@ namespace Ged2Reg.Model
         public bool Matches(EventCitations other)
         {
             return SelectedItem == other.SelectedItem;
+        }
+
+        public static void InsertUnciteNote(IWpdParagraph p, string about)
+        {
+            var settings = ReportContext.Instance.Settings;
+            WpdFootnoteBase f = settings.AsEndnotes
+                ? p.Document.BuildEndNote(brackets: settings.BracketArray)
+                : p.Document.BuildFootNote(brackets: settings.BracketArray);
+            f.AppendText($"{CitationNeededEyecatcher} {about}");
+            f.Apply(p);
         }
     }
 }

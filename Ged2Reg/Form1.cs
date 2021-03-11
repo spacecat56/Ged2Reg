@@ -39,6 +39,7 @@ namespace Ged2Reg
         private TabPage tpAncestry;
         private TabPage tpIndexes;
         private TabPage tpIo;
+        private TabPage tpCitation;
         private Label lbAncestry;
         private Button pbListAncestors;
         private Button pbConform;
@@ -59,6 +60,7 @@ namespace Ged2Reg
         private ToolStripMenuItem miTools;
         private ToolStripMenuItem miObfuscate;
         private CheckBox kbOpenAfter;
+        private CheckBox kbPlaceholderCites;
 
         private void AdjustForm ()
         {
@@ -66,6 +68,25 @@ namespace Ged2Reg
 
             tabControl1.TabPages.Remove(tabPage4);
 
+
+            //
+            // CHANGES TO the Citations tab
+            //
+            tpCitation = tabPage3;
+            tpCitation.SuspendLayout();
+            yPos = label21.Bottom + 2;
+            lbColPos = label21.Left;
+            kbColPos = checkBox15.Left;
+            kbPlaceholderCites = AddBoundCheckBox(tpCitation, 
+                "Placeholders for missing citations", 
+                nameof(G2RSettings.CitationPlaceholders));
+            checkBox15.Top++;
+            Control[] tweaks = new Control[]{label13, label14, dgShortCited, dgFullCitations};
+            foreach (Control control in tweaks)
+            {
+                control.Top += 2;
+            }
+            tpCitation.ResumeLayout();
 
             //
             // CHANGES TO the Input/Output tab
@@ -79,6 +100,15 @@ namespace Ged2Reg
             //yPos = label5.Location.Y;
             //kbColPos = lbColPos = nudGenerations.Right + 16;
             kbOpenAfter = AddUnboundCheckbox(tpIo, "Open After Create", nameof(kbOpenAfter));
+
+            label57.Left = cbSettingsSet.Left;
+            label57.Top = cbSettingsSet.Top - (label57.Height + 2);
+            label57.Text = "Current settings set:";
+            label57.Visible = true;
+
+            teLastRunOutput.Width = textBox4.Width;
+            teLastRunOutput.Anchor = textBox4.Anchor;
+
             tpIo.ResumeLayout();
 
             //
@@ -211,7 +241,7 @@ namespace Ged2Reg
             yPos += rowStep;
             var tb = AddBoundTextBox(tpAncestry, "Currently selected ancestor", nameof(G2RSettings.FocusName), 320, RightToLeft.No);
             tb.ReadOnly = true;
-            tb.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            tb.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
             yPos += 4;
 
@@ -221,7 +251,7 @@ namespace Ged2Reg
             pbPickFocus.Click += pbPickFocus_Click;
             yPos += 4;
             cbAncestorChoices = AddComboBox(tpAncestry, nameof(cbAncestorChoices), 320);
-            cbAncestorChoices.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            cbAncestorChoices.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
             yPos = pbListAncestors.Bottom + pbListAncestors.Height;
             pbConformAncestry = AddButton(tpAncestry, "Conform settings", 180);
@@ -274,6 +304,7 @@ namespace Ged2Reg
             cb.Margin = new Padding(2);
             cb.Name = name;
             cb.Size = new Size(w, 34);
+            cb.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             //cb.TabIndex = 61;
             tp.Controls.Add(cb);
             return cb;
@@ -308,6 +339,7 @@ namespace Ged2Reg
                 Size = new Size(120, 21),
                 Text = lbl,
                 UseVisualStyleBackColor = true,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left
             };
             tp.Controls.Add(kb);
             return kb;
@@ -328,6 +360,7 @@ namespace Ged2Reg
                 Size = new Size(22, 21),
                 TabIndex = 83,
                 UseVisualStyleBackColor = true,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left
             };
             kb.DataBindings.Add(new Binding("Checked", bsG2RSettings, boundSetting, true));
             tp.Controls.Add(kb);
@@ -348,6 +381,7 @@ namespace Ged2Reg
                 Name = $"te{lbl.Replace(" ", "")}",
                 RightToLeft = rtl,
                 Size = new Size(w, 21),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left
             };
             textBox.DataBindings.Add(new Binding("Text", bsG2RSettings, boundSetting, true));
             tp.Controls.Add(textBox);
@@ -360,13 +394,13 @@ namespace Ged2Reg
         {
             tp.Controls.Add(new Label
             {
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left,
                 AutoSize = true,
                 Font = new Font("Microsoft Sans Serif", 11F, FontStyle.Regular, GraphicsUnit.Point),
                 Location = new Point(lbColPos+xOffset, yPos + lblOffset),
                 Name = $"lbl{txt.Replace(" ", "")}",
                 Text = txt,
-                Visible = true
+                Visible = true,
             });
         }
 
@@ -667,6 +701,7 @@ namespace Ged2Reg
                     _rrm.Doc.Dispose();
                     _rrm.Doc = null;
                     TimeSpan elapsed = DateTime.Now.Subtract(start);
+                    Log(_rrm.Reporter.GetStatsSummary(), false);
                     Log($"Report created ({_rrm.Settings.OutFile} in {elapsed:g})");
                     Log("completed processing; see Log for details");
                     if (kbOpenAfter.Checked && File.Exists(_rrm.Settings.OutFile))

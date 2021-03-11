@@ -5,7 +5,7 @@ using Ged2Reg.Model;
 
 namespace G2RModel.Model
 {
-    public class ReportFamilyEntry
+    public class ReportFamilyEntry : ReportEntryBase
     { public ReportEntry Husband { get; set; }
         public ReportEntry Wife { get; set; }
         public ListOfReportEntry Children { get; set; }

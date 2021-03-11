@@ -358,9 +358,9 @@ namespace Ged2Reg.Model
         public LocalCitationCoordinator Optimize(LocalCitationCoordinator props)
         {
             LocalCitationCoordinator rvl = new LocalCitationCoordinator()
-                {DoCite = props.DoCite};
+                {DoCite = props.DoCite, Uncited = props.Uncited};
             LocalCitationCoordinator coordinator = new LocalCitationCoordinator() 
-                { DoCite = props.DoCite };
+                { DoCite = props.DoCite, Uncited = props.Uncited};
             
             // get rid of nulls.  be SURE to preserve the ordering!
             foreach (CitationProposal prop in props)

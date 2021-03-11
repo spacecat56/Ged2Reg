@@ -176,6 +176,7 @@ namespace Ged2Reg.Model
         private bool _asEndnotes;
         private bool _repeatInline;
         private bool _deferConsecutive;
+        private bool _citePlaceholders;
 
         private bool _mainPersonNotes;
         private bool _spousesNotes;
@@ -672,6 +673,13 @@ namespace Ged2Reg.Model
         {
             get { return _useHostName; }
             set { _useHostName = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public bool CitationPlaceholders
+        {
+            get { return _citePlaceholders; }
+            set { _citePlaceholders = value; OnPropertyChanged(); }
         }
 
 
@@ -1264,6 +1272,7 @@ namespace Ged2Reg.Model
             OmitCitesOnContinued = true;
             Brackets = false;
             DeferConsecutiveRepeats = false;
+            CitationPlaceholders = true;
 
             MainPersonNotes = false;
             SpousesNotes = false;
@@ -1285,12 +1294,12 @@ namespace Ged2Reg.Model
             Append(sb, "Omit burial date", this.OmitBurialDate);
             Append(sb, "Reduce place names", this.ReducePlaceNames);
             sb.AppendLine("NB - REVIEW THIS SETTING:");
-            Append(sb, "Generation nbr on all children", this.GenNbrAllChildren);
+            Append(sb, "Gen number on all children", this.GenNbrAllChildren);
             Append(sb, "Full place name/gen", this.FullPlaceOncePerGen);
             Append(sb, "Drop USA", this.DropUsa);
             Append(sb, "Inject county", this.InjectCounty);
             Append(sb, "Place before Date", this.PlaceFirst);
-            Append(sb, "Italics Names In Lineage List", this.ItalicsNamesInLineageList);
+            Append(sb, "Lineage list in italics", this.ItalicsNamesInLineageList);
 
             Append(sb, "Reduce continued", this.ReduceContinuedChildren);
             Append(sb, "Minimize continued", this.MinimizeContinuedChildren);
@@ -1316,6 +1325,7 @@ namespace Ged2Reg.Model
             sb.AppendLine("....Settings (citation conformance) (incomplete)");
             Append(sb, "Omit On Continued", this.OmitCitesOnContinued);
             Append(sb, "Brackets on footnote nbrs", this.Brackets);
+            Append(sb, "Placeholders for uncited", this.CitationPlaceholders);
             sb.AppendLine("NB - REVIEW THIS SETTING:");
             Append(sb, "Defer consecutive repeats", this.DeferConsecutiveRepeats);
 
@@ -1377,6 +1387,7 @@ namespace Ged2Reg.Model
             Append(sb, "Use 'see note'", this.UseSeeNote);
             Append(sb, "Repeat ref inline", this.RepeatNoteRefInline);
             Append(sb, "Defer consecutive repeats", this.DeferConsecutiveRepeats);
+            Append(sb, "Placeholders for uncited", this.CitationPlaceholders);
             Append(sb, "Brackets", this.Brackets);
             Append(sb, "Omit on continued", this.OmitCitesOnContinued);
             Append(sb, "Notes / main persons", this.MainPersonNotes);

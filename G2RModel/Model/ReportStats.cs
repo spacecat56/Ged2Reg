@@ -17,6 +17,8 @@ namespace Ged2Reg.Model
         public int SpouseParents { get; set; }
         public int MaybeLiving { get; set; }
 
+        public int UncitedEvents { get; set; }
+
         public ReportStats Init(TimeSpan prep)
         {
             PrepTime = prep;

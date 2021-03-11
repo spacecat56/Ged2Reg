@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using G2RModel.Model;
 using SimpleGedcomLib;
 
 namespace Ged2Reg.Model
@@ -13,6 +14,8 @@ namespace Ged2Reg.Model
         public string PlaceIndexEntry { get; set; }
         public int PlaceIndexIndex { get; set; }
         public TagCode EventTagCode { get; set; }
+
+        public ReportEntryBase Owner { get; set; }
 
         private static char[] _splitSpace = { ' ' };
 

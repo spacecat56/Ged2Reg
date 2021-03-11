@@ -7,11 +7,8 @@ using SimpleGedcomLib;
 
 namespace G2RModel.Model
 {
-    public class ReportEntry
+    public class ReportEntry : ReportEntryBase
     {
-        private static BigInteger _nextInternalId;
-
-        public string InternalId { get; set; } = $"{_nextInternalId++}";
         public string OverrideId { get; set; }
         public string NaturalId => IndividualView?.Id;
 

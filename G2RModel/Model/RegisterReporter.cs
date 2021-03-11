@@ -71,6 +71,7 @@ namespace Ged2Reg.Model
 
         private bool _indexMarriedNames;
         private bool _placeFirst;
+        private bool _insertUncitedNotes;
 
         private ReportTreeBuilder _tree;
 
@@ -113,6 +114,8 @@ namespace Ged2Reg.Model
             _maxLivingGenerations = _c.Settings.AssumedMaxLivingGenerations;
 
             _indexMarriedNames = _c.Settings.IndexMarriedNames;
+
+            _insertUncitedNotes = _c.Settings.CitationPlaceholders;
 
             _generationalReducePlaceNames = _c.Settings.FullPlaceOncePerGen;
             _standardReducePlaceNames = _c.Settings.ReducePlaceNames && !_c.Settings.FullPlaceOncePerGen;
@@ -288,12 +291,12 @@ namespace Ged2Reg.Model
                     {
                         if (individual.AssignedMainNumber != expectedNext)
                         {
-                            EmitPlaceholder(doc, expectedNext, individual.AssignedMainNumber - 1);
+                            EmitAncestorsPlaceholder(doc, expectedNext, individual.AssignedMainNumber - 1);
                         }
                     }
 
                     if (_ancestryReport && _allowMultiple && individual.IsRepeat)
-                        EmitRepeat(doc, individual, _currentGeneration);
+                        EmitRepeatedAncestor(doc, individual, _currentGeneration);
                     else
                         EmitMainPerson(doc, individual, _currentGeneration);
                     
@@ -359,6 +362,7 @@ namespace Ged2Reg.Model
             sb.AppendLine($"\tCitations....................{MyReportStats.Citations,8:N0}");
             sb.AppendLine($"\tDistinct citations...........{MyReportStats.DistinctCitations,8:N0}");
             sb.AppendLine($"\tDeferred/combined citations..{CitationCoordinator.Deferred,8:N0}");
+            sb.AppendLine($"\tFacts with no citations......{MyReportStats.UncitedEvents,8:N0}");
             //sb.AppendLine($"\tPrep time...................{MyReportStats.PrepTime:h\\:mm\\:ss\\.fff}");
             //sb.AppendLine($"\tRun time....................{MyReportStats.ReportTime:h\\:mm\\:ss\\.fff}");
             sb.AppendLine($"\tReport preparation time.......{MyReportStats.ReportTime.Add(MyReportStats.PrepTime):h\\:mm\\:ss\\.fff}");
@@ -380,23 +384,23 @@ namespace Ged2Reg.Model
             return ixf;
         }
 
-        private void EmitPlaceholder(IWpdDocument doc, BigInteger frum, BigInteger thru, int? g = null)
+        private void EmitAncestorsPlaceholder(IWpdDocument doc, BigInteger frum, BigInteger thru, int? g = null)
         {
             int gen = g ?? _currentGeneration;
             IWpdParagraph p = doc.InsertParagraph();
             p.StyleName = _styleMap[StyleSlots.MainPersonText].CharacterStyleName;
-            string slot = Prepare(frum, gen, _generationNumberPrefixes);
+            string slot = FormatAncestorNumber(frum, gen, _generationNumberPrefixes);
             p.Append($"{slot}");
             if (thru > frum)
-                p.Append($" - {Prepare(thru, gen, _generationNumberPrefixes)}");
+                p.Append($" - {FormatAncestorNumber(thru, gen, _generationNumberPrefixes)}");
             p.Append($". {_unknownName} {_unknownName}.", false, _styleMap[StyleSlots.MainPerson]);
         }
 
-        private void EmitRepeat(IWpdDocument doc, ReportEntry individual, int gen)
+        private void EmitRepeatedAncestor(IWpdDocument doc, ReportEntry individual, int gen)
         {
             IWpdParagraph p = doc.InsertParagraph();
             EmitMainPersonName(doc, p, individual, gen);
-            p.Append($". See {Prepare(individual.FirstAppearance, gen, _generationNumberPrefixes)}.");
+            p.Append($". See {FormatAncestorNumber(individual.FirstAppearance, gen, _generationNumberPrefixes)}.");
 
             // this allows for back references... which are distinct, even when the indi repeats
             ConditionallyEmitChildren(doc, individual, gen, -1);
@@ -424,7 +428,7 @@ namespace Ged2Reg.Model
                 MyReportStats.MaybeLiving++;
         }
 
-        private string Prepare(BigInteger bi, int gen, bool prefix)
+        private string FormatAncestorNumber(BigInteger bi, int gen, bool prefix)
         {
             return prefix
                 ? $"{gen:00}-{bi}"
@@ -557,11 +561,9 @@ namespace Ged2Reg.Model
             IWpdParagraph p = doc.InsertParagraph(); // NB insert empty "" para with a styleid DOES NOT WORK
             p.StyleName = _styleMap[StyleSlots.KidsIntro].CharacterStyleName;
             p.Append(((numberToList > 1) ? "Children" : "Child"));
-            //p.Append($" of {(family.Husband?.Individual?.SafeNameForward) ?? "unknown"}");
             p.Append($" of {(family.Husband?.Individual?.SafeGivenName) ?? "unknown"}");
             if (!_suppressGenSuperscripts)
                 p.Append($"{_gnMapper.GenerationNumberFor(_currentGeneration)}", false, _generationNumberFormatting);
-            //p.Append($" and {(family.Wife?.Individual?.SafeNameForward) ?? "unknown"}:");
             string s = family.ExtendedWifeName();
             if (!string.IsNullOrEmpty(s))
                 p.Append($" and {s}:");
@@ -766,9 +768,9 @@ namespace Ged2Reg.Model
 
         internal LocalCitationCoordinator BuildLocalCitationCoordinator(ReportEntry re, bool doCite, List<TagCode> eventsToCiteFor = null, bool doFamily = true)
         {
-            LocalCitationCoordinator cp = new LocalCitationCoordinator() {DoCite = doCite};
+            LocalCitationCoordinator lcc = new LocalCitationCoordinator() {DoCite = doCite};
             if (!doCite)
-                return cp;
+                return lcc;
 
             // we can detect and optimize out consecutive repeats of the same citation
             // NB this list is ORDERED by the appearance of the cited facts
@@ -781,7 +783,8 @@ namespace Ged2Reg.Model
             };
             foreach (TagCode tc in eventsToCiteFor)
             {
-                cp.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(tc)));
+                if (!lcc.AddNonNull(re.Individual.CitableEvents?.Find(re.Individual.EventTag(tc))))
+                    lcc.NoteUncited(re.InternalId, tc);
             }
 
             if (doFamily) 
@@ -789,11 +792,11 @@ namespace Ged2Reg.Model
                 foreach (ReportFamilyEntry family in re.SafeFamilies)
                 {
                     EventCitations ec = family.Family.CitableEvents?.Find(family.Family.EventTag(TagCode.MARR));
-                    cp.AddNonNull(ec, family.Family.FamilyView.Id);
+                    lcc.AddNonNull(ec, family.Family.FamilyView.Id);
                 }
             }
 
-            LocalCitationCoordinator localCitations = CitationCoordinator.Optimize(cp);
+            LocalCitationCoordinator localCitations = CitationCoordinator.Optimize(lcc);
             return localCitations;
         }
 
@@ -802,22 +805,22 @@ namespace Ged2Reg.Model
             // to position footnote superscripts in the running text correctly (especially,
             // in relation to punctuation), we need to know IN ADVANCE all of the pieces that 
             // will be emitted.  So, figure all that out FIRST and then start outputting it
-            FormattedEvent p1_birt = new FormattedEvent() {EventTagCode = TagCode.BIRT}
+            FormattedEvent p1_birt = new FormattedEvent() {EventTagCode = TagCode.BIRT, Owner = re}
                 .Init("was born", re.Individual.Born, re.Individual.PlaceBorn, reduced ? null : re.Individual.BirthDescription);
 
             // list the baptism for non-reduced output OR if there is no birth and option set to substitute it
             // note: CHR and BAPM are treated as equivalent in layer(s) below 
             FormattedEvent p2_bapt = (_listBapt && !reduced) || (_c.Settings.BaptIfNoBirt && p1_birt == null)
-                ? new FormattedEvent() {EventTagCode = re.Individual.BaptismTagCode}
+                ? new FormattedEvent() {EventTagCode = re.Individual.BaptismTagCode, Owner = re }
                     .Init("baptized", re.Individual.Baptized, re.Individual.PlaceBaptized,
                         reduced ? null : re.Individual.BaptizedDescription)
                 : null;
 
-            FormattedEvent p3_deat = new FormattedEvent() {EventTagCode = TagCode.DEAT}
+            FormattedEvent p3_deat = new FormattedEvent() {EventTagCode = TagCode.DEAT, Owner = re }
                 .Init("died", re.Individual.Died, re.Individual.PlaceDied, reduced ? null : re.Individual.DeathDescription);
 
             FormattedEvent p4_buri = (!reduced && _listBuri)
-                ? new FormattedEvent() {EventTagCode = TagCode.BURI}
+                ? new FormattedEvent() {EventTagCode = TagCode.BURI, Owner = re }
                     .Init("was buried", re.Individual.Buried, re.Individual.PlaceBuried, re.Individual.BurialDescription,
                         _c.Settings.OmitBurialDate)
                 : null;
@@ -877,6 +880,12 @@ namespace Ged2Reg.Model
                     if (!ec.SelectedItem.IsEmitted)
                         MyReportStats.DistinctCitations++;
                     ec.EmitNote(p.Document, p, cp.AppliesTo());
+                } 
+                else if (lcc.IsUncited(ev.Owner.InternalId, ev.EventTagCode))
+                {
+                    MyReportStats.UncitedEvents++;
+                    if (_insertUncitedNotes)
+                        EventCitations.InsertUnciteNote(p, $"{ev.EventTagCode.Map()}");
                 }
             }
             ConditionallyEmitPlaceIndexEntry(p.Document, p, ev);
@@ -917,7 +926,7 @@ namespace Ged2Reg.Model
         }
 
         private void AppendMarriagesSentences(IWpdParagraph p, ReportEntry re, bool isChild, List<GedcomIndividual> toDoNotes,
-            bool reduced, bool doCite, LocalCitationCoordinator chosenLocalCitations)
+            bool reduced, bool doCite, LocalCitationCoordinator lcc)
         {
             bool storyAppended = false;
             for (int mnbr = 0; mnbr < re.SafeFamilies.Count; mnbr++)
@@ -977,7 +986,7 @@ namespace Ged2Reg.Model
                     p.Append(" (unknown)");
                 }
 
-                FormattedEvent p5_marr = new FormattedEvent() { EventTagCode = TagCode.MARR }.Init("", family.Family.DateMarried, family.Family.PlaceMarried,
+                FormattedEvent p5_marr = new FormattedEvent() { EventTagCode = TagCode.MARR, Owner = family}.Init("", family.Family.DateMarried, family.Family.PlaceMarried,
                     reduced ? null : family.Family.MarriageDescription);
                 if (!string.IsNullOrEmpty(p5_marr?.EventString))
                 {
@@ -989,7 +998,7 @@ namespace Ged2Reg.Model
                 p.Append(".");
                 if (doCite)
                 {
-                    CitationProposal cp = chosenLocalCitations[TagCode.MARR.ToString() + family.Family.FamilyView.Id];
+                    CitationProposal cp = lcc[TagCode.MARR.ToString() + family.Family.FamilyView.Id];
                     EventCitations ec = cp?.Citation;
                     if (ec?.SelectedItem != null)
                     {
@@ -997,6 +1006,12 @@ namespace Ged2Reg.Model
                         if (!ec.SelectedItem.IsEmitted)
                             MyReportStats.DistinctCitations++;
                         ec.EmitNote(_c.Model.Doc, p, cp.AppliesTo());
+                    } 
+                    else if (p5_marr!=null && lcc.IsUncited(family.InternalId, p5_marr.EventTagCode))
+                    {
+                        MyReportStats.UncitedEvents++;
+                        if (_insertUncitedNotes)
+                            EventCitations.InsertUnciteNote(p, $"{TagCode.MARR.Map()}");
                     }
                 }
 
@@ -1028,12 +1043,12 @@ namespace Ged2Reg.Model
             if (spousesChildhoodFamily == null) return false;
 
             // here we will list the baptism iff there is no birth 
-            FormattedEvent p1BirtBapm = new FormattedEvent() { EventTagCode = TagCode.BIRT }.Init("born", spouse.Individual.Born, spouse.Individual.PlaceBorn, spouse.Individual.BirthDescription);
+            FormattedEvent p1BirtBapm = new FormattedEvent() { EventTagCode = TagCode.BIRT, Owner = spouse}.Init("born", spouse.Individual.Born, spouse.Individual.PlaceBorn, spouse.Individual.BirthDescription);
             p1BirtBapm ??= new FormattedEvent() {EventTagCode = spouse.Individual.BaptismTagCode}.Init("baptized",
                 spouse.Individual.Baptized, spouse.Individual.PlaceBaptized, spouse.Individual.BaptizedDescription);
 
             // here we will list the burial iff there is no death
-            FormattedEvent p3DeatBuri = new FormattedEvent() { EventTagCode = TagCode.DEAT }.Init("died", spouse.Individual.Died, spouse.Individual.PlaceDied, spouse.Individual.DeathDescription);
+            FormattedEvent p3DeatBuri = new FormattedEvent() { EventTagCode = TagCode.DEAT, Owner = spouse }.Init("died", spouse.Individual.Died, spouse.Individual.PlaceDied, spouse.Individual.DeathDescription);
             p3DeatBuri ??= new FormattedEvent() { EventTagCode = TagCode.BURI }.Init("buried", spouse.Individual.Buried, spouse.Individual.PlaceBuried, spouse.Individual.BurialDescription, _c.Settings.OmitBurialDate);
             
             List<TagCode> eventsToCiteFor = new List<TagCode>();
