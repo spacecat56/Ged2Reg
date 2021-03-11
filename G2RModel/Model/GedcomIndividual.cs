@@ -66,6 +66,8 @@ namespace Ged2Reg.Model
 
         public static string NoSurnameIndexValue { get; set; } = "(No surname)";
 
+        public bool HasNoSurname => IndividualView?.Surname == string.Empty; // the NAME tag has a // (empty surname)
+
         //public bool MayBeLiving { get; set; }
         private bool _presumedDeceased;
 
@@ -375,6 +377,16 @@ namespace Ged2Reg.Model
 
         public int? IntYearBorn => int.TryParse(YearBorn, out int y) && y > 0 ? y : (int?)null;
         public int? IntYearDied => int.TryParse(YearDied, out int y) && y > 0 ? y : (int?)null;
+
+        public string GivenOrFullName
+        {
+            get
+            {
+                if (HasNoSurname)
+                    return SafeNameForward;
+                return SafeGivenName;
+            }
+        }
 
         public void Expand()
         {

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using SimpleGedcomLib;
 
 namespace Ged2Reg.Model
@@ -180,6 +179,15 @@ namespace Ged2Reg.Model
                 return null;
             }
 
+            // names predating the common use of the binomial are fraught
+            // and not always clearly represented in GEDCOM data.
+            // if the surname is the empty string, that came from // in the GEDCOM,
+            // whcih is the correct way to show, no surname.  if we see that, we
+            // are going to stop trying to assemble a conventional, Given (Maiden) Married 
+            // name, and just use the woman's name.
+            if (Wife.HasNoSurname)
+                return Wife.SafeGivenName;
+
             StringBuilder sb = new StringBuilder();
 
             // start with given name and maiden name
@@ -193,7 +201,8 @@ namespace Ged2Reg.Model
                 sb.Append(" (").Append(SafeName(Wife?.Families[i].Husband?.SafeSurname, placeholder)).Append(')');
             }
 
-            sb.Append(' ').Append(SafeName(Husband?.SafeSurname, placeholder));
+            if (!Husband.HasNoSurname)
+                sb.Append(' ').Append(SafeName(Husband?.SafeSurname, placeholder));
 
             return sb.ToString();
         }

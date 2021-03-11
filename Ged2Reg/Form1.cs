@@ -26,8 +26,10 @@ namespace Ged2Reg
 
         #region WinformsDesigner Fails - Workaround 
 
-        // the dotnet core / dotnet5 winforms designer is unusable
-        // so we are stuck.  here we bypass it to add the needed changes at runtime
+        // the dotnet core / dotnet5 winforms designer is unusable (tends to lose it
+        // and has damaged our code, including once, by deleting the ENTIRE FORM layout. having
+        // moved ahead to 5.0.x we were stuck.  here we bypass the unreliable designer
+        // and instead add the needed changes at runtime
 
         // new bound bools in settings:
         // AncestorsReport
@@ -35,6 +37,7 @@ namespace Ged2Reg
         // AllFamilies
         // GenerationPrefix
         // GenerationHeadings
+        // ...etc.
 
         private TabPage tpAncestry;
         private TabPage tpIndexes;

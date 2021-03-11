@@ -416,7 +416,7 @@ namespace Ged2Reg.Model
             ex = doc.BuildIndexEntryField(ixn, $"{indi.IndexableSurname}:{indi.SafeGivenName}").Build();
             p.AppendField(ex);
 
-            if (!_indexMarriedNames || indi.Gender != "F")
+            if (!_indexMarriedNames || indi.Gender != "F" || indi.HasNoSurname)
                 return true;
 
             // heh.  I guess we can call this "lazy".
@@ -1066,7 +1066,7 @@ namespace Ged2Reg.Model
                 {
                     if (hasMere)
                     {
-                        p.Append($" {spousesChildhoodFamily.Husband.SafeGivenName}");
+                        p.Append($" {spousesChildhoodFamily.Husband.GivenOrFullName}"); // uses full name in the pre-binomial era
                     }
                     else
                     {
@@ -1084,7 +1084,7 @@ namespace Ged2Reg.Model
                 }
                 if (hasMere)
                 {
-                    p.Append($" {conj}{spousesChildhoodFamily.ExtendedWifeName()}");
+                    p.Append($" {conj}{spousesChildhoodFamily.ExtendedWifeName()}"); // extended to recognize no surn
                     MyReportStats.SpouseParents++;
                     if (!spousesChildhoodFamily.Wife.PresumedDeceased)
                         MyReportStats.MaybeLiving++;
@@ -1112,9 +1112,13 @@ namespace Ged2Reg.Model
                     connector = " was";
                 }
 
-                EmitEvent(p, p1BirtBapm, localCitations, hasDb?null:closer, connector);
+                EmitEvent(p, p1BirtBapm, localCitations, hasDb?",":closer, connector);
                 if (!hasDb)
                     closer = null;
+                connector = $" and {spouse.Individual.Pronoun.ToLower()}";
+            }
+            else
+            {
                 connector = $" and {spouse.Individual.Pronoun.ToLower()}";
             }
 

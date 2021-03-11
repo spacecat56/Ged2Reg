@@ -6,6 +6,18 @@ namespace Ged2Reg.Model
 {
     public class CitationProposal
     {
+        private static Dictionary<TagCode, string> _renamedEvents;
+        public static Dictionary<TagCode, string> RenamedEvents
+        {
+            get { return _renamedEvents ??= new Dictionary<TagCode, string>(); }
+            //set { _renamedEvents = value; }
+        }
+
+        static CitationProposal()
+        {
+            RenamedEvents.Add(TagCode.CHR, "Baptism");
+        }
+
         public string InstanceId { get; set; }
         public EventCitations Citation { get; set; }
         public string EventId { get; set; }
@@ -28,11 +40,18 @@ namespace Ged2Reg.Model
             string sep = null;
             foreach (CitationProposal other in ApplicableEvents)
             {
-                sb.Append(sep).Append(other.EventTagCode.Map().ToString());
+                sb.Append(sep).Append(GetEventName(other));
                 sep = ", ";
             }
-            sb.Append(sep).Append(EventTagCode.Map().ToString()).Append(".");
+            sb.Append(sep).Append(GetEventName(this)).Append(".");
             return sb.ToString();
+        }
+
+        public static string GetEventName(CitationProposal c)
+        {
+            return RenamedEvents.ContainsKey(c.EventTagCode) 
+            ? RenamedEvents[c.EventTagCode]
+            : c.EventTagCode.Map().ToString();
         }
 
         public void AddApplicableEvents(CitationProposal other)
