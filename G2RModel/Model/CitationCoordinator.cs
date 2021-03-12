@@ -193,10 +193,12 @@ namespace Ged2Reg.Model
                 }
             }
 
-            // this seems ill-advised:
             if (_priorityCensus[0] == _distinctCitations.Count)
             {
-                throw new Exception("No match for any source priority pattern");
+                // this seems ill-advised:
+                // throw new Exception("No match for any source priority pattern");
+                // todo: log this
+                return;
             }
             // work from example?
             // var test2NotInTest1 = test2.Where(t2 => !test1.Any(t1 => t2.Contains(t1)));

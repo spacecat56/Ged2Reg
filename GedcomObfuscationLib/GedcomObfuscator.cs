@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -27,6 +28,10 @@ namespace GedcomObfuscationLib
         private HashSet<string> _visitedIndis;
         private string _fileName;
         private long _fileSize;
+
+        private Random _random;
+
+        public Random Randomizer => _random ??= new Random(DateTime.Now.Millisecond);
 
         /// <summary>
         /// Read the GEDCOM file and assign create the maps
@@ -124,7 +129,6 @@ namespace GedcomObfuscationLib
 
             try
             {
-                // todo
                 // walk back up all persons in the tree and once we reach the horizon flag 
                 // as "immune" to stop obfuscation.
                 foreach (GedcomIndividual indi in _rrm.Individuals)
@@ -209,28 +213,60 @@ namespace GedcomObfuscationLib
                         waitOnLevel = -1;
                     }
 
-                    if (tag.Code == TagCode.OBJE)
+                    switch (tag.Code)
                     {
-                        waitOnLevel = tag.Level;
-                        continue;
+                        case TagCode.UNK:
+                        case TagCode.OBJE:
+                        case TagCode.REPO:
+                            waitOnLevel = tag.Level;
+                            break;
+                        case TagCode.CONT:
+                        case TagCode.CONC:
+                            break;
+                        //case TagCode.AUTH:
+                        //case TagCode.NOTE:
+                        //case TagCode.TEXT:
+                        //case TagCode.TITL:
+                        //    // todo: scrub and re-emit the text
+                        //    Scrub(tag, sb);
+                        //    waitOnLevel = tag.Level;
+                        //    //sb.AppendLine(tag.ReAssemble());
+                        //    break;
+                        case TagCode.DATE:
+                            tag.Content = RandomizeDate(tag.Content);
+                            sb.AppendLine(tag.ReAssemble());
+                            break;
+                        case TagCode.PAGE:
+                            // overwrite the text, set the level to drop any continues,
+                            // but fall through and keep the tag
+                            tag.Content = "Page specific ref info removed";
+                            waitOnLevel = tag.Level;
+                            sb.AppendLine(tag.ReAssemble());
+                            break;
+                        default:
+                            if (tag.Level == 0
+                                || (tag.Level == 1 && tag.Code == TagCode.NAME)
+                                || tag.Id != null)
+                            {
+                                sb.AppendLine(tag.ReAssemble());
+                            }
+                            else
+                            {
+                                Scrub(tag, sb);
+                                // scrub will eat all CONT / CONC
+                                // but this: is NOT the way to skip them!
+                                //waitOnLevel = tag.Level;
+                            }
+                            break;
                     }
 
-                    if (tag.Code == TagCode.PAGE)
-                    {
-                        // overwrite the text, set the level to drop any continues,
-                        // but fall through and keep the tag
-                        tag.Content = "Page specific ref info removed";
-                        waitOnLevel = tag.Level;
-                    }
-
-                    sb.AppendLine(tag.ReAssemble());
                 }
 
                 _cleaner = new ContentCleaner();
                 _newText = _cleaner.PruneURLs(sb.ToString());
 
-                sb = ApplyTextReplacement(_newText);
-                _newText = sb.ToString();
+                //sb = ApplyTextReplacement(_newText);
+                //_newText = sb.ToString();
 
                 File.WriteAllText(FileNameOut, _newText);
 
@@ -241,6 +277,53 @@ namespace GedcomObfuscationLib
                 LastException = ex;
                 return false;
             }
+        }
+
+        private string RandomizeDate(string s)
+        {
+            if (string.IsNullOrEmpty(s))
+                return s;
+
+            if (!DateTime.TryParse(s, out DateTime d))
+                return s;
+
+            int bump = Randomizer.Next(1, 60) - 30;
+            d = d.AddDays(bump);
+
+            return d.ToString("dd MMM yyyy").ToUpper();
+        }
+
+        private void Scrub(Tag tag, StringBuilder sb)
+        {
+            //string newContent = null;
+
+            //newContent = $"{tag.Code.Map()} (removed)";
+            
+            //switch (tag.Code)
+            //{
+            //    case TagCode.TITL:
+            //    case TagCode.TEXT:
+            //        break;
+            //}
+
+            // if the tag has no content, just pass it through
+            if (string.IsNullOrEmpty(tag.Content))
+            {
+                sb.AppendLine(tag.ReAssemble());
+                return;
+            }
+            // pull the full text and scrub it of names
+            tag.Content = _namePool.Scrub2(tag.FullText()) ?? tag.Content;
+            // break it up if it gets too long; shouldn't the TAG do that?
+            string c = tag.ReAssemble();
+            while (c.Length > 254)
+            {
+                int at = 253;
+                while (c[at] == ' ' && at > 40) at--;
+                sb.AppendLine(c.Substring(0, at));
+                c = $"{tag.Level + 1} CONC {c.Substring(at)}";
+            }
+            sb.AppendLine(c);
         }
 
         private string InitCaps(string s)

@@ -1,14 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace GedcomObfuscationLib
 {
     public class NamesPools
     {
+        public static HashSet<string> UnMappableNames = new HashSet<string> ()
+        {
+            "ENGLAND",
+            "JUNE",
+            "MAY",
+            "AUGUST",
+            "CHURCH",
+        };
+
         public static string[] Surnames =
         {
             "ABBOTT",
@@ -546,7 +553,7 @@ namespace GedcomObfuscationLib
         "ANNIE",
         "ANTOINETTE",
         "ANTONIA",
-        "APRIL",
+        //"APRIL",
         "ARLENE",
         "ASHLEY",
         "AUDREY",
@@ -755,7 +762,7 @@ namespace GedcomObfuscationLib
         "JUDY",
         "JULIA",
         "JULIE",
-        "JUNE",
+        //"JUNE",
         "KARA",
         "KAREN",
         "KARI",
@@ -855,7 +862,7 @@ namespace GedcomObfuscationLib
         "MATTIE",
         "MAUREEN",
         "MAXINE",
-        "MAY",
+        //"MAY",
         "MEGAN",
         "MEGHAN",
         "MELANIE",
@@ -1565,20 +1572,91 @@ namespace GedcomObfuscationLib
         public string MappedMname(string n) => _assignedMnames.TryGetValue(n, out string rv) ? rv : n;
         public string MappedFname(string n) => _assignedFnames.TryGetValue(n, out string rv) ? rv : n;
 
+        public string MappedName(string s, bool nullIfNotFound = true)
+        {
+            if (_assignedSurnames.TryGetValue(s, out string rv))
+                return rv;
+            if (_assignedMnames.TryGetValue(s, out rv))
+                return rv;
+            if (_assignedFnames.TryGetValue(s, out rv))
+                return rv;
+            return nullIfNotFound ? null : s;
+        }
 
         private void Assign(string s, Dictionary<string, string> known, List<string> available)
         {
-            if (s == null || s.Length < 3) return;
+            if (s == null || s.Length < 3 ) return;
             s = Regex.Replace(s, "[^ .a-zA-Z]", "");
-            if (s.Length < 3) return;
-            //s = s.ToUpper();
+            if (s.Length < 3 || UnMappableNames.Contains(s.ToUpper())) return;
             if (known.ContainsKey(s)) return;
-            if (available.Count < 50)
-                ;
+
             int choice = _rand.Next(0, available.Count - 1);
             known.Add(s, available[choice]);
             available.RemoveAt(choice);
         }
+
+        /// <summary>
+        /// check all 'words' in the string and replace any that
+        /// are found in our name maps; if this results in a
+        /// change, return the change, otherwise return null to
+        /// indicate no hits.
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public string Scrub(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return s;
+            bool hit = false;
+            string[] ws = s.Split(' ');
+            StringBuilder sb = new StringBuilder(s.Length +  32);
+
+            foreach (string w in ws)
+            {
+                string repl = MappedName(w);
+                hit |= repl != null;
+                sb.Append(InitCaps(repl)??w).Append(' ');
+            }
+
+            return hit 
+                ? sb.ToString() 
+                : null;
+        }
+
+        Regex _wordRex = new Regex(@"\b(.+?)\b");
+
+        public string Scrub2(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return s;
+
+            MatchCollection ms = _wordRex.Matches(s);
+
+            if (ms.Count == 0) return s;
+
+            bool hit = false;
+            StringBuilder sb = new StringBuilder(s);
+
+            // loop through the hits backwards
+            // so changes do not invalidate the other matches
+            for (int i = ms.Count-1; i >= 0; i--)
+            {
+                string repl = MappedName(ms[i].Value);
+                if (repl == null)
+                    continue;
+                hit = true;
+                sb.Replace(ms[i].Value, InitCaps(repl), ms[i].Index, ms[i].Length);
+            }
+
+            return hit
+                ? sb.ToString()
+                : null;
+        }
+        private string InitCaps(string s)
+        {
+            if ((s?.Length ?? 0) < 2 || !char.IsLetter(s[0]))
+                return s;
+            return $"{s.Substring(0, 1).ToUpper()}{s.Substring(1).ToLower()}";
+        }
+
 
         public List<TextReplacer> GetReplacers()
         {

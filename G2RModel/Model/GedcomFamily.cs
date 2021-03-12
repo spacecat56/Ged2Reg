@@ -201,7 +201,7 @@ namespace Ged2Reg.Model
                 sb.Append(" (").Append(SafeName(Wife?.Families[i].Husband?.SafeSurname, placeholder)).Append(')');
             }
 
-            if (!Husband.HasNoSurname)
+            if (!Husband?.HasNoSurname??true) // ugh.  todo: true or false here
                 sb.Append(' ').Append(SafeName(Husband?.SafeSurname, placeholder));
 
             return sb.ToString();
