@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Ged2Reg.Model;
 using SimpleGedcomLib;
 
@@ -17,6 +16,9 @@ namespace GedcomObfuscationLib
         public Exception LastException { get; set; }
         public string FileNameOut { get; set; }
         public int Fence { get; set; } = 1700;
+        public StringBuilder ResultsText { get;  } = new StringBuilder();
+
+        public List<NamesPools.NameCounter> Residuals { get; set; }
 
         private GedcomFile _file;
         private NamesPools _namePool;
@@ -122,6 +124,9 @@ namespace GedcomObfuscationLib
         public int CountGivenMapped { get; set; }
         public int CountSurnUnMapped { get; set; }
         public int CountGivenUnMapped { get; set; }
+        public int CountDropObje { get; set; }
+        public int CountDropRepo { get; set; }
+        public int CountDropUnk { get; set; }
 
         public bool Exec()
         {
@@ -192,15 +197,6 @@ namespace GedcomObfuscationLib
                     }
                 }
 
-                Debug.WriteLine("*** Name Mapping ***");
-                Debug.WriteLine($"    Individuals...............{CountIndividuals}");
-                Debug.WriteLine($"    Immune....................{CountImmune}");
-                Debug.WriteLine($"    No Id.....................{CountNoId}");
-                Debug.WriteLine($"    Surname unmapped..........{CountSurnUnMapped}");
-                Debug.WriteLine($"    Surname mapped............{CountSurnMapped}");
-                Debug.WriteLine($"    Given unmapped............{CountGivenUnMapped}");
-                Debug.WriteLine($"    Given mapped..............{CountGivenMapped}");
-
                 // write the file back to a memory buffer, then 
                 // truncate all URLS, ...
                 StringBuilder sb = new StringBuilder((int) _fileSize);
@@ -237,8 +233,15 @@ namespace GedcomObfuscationLib
                             sb.AppendLine(tag.ReAssemble());
                             break;
                         case TagCode.UNK:
+                            CountDropUnk++;
+                            waitOnLevel = tag.Level;
+                            break;
                         case TagCode.OBJE:
+                            CountDropObje++;
+                            waitOnLevel = tag.Level;
+                            break;
                         case TagCode.REPO:
+                            CountDropRepo++;
                             waitOnLevel = tag.Level;
                             break;
                         case TagCode.CONT:
@@ -279,7 +282,7 @@ namespace GedcomObfuscationLib
                         case TagCode.PAGE:
                             // overwrite the text, set the level to drop any continues,
                             // but fall through and keep the tag
-                            tag.Content = "Page specific ref info removed";
+                            tag.Content = "Page info [removed]";
                             waitOnLevel = tag.Level;
                             sb.AppendLine(tag.ReAssemble());
                             break;
@@ -308,10 +311,50 @@ namespace GedcomObfuscationLib
 
                 _newText = _cleaner.PruneURLs(sb.ToString());
 
-                //sb = ApplyTextReplacement(_newText);
-                //_newText = sb.ToString();
+                ResultsText.AppendLine("*** Name Mapping ***");
+                ResultsText.AppendLine($"    Individuals...............{CountIndividuals}");
+                ResultsText.AppendLine($"    Immune....................{CountImmune}");
+                ResultsText.AppendLine($"    No Id.....................{CountNoId}");
+                ResultsText.AppendLine($"    Surname unmapped..........{CountSurnUnMapped}");
+                ResultsText.AppendLine($"    Surname mapped............{CountSurnMapped}");
+                ResultsText.AppendLine($"    Given unmapped............{CountGivenUnMapped}");
+                ResultsText.AppendLine($"    Given mapped..............{CountGivenMapped}");
+                ResultsText.AppendLine("*** Other processing ***");
+                ResultsText.AppendLine($"    URL truncations...........{_cleaner?.TextsChanged}");
+                ResultsText.AppendLine($"    Dropped REPO..............{CountDropRepo}");
+                ResultsText.AppendLine($"    Dropped OBJE..............{CountDropObje}");
+                ResultsText.AppendLine($"    Dropped UNK...............{CountDropUnk}");
+
+                Residuals = _namePool.CheckForResiduals(_newText, 10);
 
                 File.WriteAllText(FileNameOut, _newText);
+
+                ResultsText.AppendLine().Append("File written: ").Append(FileNameOut);
+                List<NamesPools.NameCounter> repairs = Residuals.Where(
+                    nc => nc.ResidualCount > 0 && nc.ResidualCount < 100 
+                    && nc.OriginalName.Length > 4)
+                    .ToList();
+
+                bool didRepair = false;
+                foreach (NamesPools.NameCounter repair in repairs)
+                {
+                    _newText = Regex.Replace(_newText, repair.OriginalName, InitCaps(repair.Name));
+                    didRepair = repair.Repaired = true;
+                }
+
+                if (!didRepair)
+                    return true;
+
+                string altFile = Path.ChangeExtension(FileNameOut, $".alt{Path.GetExtension(FileNameOut)}");
+                File.WriteAllText(altFile, _newText);
+                ResultsText.AppendLine("Leftover occurrences of top-ten surnames:");
+                foreach (NamesPools.NameCounter r in Residuals)
+                {
+                    ResultsText.AppendLine(
+                        $"Name in: {r.OriginalName}; Individuals: {r.Count}; Name out: {r.Name}; Leftovers: {r.ResidualCount}; Fixed: {r.Repaired}");
+                }
+
+                ResultsText.AppendLine().Append("Alt file written (residuals changed): ").Append(altFile);
 
                 return true;
             }

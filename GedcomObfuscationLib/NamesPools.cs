@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -1532,14 +1533,18 @@ namespace GedcomObfuscationLib
         private List<string> _availableFnames;
         private List<string> _availableMnames;
 
-        private Dictionary<string, string> _assignedSurnames;
-        private Dictionary<string, string> _assignedFnames;
-        private Dictionary<string, string> _assignedMnames;
+        private Dictionary<string, NameCounter> _assignedSurnames;
+        private Dictionary<string, NameCounter> _assignedFnames;
+        private Dictionary<string, NameCounter> _assignedMnames;
 
-        class NameCounter
+        public class NameCounter
         {
+            public string OriginalName { get; set; }
             public string Name { get; set; }
             public int Count { get; set; }
+            public int ResidualCount { get; set; }
+            public List<string> ResidualTexts { get; set; }
+            public bool Repaired { get; set; }
         }
 
         private Random _rand;
@@ -1549,9 +1554,9 @@ namespace GedcomObfuscationLib
             _availableSurnames=new List<string>(Surnames);
             _availableFnames = new List<string>(FemaleNames);
             _availableMnames = new List<string>(MaleNames);
-            _assignedSurnames = new Dictionary<string, string>();
-            _assignedFnames = new Dictionary<string, string>();
-            _assignedMnames = new Dictionary<string, string>();
+            _assignedSurnames = new Dictionary<string, NameCounter>();
+            _assignedFnames = new Dictionary<string, NameCounter>();
+            _assignedMnames = new Dictionary<string, NameCounter>();
             _rand = new Random(DateTime.Now.Millisecond);
         }
 
@@ -1574,32 +1579,41 @@ namespace GedcomObfuscationLib
             Assign(s, _assignedMnames, _availableMnames);
         }
 
-        public string MappedSurname(string n) => _assignedSurnames.TryGetValue(InitCaps(n), out string rv) ? rv : n;
-        public string MappedMname(string n) => _assignedMnames.TryGetValue(InitCaps(n), out string rv) ? rv : n;
-        public string MappedFname(string n) => _assignedFnames.TryGetValue(InitCaps(n), out string rv) ? rv : n;
+        public string MappedSurname(string n) => _assignedSurnames.TryGetValue(InitCaps(n), out NameCounter rv) ? rv.Name : n;
+        public string MappedMname(string n) => _assignedMnames.TryGetValue(InitCaps(n), out NameCounter rv) ? rv.Name : n;
+        public string MappedFname(string n) => _assignedFnames.TryGetValue(InitCaps(n), out NameCounter rv) ? rv.Name : n;
 
         public string AnyMappedName(string s, bool nullIfNotFound = true)
         {
             s = InitCaps(s);
-            if (_assignedSurnames.TryGetValue(s, out string rv))
-                return rv;
+            if (_assignedSurnames.TryGetValue(s, out NameCounter rv))
+                return rv.Name;
             if (_assignedMnames.TryGetValue(s, out rv))
-                return rv;
+                return rv.Name;
             if (_assignedFnames.TryGetValue(s, out rv))
-                return rv;
+                return rv.Name;
             return nullIfNotFound ? null : s;
         }
 
-        private void Assign(string s, Dictionary<string, string> known, List<string> available)
+        private void Assign(string s, Dictionary<string, NameCounter> known, List<string> available)
         {
             if (s == null || s.Length < 3 ) return;
             s = Regex.Replace(s, "[^ .a-zA-Z]", "");
             if (s.Length < 3 || UnMappableNames.Contains(s.ToUpper())) return;
             s = InitCaps(s);
-            if (known.ContainsKey(s)) return;
+            if (known.ContainsKey(s))
+            {
+                known[s].Count++;
+                return;
+            }
 
             int choice = _rand.Next(0, available.Count - 1);
-            known.Add(s, available[choice]);
+            known.Add(s, new NameCounter()
+            {
+                OriginalName = s,
+                Name = available[choice], 
+                Count = 1
+            });
             available.RemoveAt(choice);
         }
 
@@ -1675,12 +1689,36 @@ namespace GedcomObfuscationLib
             return rvl;
         }
 
-        private void BuildReplacers(List<TextReplacer> list, Dictionary<string, string> map)
+        private void BuildReplacers(List<TextReplacer> list, Dictionary<string, NameCounter> map)
         {
             foreach (string key in map.Keys)
             {
-                list.Add(new TextReplacer(){Input = key, Output = map[key]});
+                list.Add(new TextReplacer(){Input = key, Output = map[key].Name});
             }
         }
+
+        public List<NameCounter> CheckForResiduals(string text, int howMany)
+        {
+            List<NameCounter> rvl = _assignedSurnames.Values.OrderByDescending(nc => nc.Count).Take(howMany).ToList();
+            int texLen = text.Length;
+            foreach (NameCounter nc in rvl)
+            {
+                var ms = Regex.Matches(text, nc.OriginalName);
+                nc.ResidualCount = ms.Count;
+                nc.ResidualTexts = new List<string>();
+                foreach (Match m in ms)
+                {
+                    int s = Math.Max(0, m.Index - Aperture);
+                    int l = s + m.Length + 2 * Aperture;
+                    if (l >= texLen) l = texLen - s;
+                    else l -= s;
+                    nc.ResidualTexts.Add(text.Substring(s, l));
+                }
+            }
+
+            return rvl;
+        }
+
+        public static int Aperture { get; set; } = 10;
     }
 }

@@ -1193,7 +1193,11 @@ namespace Ged2Reg
                     FileNameOut = sfd.FileName,
                 };
                 if (_obfu.Init(_rrm))
+                {
                     _obfu.Exec();
+                    Log(_obfu.ResultsText.ToString());
+                    Log("Obfuscated (obscured) GEDCOM file(s) written, see log for details");
+                }
             }
             catch (Exception ex)
             {
