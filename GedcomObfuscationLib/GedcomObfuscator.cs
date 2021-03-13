@@ -12,6 +12,7 @@ namespace GedcomObfuscationLib
 {
     public class GedcomObfuscator
     {
+        public static int OutputLineLength { get; set; } = 80;
         public string FileName { get; set; }
         public Exception LastException { get; set; }
         public string FileNameOut { get; set; }
@@ -203,9 +204,15 @@ namespace GedcomObfuscationLib
                 // write the file back to a memory buffer, then 
                 // truncate all URLS, ...
                 StringBuilder sb = new StringBuilder((int) _fileSize);
+                _cleaner = new ContentCleaner();
                 int waitOnLevel = -1;
-                foreach (Tag tag in _file.AllTags)
+                for (int i = 0; i < _file.AllTags.Count; i++)
                 {
+                    Tag tag = _file.AllTags[i];
+
+                    Tag nextTag = i+1 >= _file.AllTags.Count ? null : _file.AllTags[i + 1];
+                    bool continued = nextTag != null && (nextTag.Code == TagCode.CONC || nextTag.Code == TagCode.CONT);
+
                     if (waitOnLevel >= 0)
                     {
                         if (tag.Level > waitOnLevel)
@@ -223,15 +230,33 @@ namespace GedcomObfuscationLib
                         case TagCode.CONT:
                         case TagCode.CONC:
                             break;
-                        //case TagCode.AUTH:
-                        //case TagCode.NOTE:
-                        //case TagCode.TEXT:
-                        //case TagCode.TITL:
-                        //    // todo: scrub and re-emit the text
-                        //    Scrub(tag, sb);
-                        //    waitOnLevel = tag.Level;
-                        //    //sb.AppendLine(tag.ReAssemble());
-                        //    break;
+                        case TagCode.DATA:
+                            if (string.IsNullOrEmpty(tag.Content))
+                            {
+                                sb.AppendLine(tag.ReAssemble());
+                                break;
+                            }
+                            Scrub(tag, sb, continued);
+                            waitOnLevel = tag.Level;
+                            break;
+                        case TagCode.TEXT:
+                            //sb.AppendLine(tag.ReAssemble());
+                            Scrub(tag, sb, continued);
+                            waitOnLevel = tag.Level;
+                            break;
+                        case TagCode.NOTE:
+                            // may be a reference:
+                            if (!tag.HasIdentifier)
+                            {
+                                sb.AppendLine(tag.ReAssemble());
+                                break;
+                            }
+                            // or, the note body, which
+                            // requires special handling, FTM (at least) emits them 
+                            // empty of content but filled with next-level CONT/C 
+                            ScrubNote(tag, sb);
+                            waitOnLevel = tag.Level;
+                            break;
                         case TagCode.DATE:
                             tag.Content = RandomizeDate(tag.Content);
                             sb.AppendLine(tag.ReAssemble());
@@ -252,7 +277,7 @@ namespace GedcomObfuscationLib
                             }
                             else
                             {
-                                Scrub(tag, sb);
+                                Scrub(tag, sb, continued);
                                 // scrub will eat all CONT / CONC
                                 // but this: is NOT the way to skip them!
                                 //waitOnLevel = tag.Level;
@@ -262,7 +287,6 @@ namespace GedcomObfuscationLib
 
                 }
 
-                _cleaner = new ContentCleaner();
                 _newText = _cleaner.PruneURLs(sb.ToString());
 
                 //sb = ApplyTextReplacement(_newText);
@@ -276,6 +300,28 @@ namespace GedcomObfuscationLib
             {
                 LastException = ex;
                 return false;
+            }
+        }
+
+        private void ScrubNote(Tag tag, StringBuilder sb)
+        {
+            //bool emptyBase = string.IsNullOrEmpty(tag.Content);
+            string text = tag.FullText(true);
+            text = _namePool.Scrub2(text) ?? text;
+            
+            tag.Content = null;
+            sb.AppendLine(tag.ReAssemble());
+
+            if (string.IsNullOrEmpty(text))
+                return;
+
+            string[] lines = text.Split(new[] {"\r\n", "\r", "\n"}, StringSplitOptions.None);
+            string lTag = "CONC";  // first one does not begin with a nl
+            foreach (string line in lines)
+            {
+                string lineOut = $"{tag.Level+1} {lTag} {line}";
+                lTag = "CONT";  // any 'line' after the first needs a nl
+                EmitContinuableText(sb, lineOut, tag.Level + 1);
             }
         }
 
@@ -293,37 +339,39 @@ namespace GedcomObfuscationLib
             return d.ToString("dd MMM yyyy").ToUpper();
         }
 
-        private void Scrub(Tag tag, StringBuilder sb)
+        private void Scrub(Tag tag, StringBuilder sb, bool continued)
         {
-            //string newContent = null;
-
-            //newContent = $"{tag.Code.Map()} (removed)";
-            
-            //switch (tag.Code)
-            //{
-            //    case TagCode.TITL:
-            //    case TagCode.TEXT:
-            //        break;
-            //}
-
             // if the tag has no content, just pass it through
-            if (string.IsNullOrEmpty(tag.Content))
+            // NB do not call this with tags that carry extended text
+            // e.g. NOTE, TITL, 
+            if (!continued && string.IsNullOrEmpty(tag.Content))
             {
                 sb.AppendLine(tag.ReAssemble());
                 return;
             }
-            // pull the full text and scrub it of names
-            tag.Content = _namePool.Scrub2(tag.FullText()) ?? tag.Content;
-            // break it up if it gets too long; shouldn't the TAG do that?
+
+            // pull the full text and scrub it of names and URLs
+            tag.Content = _cleaner.PruneURLs(_namePool.Scrub2(tag.FullText()) ?? tag.Content);
+            if (tag.Content == null)
+                tag.Content = tag.FullText();
             string c = tag.ReAssemble();
-            while (c.Length > 254)
+            int lvl = tag.Level + 1;
+
+            EmitContinuableText(sb, c, lvl);
+        }
+
+        private static void EmitContinuableText(StringBuilder sb, string tagLine, int level)
+        {
+            // break it up if it gets too long; shouldn't the TAG do that?
+            while (tagLine.Length > OutputLineLength)
             {
-                int at = 253;
-                while (c[at] == ' ' && at > 40) at--;
-                sb.AppendLine(c.Substring(0, at));
-                c = $"{tag.Level + 1} CONC {c.Substring(at)}";
+                int at = OutputLineLength - 1;
+                while (tagLine[at] == ' ' && at > 40) at--;
+                sb.AppendLine(tagLine.Substring(0, at));
+                tagLine = $"{level} CONC {tagLine.Substring(at)}";
             }
-            sb.AppendLine(c);
+
+            sb.AppendLine(tagLine);
         }
 
         private string InitCaps(string s)
