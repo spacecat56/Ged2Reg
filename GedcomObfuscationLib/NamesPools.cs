@@ -1536,6 +1536,12 @@ namespace GedcomObfuscationLib
         private Dictionary<string, string> _assignedFnames;
         private Dictionary<string, string> _assignedMnames;
 
+        class NameCounter
+        {
+            public string Name { get; set; }
+            public int Count { get; set; }
+        }
+
         private Random _rand;
 
         public NamesPools()
@@ -1568,12 +1574,13 @@ namespace GedcomObfuscationLib
             Assign(s, _assignedMnames, _availableMnames);
         }
 
-        public string MappedSurname(string n) => _assignedSurnames.TryGetValue(n, out string rv) ? rv : n;
-        public string MappedMname(string n) => _assignedMnames.TryGetValue(n, out string rv) ? rv : n;
-        public string MappedFname(string n) => _assignedFnames.TryGetValue(n, out string rv) ? rv : n;
+        public string MappedSurname(string n) => _assignedSurnames.TryGetValue(InitCaps(n), out string rv) ? rv : n;
+        public string MappedMname(string n) => _assignedMnames.TryGetValue(InitCaps(n), out string rv) ? rv : n;
+        public string MappedFname(string n) => _assignedFnames.TryGetValue(InitCaps(n), out string rv) ? rv : n;
 
-        public string MappedName(string s, bool nullIfNotFound = true)
+        public string AnyMappedName(string s, bool nullIfNotFound = true)
         {
+            s = InitCaps(s);
             if (_assignedSurnames.TryGetValue(s, out string rv))
                 return rv;
             if (_assignedMnames.TryGetValue(s, out rv))
@@ -1588,6 +1595,7 @@ namespace GedcomObfuscationLib
             if (s == null || s.Length < 3 ) return;
             s = Regex.Replace(s, "[^ .a-zA-Z]", "");
             if (s.Length < 3 || UnMappableNames.Contains(s.ToUpper())) return;
+            s = InitCaps(s);
             if (known.ContainsKey(s)) return;
 
             int choice = _rand.Next(0, available.Count - 1);
@@ -1612,7 +1620,7 @@ namespace GedcomObfuscationLib
 
             foreach (string w in ws)
             {
-                string repl = MappedName(w);
+                string repl = AnyMappedName(w);
                 hit |= repl != null;
                 sb.Append(InitCaps(repl)??w).Append(' ');
             }
@@ -1639,7 +1647,7 @@ namespace GedcomObfuscationLib
             // so changes do not invalidate the other matches
             for (int i = ms.Count-1; i >= 0; i--)
             {
-                string repl = MappedName(ms[i].Value);
+                string repl = AnyMappedName(ms[i].Value);
                 if (repl == null)
                     continue;
                 hit = true;

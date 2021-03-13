@@ -206,8 +206,19 @@ namespace GedcomObfuscationLib
                 StringBuilder sb = new StringBuilder((int) _fileSize);
                 _cleaner = new ContentCleaner();
                 int waitOnLevel = -1;
-                for (int i = 0; i < _file.AllTags.Count; i++)
+                int i;
+                int iterLimit = _file.AllTags.Count;
+                for (i = 0; i < iterLimit; i++)
                 {
+                    void SkipContinuations()
+                    {
+                        while (i + 1 < iterLimit && (_file.AllTags[i+1].Code == TagCode.CONC ||
+                                                     _file.AllTags[i+1].Code == TagCode.CONT))
+                        {
+                            i++;
+                        }
+                    }
+
                     Tag tag = _file.AllTags[i];
 
                     Tag nextTag = i+1 >= _file.AllTags.Count ? null : _file.AllTags[i + 1];
@@ -222,6 +233,9 @@ namespace GedcomObfuscationLib
 
                     switch (tag.Code)
                     {
+                        case TagCode.PLAC:
+                            sb.AppendLine(tag.ReAssemble());
+                            break;
                         case TagCode.UNK:
                         case TagCode.OBJE:
                         case TagCode.REPO:
@@ -236,13 +250,14 @@ namespace GedcomObfuscationLib
                                 sb.AppendLine(tag.ReAssemble());
                                 break;
                             }
-                            Scrub(tag, sb, continued);
-                            waitOnLevel = tag.Level;
+                            if (Scrub(tag, sb, continued))
+                                waitOnLevel = tag.Level;
                             break;
                         case TagCode.TEXT:
                             //sb.AppendLine(tag.ReAssemble());
-                            Scrub(tag, sb, continued);
-                            waitOnLevel = tag.Level;
+                            if  (Scrub(tag, sb, continued) && continued)
+                                //waitOnLevel = tag.Level;
+                                SkipContinuations();
                             break;
                         case TagCode.NOTE:
                             // may be a reference:
@@ -277,10 +292,14 @@ namespace GedcomObfuscationLib
                             }
                             else
                             {
-                                Scrub(tag, sb, continued);
+                                bool eaten = Scrub(tag, sb, continued) && continued;
                                 // scrub will eat all CONT / CONC
                                 // but this: is NOT the way to skip them!
-                                //waitOnLevel = tag.Level;
+                                if (eaten)
+                                {
+                                    //waitOnLevel = tag.Level;
+                                    SkipContinuations();
+                                }
                             }
                             break;
                     }
@@ -339,7 +358,7 @@ namespace GedcomObfuscationLib
             return d.ToString("dd MMM yyyy").ToUpper();
         }
 
-        private void Scrub(Tag tag, StringBuilder sb, bool continued)
+        private bool Scrub(Tag tag, StringBuilder sb, bool continued)
         {
             // if the tag has no content, just pass it through
             // NB do not call this with tags that carry extended text
@@ -347,17 +366,21 @@ namespace GedcomObfuscationLib
             if (!continued && string.IsNullOrEmpty(tag.Content))
             {
                 sb.AppendLine(tag.ReAssemble());
-                return;
+                return false;
             }
 
             // pull the full text and scrub it of names and URLs
-            tag.Content = _cleaner.PruneURLs(_namePool.Scrub2(tag.FullText()) ?? tag.Content);
-            if (tag.Content == null)
-                tag.Content = tag.FullText();
+            string fullText = tag.FullText();
+            string scrubText = _cleaner.PruneURLs(_namePool.Scrub2(fullText) ?? fullText);
+            tag.Content = scrubText ?? fullText;
+            //tag.Content = _cleaner.PruneURLs(_namePool.Scrub2(tag.FullText()) ?? tag.Content);
+            //if (tag.Content == null)
+            //    tag.Content = tag.FullText();
             string c = tag.ReAssemble();
             int lvl = tag.Level + 1;
 
             EmitContinuableText(sb, c, lvl);
+            return true;
         }
 
         private static void EmitContinuableText(StringBuilder sb, string tagLine, int level)

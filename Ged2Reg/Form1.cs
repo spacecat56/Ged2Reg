@@ -578,6 +578,7 @@ namespace Ged2Reg
         {
             try
             {
+                Cursor = Cursors.WaitCursor;
                 var sel = (cbSettingsSet.SelectedItem as NamedValue<G2RSettings>)?.Value;
                 if (sel == null || sel == _rrm.Settings)
                     return;
@@ -586,6 +587,10 @@ namespace Ged2Reg
             catch (Exception ex)
             {
                 MessageBox.Show($"Exception:{ex}");
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
             }
         }
         #endregion
@@ -1182,6 +1187,7 @@ namespace Ged2Reg
                 };
                 if (sfd.ShowDialog() != DialogResult.OK)
                     return;
+                Cursor = Cursors.WaitCursor;
                 _obfu = new GedcomObfuscator()
                 {
                     FileNameOut = sfd.FileName,
@@ -1193,6 +1199,10 @@ namespace Ged2Reg
             {
                 Log(ex);
                 MessageBox.Show($"Exception:{ex}");
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
             }
         }
 
