@@ -426,7 +426,7 @@ namespace Ged2Reg.Model
             if (re.FamilyEntries == null)
                 return true;
 
-            foreach (ReportFamilyEntry fre in re.FamilyEntries)
+            foreach (ReportFamilyEntry fre in re.SafeFamilyEntries)
             {
                 string altName;
                 if ((altName = fre?.IndexableExtendedWifeForeName) == null)
@@ -633,7 +633,7 @@ namespace Ged2Reg.Model
                 return;
 
             // list the children
-            foreach (ReportFamilyEntry family in indi.FamilyEntries) // todo:FamiliesToReport not populated?
+            foreach (ReportFamilyEntry family in indi.SafeFamilyEntries) // todo:FamiliesToReport not populated?
             {
                 if ((family.Children?.Count ?? 0) == 0)
                     continue;
@@ -890,10 +890,10 @@ namespace Ged2Reg.Model
                 conn = "; m.";
             }
 
-            string mnbr = re.SafeFamilies.Count > 1 ? $" {_wordsForNumbers[1]}" : "";
-            for (int i = 0; i < re.SafeFamilies.Count; i++)
+            string mnbr = re.SafeFamilyEntries.Count > 1 ? $" {_wordsForNumbers[1]}" : "";
+            for (int i = 0; i < re.SafeFamilyEntries.Count; i++)
             {
-                GedcomIndividual spouze = re.SafeFamilies[i].Family.SpouseOf(re.Individual);
+                GedcomIndividual spouze = re.SafeFamilyEntries[i].Family.SpouseOf(re.Individual);
                 string s = $"{conn}{mnbr} {spouze?.SafeNameForward ?? GedcomIndividual.UnknownName}";
                 p.Append(s);
                 EmitNameIndexEntries(p, spouze);
@@ -909,14 +909,14 @@ namespace Ged2Reg.Model
             bool reduced, bool doCite, LocalCitationCoordinator lcc)
         {
             bool storyAppended = false;
-            for (int mnbr = 0; mnbr < re.SafeFamilies.Count; mnbr++)
+            for (int mnbr = 0; mnbr < re.SafeFamilyEntries.Count; mnbr++)
             {
-                string marriageNumberWord = (re.SafeFamilies.Count > 1)
+                string marriageNumberWord = (re.SafeFamilyEntries.Count > 1)
                     ? (mnbr + 1 < _wordsForNumbers.Length) ? $" {_wordsForNumbers[mnbr + 1]}" : (mnbr + 1).ToString()
                     : null;
                 if (marriageNumberWord != null && !re.FamiliesAreSorted)
                     marriageNumberWord += "[?]";
-                ReportFamilyEntry family = re.SafeFamilies[mnbr];
+                ReportFamilyEntry family = re.SafeFamilyEntries[mnbr];
                 ReportEntry spouse = (family.Husband?.Individual == re.Individual) ? family.Wife : family.Husband;
                 ReportEntry main = spouse == family.Wife ? family.Husband : family.Wife;
                 p.Append($" {(storyAppended ? re.Individual.SafeNameForward : re.Individual.Pronoun)} married{marriageNumberWord} ");
@@ -1157,7 +1157,7 @@ namespace Ged2Reg.Model
 
             if (doFamily) 
             {
-                foreach (ReportFamilyEntry family in re.SafeFamilies)
+                foreach (ReportFamilyEntry family in re.SafeFamilyEntries)
                 {
                     EventCitations ec = family.Family.CitableEvents?.Find(family.Family.EventTag(TagCode.MARR));
                     lcc.AddNonNull(ec, family.Family.FamilyView.Id);

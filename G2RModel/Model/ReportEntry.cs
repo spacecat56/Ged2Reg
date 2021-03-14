@@ -93,7 +93,7 @@ namespace G2RModel.Model
 
         public ListOfReportFamilyEntries FamilyEntries { get; set; }
         public static readonly ListOfReportFamilyEntries SafeEmptyFamilies = new ListOfReportFamilyEntries();
-        public ListOfReportFamilyEntries SafeFamilies => FamilyEntries ?? SafeEmptyFamilies;
+        public ListOfReportFamilyEntries SafeFamilyEntries => FamilyEntries ?? SafeEmptyFamilies;
         public ReportEntry Spouse => FindSpouse();
 
         private ReportEntry FindSpouse()
@@ -197,7 +197,7 @@ namespace G2RModel.Model
         private int? CountChildren()
         {
             int rv = 0;
-            foreach (ReportFamilyEntry family in SafeFamilies)
+            foreach (ReportFamilyEntry family in SafeFamilyEntries)
             {
                 rv += family.Children?.Count ?? 0;
             }
@@ -211,7 +211,7 @@ namespace G2RModel.Model
             if (!EmitChildrenAfter)  
                 return rvl;
 
-            foreach (ReportFamilyEntry familyEntry in FamilyEntries)
+            foreach (ReportFamilyEntry familyEntry in SafeFamilyEntries)
             {
                 if (familyEntry.FindMainNumberedChildren().Count > 0)
                     rvl.Add(familyEntry);
@@ -225,7 +225,7 @@ namespace G2RModel.Model
             if (!EmitChildrenAfter)  //(FamilyEntries == null || (FamiliesToReport?.Count ?? 0) == 0)
                 return rvl;
 
-            foreach (ReportFamilyEntry familyEntry in FamilyEntries)
+            foreach (ReportFamilyEntry familyEntry in SafeFamilyEntries)
             {
                 rvl.AddRange(familyEntry.FindMainNumberedChildren());
             }

@@ -302,7 +302,7 @@ namespace G2RModel.Model
                     re.Init();
                     if (AllFamilies)
                     {
-                        foreach (ReportFamilyEntry family in re.FamilyEntries)
+                        foreach (ReportFamilyEntry family in re.SafeFamilyEntries)
                         {
                             family.Init();
                             family.IsIncluded = true;
@@ -407,6 +407,8 @@ namespace G2RModel.Model
                 // we need to put i. 's on the children of the last gen in the report
                 foreach (ReportEntry mainIndividual in ip)
                 {
+                    if (mainIndividual?.FamilyEntries == null)
+                        continue;
                     // being in the list entails: indi has some child[ren]
                     int greatestChildSeq = 0;
                     foreach (ReportFamilyEntry family in mainIndividual.FamilyEntries)
@@ -433,7 +435,7 @@ namespace G2RModel.Model
                 // being in the list entails: indi has some child[ren]
                 int greatestChildSeq = 0;
                 mainIndividual.Init();
-                foreach (ReportFamilyEntry family in mainIndividual.FamilyEntries)
+                foreach (ReportFamilyEntry family in mainIndividual.SafeFamilyEntries)
                 {
                     family.Init();
                     foreach (ReportEntry child in family.Children)
