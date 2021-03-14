@@ -24,7 +24,14 @@
   </PropertyGroup>-->
 
   <ItemGroup>
+    <None Remove="Resources\sample.ged" />
     <None Remove="Resources\stylesFile.docx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\sample.ged">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

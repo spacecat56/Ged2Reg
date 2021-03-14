@@ -15,8 +15,20 @@ namespace GedcomObfuscationLib
         public string FileName { get; set; }
         public Exception LastException { get; set; }
         public string FileNameOut { get; set; }
-        public int Fence { get; set; } = 1700;
+        public int Fence { get; set; } = 1750;
+        public int NamesToRecheck { get; set; } = 10;
+
         public StringBuilder ResultsText { get;  } = new StringBuilder();
+        public int CountIndividuals { get; set; }
+        public int CountImmune { get; set; }
+        public int CountNoId { get; set; }
+        public int CountSurnMapped { get; set; }
+        public int CountGivenMapped { get; set; }
+        public int CountSurnUnMapped { get; set; }
+        public int CountGivenUnMapped { get; set; }
+        public int CountDropObje { get; set; }
+        public int CountDropRepo { get; set; }
+        public int CountDropUnk { get; set; }
 
         public List<NamesPools.NameCounter> Residuals { get; set; }
 
@@ -26,7 +38,7 @@ namespace GedcomObfuscationLib
         private string _newText;
         private HashSet<string> _immune;
         private RegisterReportModel _rrm;
-        private Dictionary<string, GedcomIndividual> _individualViews;
+        private Dictionary<string, GedcomIndividual> _gedcomIndividuals;
 
         private HashSet<string> _visitedIndis;
         private string _fileName;
@@ -34,7 +46,7 @@ namespace GedcomObfuscationLib
 
         private Random _random;
 
-        public Random Randomizer => _random ??= new Random(DateTime.Now.Millisecond);
+        public Random Randomizer => _random ??= new Random(DateTime.Now.Millisecond + (int)(DateTime.Now.Ticks % 100019));
 
         /// <summary>
         /// Read the GEDCOM file and assign create the maps
@@ -53,21 +65,21 @@ namespace GedcomObfuscationLib
 
                 _rrm.ResetGedcom();
 
-                _individualViews = new Dictionary<string, GedcomIndividual>();
+                _gedcomIndividuals = new Dictionary<string, GedcomIndividual>();
                 foreach (GedcomIndividual gi in _rrm.Individuals)
                 {
                     gi.FindFamilies(true);
-                    IndividualView indi = gi.IndividualView;
-                    _individualViews.Add(indi.Id, gi);
-                    _namePool.AssignSurname(indi.Surname);
-                    string sex = indi.IndiTag.GetFirstDescendant(TagCode.SEX)?.Content;
+                    IndividualView individualView = gi.IndividualView;
+                    _gedcomIndividuals.Add(individualView.Id, gi);
+                    _namePool.AssignSurname(individualView.Surname);
+                    string sex = individualView.IndiTag.GetFirstDescendant(TagCode.SEX)?.Content;
                     if (sex == "M")
                     {
-                        _namePool.AssignMame(indi.GivenName);
+                        _namePool.AssignMame(individualView.GivenName);
                     }
                     else
                     {
-                        _namePool.AssignFname(indi.GivenName);
+                        _namePool.AssignFname(individualView.GivenName);
                     }
                 }
                 return true;
@@ -78,55 +90,6 @@ namespace GedcomObfuscationLib
                 return false;
             }
         }
-
-        public bool ExecBrute()
-        {
-            try
-            {
-                //StringBuilder sb = new StringBuilder(File.ReadAllText(teFile.Text));
-                string s = File.ReadAllText(FileName);
-                StringBuilder sb = ApplyTextReplacement(s);
-
-                _cleaner = new ContentCleaner();
-                _newText = _cleaner.PruneURLs(sb.ToString());
-                return true;
-            }
-            catch (Exception ex)
-            {
-                LastException = ex;
-                return false;
-            }
-        }
-
-        public StringBuilder ApplyTextReplacement(string s)
-        {
-            List<TextReplacer> textReplacers = _namePool.GetReplacers();
-
-            textReplacers = textReplacers.OrderByDescending(t => t.Length).ToList();
-            foreach (TextReplacer replacer in textReplacers)
-            {
-                s = replacer.Apply(s);
-            }
-
-            StringBuilder sb = new StringBuilder(s);
-            foreach (TextReplacer replacer in textReplacers)
-            {
-                replacer.Apply(sb);
-            }
-
-            return sb;
-        }
-
-        public int CountIndividuals { get; set; }
-        public int CountImmune { get; set; }
-        public int CountNoId { get; set; }
-        public int CountSurnMapped { get; set; }
-        public int CountGivenMapped { get; set; }
-        public int CountSurnUnMapped { get; set; }
-        public int CountGivenUnMapped { get; set; }
-        public int CountDropObje { get; set; }
-        public int CountDropRepo { get; set; }
-        public int CountDropUnk { get; set; }
 
         public bool Exec()
         {
@@ -167,20 +130,21 @@ namespace GedcomObfuscationLib
                                             break;
                                         }
 
-                                        if (!_individualViews.TryGetValue(zeroLevel.Id, out GedcomIndividual gi))
+                                        if (!_gedcomIndividuals.TryGetValue(zeroLevel.Id, out GedcomIndividual gedcomIndividual))
                                         {
                                             CountNoId++;
                                             break;
                                         }
-                                        string surn = _namePool.MappedSurname(gi.Surname);
-                                        if (surn.Equals(gi.Surname, StringComparison.InvariantCultureIgnoreCase))
+                                        string surn = _namePool.MappedSurname(gedcomIndividual.IndividualView.Surname) ?? "";
+                                        if (surn.Equals(gedcomIndividual.IndividualView.Surname, StringComparison.InvariantCultureIgnoreCase))
                                             CountSurnUnMapped++;
                                         else
                                             CountSurnMapped++;
-                                        string gnam = gi.Gender == "M"
-                                            ? _namePool.MappedMname(gi.GivenName)
-                                            : _namePool.MappedFname(gi.GivenName);
-                                        if (gnam.Equals(gi.GivenName, StringComparison.InvariantCultureIgnoreCase))
+                                        string gnam = gedcomIndividual.Gender == "M"
+                                            ? _namePool.MappedMname(gedcomIndividual.IndividualView.GivenName)
+                                            : _namePool.MappedFname(gedcomIndividual.IndividualView.GivenName);
+                                        gnam ??= "";
+                                        if (gnam.Equals(gedcomIndividual.IndividualView.GivenName, StringComparison.InvariantCultureIgnoreCase))
                                             CountGivenUnMapped++;
                                         else
                                             CountGivenMapped++;
@@ -314,7 +278,7 @@ namespace GedcomObfuscationLib
                 ResultsText.AppendLine("*** Name Mapping ***");
                 ResultsText.AppendLine($"    Individuals...............{CountIndividuals}");
                 ResultsText.AppendLine($"    Immune....................{CountImmune}");
-                ResultsText.AppendLine($"    No Id.....................{CountNoId}");
+                //ResultsText.AppendLine($"    No Id.....................{CountNoId}");
                 ResultsText.AppendLine($"    Surname unmapped..........{CountSurnUnMapped}");
                 ResultsText.AppendLine($"    Surname mapped............{CountSurnMapped}");
                 ResultsText.AppendLine($"    Given unmapped............{CountGivenUnMapped}");
@@ -325,11 +289,12 @@ namespace GedcomObfuscationLib
                 ResultsText.AppendLine($"    Dropped OBJE..............{CountDropObje}");
                 ResultsText.AppendLine($"    Dropped UNK...............{CountDropUnk}");
 
-                Residuals = _namePool.CheckForResiduals(_newText, 10);
+                Residuals = _namePool.CheckForResiduals(_newText, NamesToRecheck);
 
                 File.WriteAllText(FileNameOut, _newText);
 
                 ResultsText.AppendLine().Append("File written: ").Append(FileNameOut);
+
                 List<NamesPools.NameCounter> repairs = Residuals.Where(
                     nc => nc.ResidualCount > 0 && nc.ResidualCount < 100 
                     && nc.OriginalName.Length > 4)
@@ -347,7 +312,7 @@ namespace GedcomObfuscationLib
 
                 string altFile = Path.ChangeExtension(FileNameOut, $".alt{Path.GetExtension(FileNameOut)}");
                 File.WriteAllText(altFile, _newText);
-                ResultsText.AppendLine("Leftover occurrences of top-ten surnames:");
+                ResultsText.AppendLine($"'Leftover' occurrences of top-{NamesToRecheck} surnames:");
                 foreach (NamesPools.NameCounter r in Residuals)
                 {
                     ResultsText.AppendLine(
@@ -377,6 +342,8 @@ namespace GedcomObfuscationLib
             if (string.IsNullOrEmpty(text))
                 return;
 
+            text = RandomizeAnyDate(text);
+
             string[] lines = text.Split(new[] {"\r\n", "\r", "\n"}, StringSplitOptions.None);
             string lTag = "CONC";  // first one does not begin with a nl
             foreach (string line in lines)
@@ -401,11 +368,32 @@ namespace GedcomObfuscationLib
             return d.ToString("dd MMM yyyy").ToUpper();
         }
 
+        Regex _anyDate = new Regex(@"(?i)(?<date>\d{1,2}\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[A-Za-z]*,?\s\d{4})|(?<date>(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[A-Za-z]*\s+\d\d?,?\s+\d{4})");
+        private string RandomizeAnyDate(string txt)
+        {
+            if ((txt ?? "").Length < 10)
+                return txt;
+
+            MatchCollection matches = _anyDate.Matches(txt);
+            if (matches.Count == 0)
+                return txt;
+
+            StringBuilder sb = new StringBuilder(txt);
+            for (int i = matches.Count - 1; i >= 0; i--)
+            {
+                if (!DateTime.TryParse(matches[i].Value, out DateTime dt))
+                    continue;
+                int bump = Randomizer.Next(1, 60) - 30;
+                sb.Replace(matches[i].Value, dt.AddDays(bump).ToString("dd MMM yyyy"), matches[i].Index, matches[i].Length);
+            }
+
+            return sb.ToString();
+        }
+
+
         private bool Scrub(Tag tag, StringBuilder sb, bool continued)
         {
             // if the tag has no content, just pass it through
-            // NB do not call this with tags that carry extended text
-            // e.g. NOTE, TITL, 
             if (!continued && string.IsNullOrEmpty(tag.Content))
             {
                 sb.AppendLine(tag.ReAssemble());
@@ -416,12 +404,10 @@ namespace GedcomObfuscationLib
             string fullText = tag.FullText();
             string scrubText = _cleaner.PruneURLs(_namePool.Scrub2(fullText) ?? fullText);
             tag.Content = scrubText ?? fullText;
-            //tag.Content = _cleaner.PruneURLs(_namePool.Scrub2(tag.FullText()) ?? tag.Content);
-            //if (tag.Content == null)
-            //    tag.Content = tag.FullText();
-            string c = tag.ReAssemble();
+           string c = tag.ReAssemble();
             int lvl = tag.Level + 1;
 
+            // output as one or more tags - original plus any needed CONC
             EmitContinuableText(sb, c, lvl);
             return true;
         }
@@ -461,7 +447,6 @@ namespace GedcomObfuscationLib
             Ascend(indi.ChildhoodFamily?.Husband, isImmune);
             Ascend(indi.ChildhoodFamily?.Wife, isImmune);
         }
-
     }
 
     public static class GedcomExtensions

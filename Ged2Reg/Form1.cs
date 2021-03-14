@@ -112,6 +112,8 @@ namespace Ged2Reg
             teLastRunOutput.Width = textBox4.Width;
             teLastRunOutput.Anchor = textBox4.Anchor;
 
+            teGedcom.Validated += TeGedcom_Validated;
+
             tpIo.ResumeLayout();
 
             //
@@ -292,6 +294,12 @@ namespace Ged2Reg
             };
             miTools.DropDownItems.Add(miObfuscate);
             miObfuscate.Click += miObfuscate_Click;
+        }
+
+        private void TeGedcom_Validated(object sender, EventArgs e)
+        {
+            if (teGedcom.Text != "sample") return;
+            _rrm.Settings.GedcomFile = teGedcom.Text = _rrm.SampleGedcomPath();
         }
 
         private ComboBox AddComboBox(TabPage tp, string name, int w = 200, int x = -1)
@@ -630,6 +638,7 @@ namespace Ged2Reg
         {
             try
             {
+
                 //UseWaitCursor = true;
                 Cursor = Cursors.WaitCursor;
                 Application.DoEvents();
@@ -1177,6 +1186,18 @@ namespace Ged2Reg
 
         private void miObfuscate_Click(object sender, EventArgs e)
         {
+            void FailMsg()
+            {
+                string msg = null;
+                if (_obfu.LastException != null)
+                {
+                    Log(_obfu.LastException);
+                    msg = $" ({_obfu.LastException.Message})";
+                }
+
+                Log($"Failed to create Obfuscated (obscured) GEDCOM file{msg}");
+            }
+
             try
             {
                 SaveFileDialog sfd = new SaveFileDialog()
@@ -1192,11 +1213,25 @@ namespace Ged2Reg
                 {
                     FileNameOut = sfd.FileName,
                 };
+
+                Log($"Creating obfuscated (obscured) GEDCOM file{sfd.FileName}");
+                Application.DoEvents();
+
                 if (_obfu.Init(_rrm))
                 {
-                    _obfu.Exec();
-                    Log(_obfu.ResultsText.ToString());
-                    Log("Obfuscated (obscured) GEDCOM file(s) written, see log for details");
+                    if (_obfu.Exec())
+                    {
+                        Log(_obfu.ResultsText.ToString());
+                        Log("Obfuscated (obscured) GEDCOM file(s) written, see log for details");
+                    }
+                    else
+                    {
+                        FailMsg();
+                    }
+                }
+                else
+                {
+                    FailMsg();
                 }
             }
             catch (Exception ex)

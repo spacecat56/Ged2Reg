@@ -208,6 +208,14 @@ namespace Ged2Reg.Model
 
         }
 
+        public string SampleGedcomPath()
+        {
+            string appPath = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+            string rezPath = Path.Combine(appPath, "Resources");
+            string gedPath = Path.Combine(rezPath, "sample.ged");
+            return gedPath;
+        }
+
         private Dictionary<IndividualView, GedcomIndividual> GetIndiMap()
         {
             if (_ivgiMap != null) return _ivgiMap;
