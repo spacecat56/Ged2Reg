@@ -73,7 +73,15 @@
   
     <None Remove="Resources\Custom-Icon-Design-Pretty-Office-5-Glossary.ico" />
   
+    <None Remove="Resources\Ged2Reg User Guide.pdf" />
+  
     <None Remove="stylesFile.docx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\Ged2Reg User Guide.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

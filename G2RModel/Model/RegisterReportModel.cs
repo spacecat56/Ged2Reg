@@ -208,12 +208,12 @@ namespace Ged2Reg.Model
 
         }
 
-        public string SampleGedcomPath()
+        public static string PathToFileResource(string fn)
         {
             string appPath = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
             string rezPath = Path.Combine(appPath, "Resources");
-            string gedPath = Path.Combine(rezPath, "sample.ged");
-            return gedPath;
+            string fname = Path.Combine(rezPath, fn);
+            return fname;
         }
 
         private Dictionary<IndividualView, GedcomIndividual> GetIndiMap()

@@ -24,6 +24,8 @@ namespace Ged2Reg
         private AsyncActionDelegates _aad = new AsyncActionDelegates();
         private frmSettingsSets.ListOfNamedSettingSets _settingsSetsBound = new frmSettingsSets.ListOfNamedSettingSets();
 
+        private Uri _githubUrl = new Uri("https://github.com/spacecat56/Ged2Reg");
+
         #region WinformsDesigner Fails - Workaround 
 
         // the dotnet core / dotnet5 winforms designer is unusable (tends to lose it
@@ -294,12 +296,18 @@ namespace Ged2Reg
             };
             miTools.DropDownItems.Add(miObfuscate);
             miObfuscate.Click += miObfuscate_Click;
+
+            miLicenseInfo.Click += MiLicenseInfo_Click;
+            miSampleInput.Click += MiSampleInput_Click;
+            miUpdates.Click += MiUpdates_Click;
+            miUserGuide.Click += MiUserGuide_Click;
+
         }
 
         private void TeGedcom_Validated(object sender, EventArgs e)
         {
             if (teGedcom.Text != "sample") return;
-            _rrm.Settings.GedcomFile = teGedcom.Text = _rrm.SampleGedcomPath();
+            _rrm.Settings.GedcomFile = teGedcom.Text = RegisterReportModel.PathToFileResource("sample.ged");
         }
 
         private ComboBox AddComboBox(TabPage tp, string name, int w = 200, int x = -1)
@@ -725,14 +733,7 @@ namespace Ged2Reg
                     {
                         try
                         {
-                            Process p = new Process ()
-                            { StartInfo =
-                                {
-                                    FileName = _rrm.Settings.OutFile,
-                                    UseShellExecute = true
-                                }
-                            };
-                            p.Start();
+                            StartDefaultProcess(_rrm.Settings.OutFile);
                         }
                         catch (Exception ex)
                         {
@@ -1233,6 +1234,97 @@ namespace Ged2Reg
                 {
                     FailMsg();
                 }
+            }
+            catch (Exception ex)
+            {
+                Log(ex);
+                MessageBox.Show($"Exception:{ex}");
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+        }
+
+        private void MiUserGuide_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+                Application.DoEvents();
+                string ugFn = RegisterReportModel.PathToFileResource("Ged2Reg User Guide.pdf");
+                StartDefaultProcess(ugFn);
+            }
+            catch (Exception ex)
+            {
+                Log(ex);
+                MessageBox.Show($"Exception:{ex}");
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+        }
+
+        private static void StartDefaultProcess(string filePath)
+        {
+            Process p = new Process()
+            {
+                StartInfo =
+                {
+                    FileName = filePath,
+                    UseShellExecute = true
+                }
+            };
+            p.Start();
+        }
+
+        private void MiUpdates_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+                Application.DoEvents();
+                StartDefaultProcess(_githubUrl.ToString());
+            }
+            catch (Exception ex)
+            {
+                Log(ex);
+                MessageBox.Show($"Exception:{ex}");
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+        }
+
+        private void MiSampleInput_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+                Application.DoEvents();
+                _rrm.Settings.GedcomFile = teGedcom.Text = RegisterReportModel.PathToFileResource("sample.ged");
+                pbInit_Click(sender, e);
+            }
+            catch (Exception ex)
+            {
+                Log(ex);
+                MessageBox.Show($"Exception:{ex}");
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+        }
+
+        private void MiLicenseInfo_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+                Application.DoEvents();
+                throw new NotImplementedException();
             }
             catch (Exception ex)
             {

@@ -131,6 +131,7 @@ namespace Ged2Reg
             this.baptismOptionChoicesBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.label30 = new System.Windows.Forms.Label();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.checkBox28 = new System.Windows.Forms.CheckBox();
             this.kbRefInline = new System.Windows.Forms.CheckBox();
             this.kbRefSeeNote = new System.Windows.Forms.CheckBox();
             this.textBox10 = new System.Windows.Forms.TextBox();
@@ -246,10 +247,15 @@ namespace Ged2Reg
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.miLicenseInfo = new System.Windows.Forms.ToolStripMenuItem();
+            this.miUpdates = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.installedLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bsSettingsSets = new System.Windows.Forms.BindingSource(this.components);
-            this.checkBox28 = new System.Windows.Forms.CheckBox();
+            this.miUserGuide = new System.Windows.Forms.ToolStripMenuItem();
+            this.miSampleInput = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)(this.bsG2RSettings)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvStartPerson)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bsIndi)).BeginInit();
@@ -1522,6 +1528,18 @@ namespace Ged2Reg
             this.tabPage3.Text = "Citations";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
+            // checkBox28
+            // 
+            this.checkBox28.AutoSize = true;
+            this.checkBox28.DataBindings.Add(new System.Windows.Forms.Binding("Checked", this.bsG2RSettings, "DeferConsecutiveRepeats", true));
+            this.checkBox28.Location = new System.Drawing.Point(76, 197);
+            this.checkBox28.Margin = new System.Windows.Forms.Padding(2);
+            this.checkBox28.Name = "checkBox28";
+            this.checkBox28.Size = new System.Drawing.Size(260, 22);
+            this.checkBox28.TabIndex = 76;
+            this.checkBox28.Text = "Defer/combine consecutive repeats";
+            this.checkBox28.UseVisualStyleBackColor = true;
+            // 
             // kbRefInline
             // 
             this.kbRefInline.AutoSize = true;
@@ -2686,6 +2704,8 @@ namespace Ged2Reg
             this.toolStripMenuItem1,
             this.manageSettingsToolStripMenuItem,
             this.toolStripMenuItem4,
+            this.miSampleInput,
+            this.toolStripSeparator2,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 22);
@@ -2744,7 +2764,11 @@ namespace Ged2Reg
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.miUserGuide,
+            this.toolStripSeparator1,
             this.aboutToolStripMenuItem,
+            this.miLicenseInfo,
+            this.miUpdates,
             this.toolStripMenuItem2,
             this.installedLocationToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
@@ -2754,19 +2778,36 @@ namespace Ged2Reg
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(173, 6);
+            // 
+            // miLicenseInfo
+            // 
+            this.miLicenseInfo.Name = "miLicenseInfo";
+            this.miLicenseInfo.Size = new System.Drawing.Size(179, 22);
+            this.miLicenseInfo.Text = "License information";
+            // 
+            // miUpdates
+            // 
+            this.miUpdates.Name = "miUpdates";
+            this.miUpdates.Size = new System.Drawing.Size(179, 22);
+            this.miUpdates.Text = "Check for updates";
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(173, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(176, 6);
             // 
             // installedLocationToolStripMenuItem
             // 
             this.installedLocationToolStripMenuItem.Name = "installedLocationToolStripMenuItem";
-            this.installedLocationToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
+            this.installedLocationToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
             this.installedLocationToolStripMenuItem.Text = "Installed Location...";
             this.installedLocationToolStripMenuItem.Click += new System.EventHandler(this.installedLocationToolStripMenuItem_Click);
             // 
@@ -2774,17 +2815,22 @@ namespace Ged2Reg
             // 
             this.bsSettingsSets.DataSource = typeof(Ged2Reg.frmSettingsSets.ListOfNamedSettingSets);
             // 
-            // checkBox28
+            // miUserGuide
             // 
-            this.checkBox28.AutoSize = true;
-            this.checkBox28.DataBindings.Add(new System.Windows.Forms.Binding("Checked", this.bsG2RSettings, "DeferConsecutiveRepeats", true));
-            this.checkBox28.Location = new System.Drawing.Point(76, 197);
-            this.checkBox28.Margin = new System.Windows.Forms.Padding(2);
-            this.checkBox28.Name = "checkBox28";
-            this.checkBox28.Size = new System.Drawing.Size(260, 22);
-            this.checkBox28.TabIndex = 76;
-            this.checkBox28.Text = "Defer/combine consecutive repeats";
-            this.checkBox28.UseVisualStyleBackColor = true;
+            this.miUserGuide.Name = "miUserGuide";
+            this.miUserGuide.Size = new System.Drawing.Size(179, 22);
+            this.miUserGuide.Text = "User guide";
+            // 
+            // miSampleInput
+            // 
+            this.miSampleInput.Name = "miSampleInput";
+            this.miSampleInput.Size = new System.Drawing.Size(181, 22);
+            this.miSampleInput.Text = "Sample input file";
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(178, 6);
             // 
             // Form1
             // 
@@ -3076,6 +3122,12 @@ namespace Ged2Reg
         private System.Windows.Forms.CheckBox kbAncestorsReport;
         private System.Windows.Forms.Label label65;
         private System.Windows.Forms.CheckBox checkBox28;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem miLicenseInfo;
+        private System.Windows.Forms.ToolStripMenuItem miUpdates;
+        private System.Windows.Forms.ToolStripMenuItem miSampleInput;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem miUserGuide;
         //private LabeledInputPanel.LabeledInputPanel labeledInputPanel1;
     }
 }
