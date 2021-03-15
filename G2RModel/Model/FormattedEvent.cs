@@ -103,7 +103,13 @@ namespace Ged2Reg.Model
             {
                 if (!ss[i].EndsWith(".")) continue;
                 if (ss[i].Length < 3) continue;
-                // remove the '.'; todo: what about abbreviations like "St."
+                // trying to not be fooled by abbreviations like "St."
+                if (LanguageElementConstants.Abbreviations.Contains(ss[i])) continue;
+                //if (LanguageElementConstants.Abbreviations.Contains(ss[i].ToLower())) continue;
+                //if (LanguageElementConstants.Abbreviations.Contains(ss[i].ToUpper())) continue;
+                // try to recognize initials like L.I.  or W.H.
+                if (ss[i].IndexOf('.') < ss[i].LastIndexOf('.')) continue;
+                // remove the '.';
                 ss[i] = ss[i].Substring(0, ss[i].Length - 1) + ";";
                 if (i + 2 >= ss.Length) continue; // need two more words to evaluate for lc
                 if (!EvalForInitialLowercase(ss[i + 1], ss[i + 2])) continue;
