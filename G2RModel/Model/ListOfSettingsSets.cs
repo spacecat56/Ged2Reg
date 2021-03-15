@@ -44,7 +44,7 @@ namespace Ged2Reg.Model
                 }
                 catch (FileNotFoundException)
                 {
-                    G2RSettings rvi = new G2RSettings() { SetName = DefaultSetName }.Init(); ;
+                    G2RSettings rvi = new G2RSettings() { SetName = DefaultSetName }.Defaults().Init(); ;
                     rv0.Add(rvi);
                 }
 
@@ -63,7 +63,7 @@ namespace Ged2Reg.Model
                 : null;
             rv ??= Find(s => name.Equals(s.SetName));
             if (rv != null) return rv.InitInternals();
-            rv = new G2RSettings(){SetName = name}.Init();
+            rv = new G2RSettings(){SetName = name}.Defaults().Init();
             if (cloneFrom != null)
             {
                 // todo: clone settings

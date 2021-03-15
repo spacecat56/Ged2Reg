@@ -230,6 +230,7 @@ namespace Ged2Reg.Model
         private bool _backRefs;
         private bool _includeSibs;
         private int _minFromGen;
+        private bool _spaceBetweenCouples;
         private bool _generationHeadings;
         private bool _allowMultiple = true;
         private bool _reduceMargins;
@@ -286,6 +287,19 @@ namespace Ged2Reg.Model
         public void Reset()
         {
             _citeShortFormatter = _citeFormatter = null;
+        }
+
+        public G2RSettings Defaults()
+        {
+            ConformToRegister();
+
+            DeferConsecutiveRepeats = true;
+            CitationPlaceholders = false;
+            ReducedMargins = true;
+            UseHostName = true;
+            GenerationPrefix = true;
+
+            return this;
         }
         public G2RSettings Init()
         {
@@ -682,6 +696,12 @@ namespace Ged2Reg.Model
             set { _citePlaceholders = value; OnPropertyChanged(); }
         }
 
+        [DataMember]
+        public bool SpaceBetweenCouples
+        {
+            get { return _spaceBetweenCouples; }
+            set { _spaceBetweenCouples = value; OnPropertyChanged(); }
+        }
 
         [DataMember]
         public bool LastActive
@@ -1259,6 +1279,7 @@ namespace Ged2Reg.Model
             AllFamilies = false; // option is defunct / not visible anyway
             AllowMultipleAppearances = true;
             Placeholders = true;
+            SpaceBetweenCouples = true;
             IncludeBackRefs = false;
             IncludeSiblings = false;
             GenerationPrefix = false;
@@ -1316,6 +1337,7 @@ namespace Ged2Reg.Model
             //Append(sb, "All Families", this.AllFamilies);
             Append(sb, "Allow Multiple Appearances", this.AllowMultipleAppearances);
             Append(sb, "Placeholders for unknowns", Placeholders);
+            Append(sb, "Space between couples", SpaceBetweenCouples);
             Append(sb, "Include back references", this.IncludeBackRefs);
             //Append(sb, "Also include siblings", this.IncludeSiblings);
             Append(sb, "Focus", this.Focus);

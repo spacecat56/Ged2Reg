@@ -76,6 +76,7 @@ namespace Ged2Reg.Model
         private bool _indexMarriedNames;
         private bool _placeFirst;
         private bool _insertUncitedNotes;
+        private bool _spaceCouples;
 
         private Formatting _childNameFormatting;
         private Formatting _generationNumberFormatting;
@@ -122,6 +123,8 @@ namespace Ged2Reg.Model
             _generationalReducePlaceNames = _c.Settings.FullPlaceOncePerGen;
             _standardReducePlaceNames = _c.Settings.ReducePlaceNames && !_c.Settings.FullPlaceOncePerGen;
             _standardBriefContdChild = _c.Settings.StandardBriefContinued;
+
+            _spaceCouples = _c.Settings.SpaceBetweenCouples;
 
             ReportEntryFactory.Init(!_allowMultiple);
 
@@ -259,8 +262,9 @@ namespace Ged2Reg.Model
             BigInteger expectedNext = 1;
             foreach (ListOfReportEntry generation in Generations)
             {
-                _currentGeneration++;
                 if (Model.CheckCancel()) throw new CanceledByUserException();
+
+                _currentGeneration++;
                 Debug.WriteLine($"Generation {_currentGeneration} begins {DateTime.Now:G}");
                 if (_generationalReducePlaceNames)
                     _placeFormatter.Reset();
@@ -286,26 +290,47 @@ namespace Ged2Reg.Model
                 if (_c.Settings.GenerationHeadings)
                     EmitDivider(doc, genDivider, genDivider3Plus);
 
-                foreach (ReportEntry individual in generation)
+                for (int i = 0; i < generation.Count; i++)
                 {
+                    ReportEntry individual = generation[i];
+
                     if (_standardReducePlaceNames)
                         _placeFormatter.Reset();
 
-                    if (_ancestryReport && _placeholders && (_minFromGen == 0 || _currentGeneration < _minFromGen))
+                    if (!_ancestryReport)
+                    {
+                        EmitMainPerson(doc, individual, _currentGeneration);
+                        continue;
+                    }
+
+                    // Below this point: Ancestors Table format ONLY
+
+                    if (_placeholders && (_minFromGen == 0 || _currentGeneration < _minFromGen))
                     {
                         if (individual.AssignedMainNumber != expectedNext)
                         {
+                            if (_spaceCouples && expectedNext % 2 == 0)
+                                doc.InsertParagraph();
                             EmitAncestorsPlaceholder(doc, expectedNext, individual.AssignedMainNumber - 1);
                         }
                     }
 
-                    if (_ancestryReport && _allowMultiple && individual.IsRepeat)
+                    if (_spaceCouples)
+                    {
+                        bool spaceNeeded = _currentGeneration > 1 && i == 0;
+                        spaceNeeded |= individual.AssignedMainNumber % 2 == 0;
+                        spaceNeeded |=
+                            i > 0 && individual.AssignedMainNumber - 1 != generation[i - 1].AssignedMainNumber;
+                        if (spaceNeeded)
+                            doc.InsertParagraph();
+                    }
+
+                    if (_allowMultiple && individual.IsRepeat)
                         EmitRepeatedAncestor(doc, individual, _currentGeneration);
                     else
                         EmitMainPerson(doc, individual, _currentGeneration);
                     
-                    if (_ancestryReport && _placeholders)
-                        expectedNext = individual.AssignedMainNumber + 1;
+                    expectedNext = individual.AssignedMainNumber + 1;
                 }
 
                 if (_ancestryReport)  

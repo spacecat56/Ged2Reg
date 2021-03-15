@@ -99,7 +99,7 @@ namespace Ged2Reg
             tpIo = tabPage1;
             tpIo.SuspendLayout();
             //sigh.  this works...
-            yPos = label5.Bottom + 20;
+            yPos = label5.Bottom + 21;
             kbColPos = lbColPos = pbGo.Left;
             // ...this fails.  being dull today, I guess.
             //yPos = label5.Location.Y;
@@ -213,6 +213,7 @@ namespace Ged2Reg
             AddBoundCheckBox(tpAncestry, "Omit generation superscripts", nameof(G2RSettings.SuppressGenNbrs));
             AddBoundCheckBox(tpAncestry, "Allow multiple appearances", nameof(G2RSettings.AllowMultipleAppearances));
             AddBoundCheckBox(tpAncestry, "Placeholders for unknowns", nameof(G2RSettings.Placeholders));
+            AddBoundCheckBox(tpAncestry, "Space between couples", nameof(G2RSettings.SpaceBetweenCouples));
             yPos += rowStep / 4;
 
             AddBoundCheckBox(tpAncestry, "Include back references", nameof(G2RSettings.IncludeBackRefs));
@@ -358,7 +359,7 @@ namespace Ged2Reg
                 Size = new Size(120, 21),
                 Text = lbl,
                 UseVisualStyleBackColor = true,
-                Anchor = AnchorStyles.Top | AnchorStyles.Left
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left
             };
             tp.Controls.Add(kb);
             return kb;
@@ -535,6 +536,8 @@ namespace Ged2Reg
                 tabPage4.Enabled = tabPage5.Enabled = tabPage6.Enabled = tabPage7.Enabled = ena;
 
             pnToggler.Enabled = pbGo.Enabled = ena;
+
+            cbSettingsSet.Enabled = ena;
 
             loadSettingsToolStripMenuItem.Enabled = defaultSettingsToolStripMenuItem.Enabled =
                 manageSettingsToolStripMenuItem.Enabled = ena;
@@ -1114,9 +1117,12 @@ namespace Ged2Reg
                     return;
                 bool keepTitleRewrites = (DialogResult.Yes == dr);
                 if (keepTitleRewrites)
-                    _rrm.Settings = new G2RSettings { SetName = _rrm.Settings.SetName, GedcomFile = teGedcom.Text, OutFile = teOutFile.Text, TextCleaners = _rrm.Settings.TextCleaners }.Init();
+                    _rrm.Settings = new G2RSettings { SetName = _rrm.Settings.SetName, GedcomFile = teGedcom.Text, OutFile = teOutFile.Text, TextCleaners = _rrm.Settings.TextCleaners }
+                        .Defaults().Init();
                 else
-                    _rrm.Settings = new G2RSettings { SetName = _rrm.Settings.SetName, GedcomFile = teGedcom.Text, OutFile = teOutFile.Text }.Init();
+                    _rrm.Settings = new G2RSettings { SetName = _rrm.Settings.SetName, GedcomFile = teGedcom.Text, OutFile = teOutFile.Text }
+                        .Defaults().Init();
+
                 BindUiToSettings();
                 _rrm.SettingsSets.Update(_rrm.Settings);
                 Log($"Settings set {_rrm.Settings.SetName} reset to default values");

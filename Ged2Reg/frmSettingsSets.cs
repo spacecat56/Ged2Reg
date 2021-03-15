@@ -25,7 +25,7 @@ namespace Ged2Reg
 
         public frmSettingsSets Init()
         {
-            _defaultValues = new G2RSettings() {SetName = "(default values)"}.Init();
+            _defaultValues = new G2RSettings() {SetName = "(default values)"}.Defaults().Init();
             _setSelect = new ListOfNamedSettingSets();
             _setModelOn = new ListOfNamedSettingSets();
             _setModelOn.Add(new NamedValue<G2RSettings>(_defaultValues.SetName, _defaultValues));
@@ -141,7 +141,7 @@ namespace Ged2Reg
                 G2RSettings newSettings = null;
                 if (cbSelectCopyFrom.SelectedIndex == 0)
                 {
-                    newSettings = new G2RSettings(){SetName = teNewName.Text}.Init();
+                    newSettings = new G2RSettings(){SetName = teNewName.Text}.Defaults().Init();
                 }
                 else
                 {

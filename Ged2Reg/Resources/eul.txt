@@ -1,0 +1,11 @@
+﻿Ged2Reg - License 
+
+Ged2Reg is free for non-commercial use, under license, as descibed here.
+
+Ged2Reg is provided with no warranty of any kind, including without limitation any implied warranty of merchantibility or fitness for any particular purpose, or any purpose. 
+
+You must agree that under no circumstances will you have, or make, any claim for damages against the develoepr(s) of Ged2Reg.  
+
+If you do not agree, or if you lack the legal capacity to agree, or you live in a jurisdiction in which your agreement is not binding, then no license is granted to you, and you cannot use Ged2Reg.
+
+NOTE: commercial use includes selling service(s) which include output(s) produced using Ged2Reg. for purposes of this license, using Ged2Reg to produce output on your own behalf, even if you may be compensated in some way (e.g., by a publication) is considered non-commercial.
