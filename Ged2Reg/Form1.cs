@@ -1344,6 +1344,26 @@ namespace Ged2Reg
                     _rrm.Settings.LastPersonId = "@I376@";
                 else
                     _rrm.Settings.LastPersonId = "@I2392@";
+                if (_rrm.Settings.TextCleaners != null && _rrm.Settings.TextCleaners.Count == 0) 
+                {
+                    _rrm.Settings.TextCleaners.Add(new TextCleanerEntry()
+                    {
+                        Context = TextCleanerContext.Everywhere,
+                        FirstUseUnchanged = true,
+                        Input = "(Brede, Sussex, England), Parish Registers",
+                        Output = "Brede Parish Registers",
+                        ReplaceEntire = true
+                    });
+
+                    _rrm.Settings.TextCleaners.Add(new TextCleanerEntry()
+                    {
+                        Context = TextCleanerContext.Everywhere,
+                        FirstUseUnchanged = false,
+                        Input = "United States Federal Census",
+                        Output = "US Census",
+                        ReplaceEntire = false
+                    });
+                }
                 pbInit_Click(sender, e);
             }
             catch (Exception ex)

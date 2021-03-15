@@ -335,6 +335,7 @@ namespace G2RModel.Model
                         {
                             de = ReportEntryFactory.Instance.GetReportEntry(dad);
                             de.AssignedMainNumber = re.AssignedMainNumber * 2;
+                            de.Generation = generation + 1;
                             de.EmitChildrenAfter = true;
 
                             // when allowing multiple occurrences, the factory 
@@ -357,6 +358,7 @@ namespace G2RModel.Model
                         {
                             ReportEntry me = ReportEntryFactory.Instance.GetReportEntry(mom);
                             me.AssignedMainNumber = re.AssignedMainNumber * 2 + 1;
+                            me.Generation = generation + 1;
                             me.EmitChildrenAfter = true;
                             me.Link(re.ChildhoodFamily);
                             mom.FirstReportEntry ??= me;
@@ -399,20 +401,29 @@ namespace G2RModel.Model
         private void ApplyDescendantNumbering(int generation)
         {
             ListOfReportEntry ip = Generations[generation];
-            if ((ip?.Count??0) == 0)
-                return;
-            if (generation >= Generations.Length - 1)
+            bool emptyGen = (ip?.Count ?? 0) == 0;
+            bool atTheEnd = emptyGen || generation >= Generations.Length - 1;
+            if (atTheEnd)
             {
                 // well, this is awkward....
                 // we need to put i. 's on the children of the last gen in the report
+                if (emptyGen)
+                    ip = Generations[generation - 1];
                 foreach (ReportEntry mainIndividual in ip)
                 {
-                    if (mainIndividual?.FamilyEntries == null)
+                    if (mainIndividual==null) continue; // not clear how or why this might happen
+                    if (mainIndividual.FamilyEntries == null)
+                        mainIndividual.Init();
+                    if (mainIndividual.FamilyEntries == null)
                         continue;
                     // being in the list entails: indi has some child[ren]
                     int greatestChildSeq = 0;
                     foreach (ReportFamilyEntry family in mainIndividual.FamilyEntries)
                     {
+                        if (family.Children == null)
+                            family.Init();  
+                        if ((family.Children?.Count ?? 0) == 0)
+                            continue;
                         foreach (ReportEntry child in family.Children)
                         {
                             if (child.AssignedChildNumber != 0) continue;

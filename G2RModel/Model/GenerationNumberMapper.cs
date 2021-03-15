@@ -54,6 +54,6 @@ namespace G2RModel.Model
             return this;
         }
 
-        public string GenerationNumberFor(int ix) => _genNbrs[ix];
+        public string GenerationNumberFor(int ix) => ix >= _genNbrs.Length ? "" : _genNbrs[ix];
     }
 }

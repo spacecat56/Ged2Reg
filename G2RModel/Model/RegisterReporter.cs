@@ -660,7 +660,7 @@ namespace Ged2Reg.Model
             // list the children
             foreach (ReportFamilyEntry family in indi.SafeFamilyEntries) // todo:FamiliesToReport not populated?
             {
-                if ((family.Children?.Count ?? 0) == 0)
+                if ((family.Children?.Count ?? 0) == 0) // if this happens, the tree build is broken
                     continue;
 
                 if (!_allFamilies && !family.IsIncluded)
