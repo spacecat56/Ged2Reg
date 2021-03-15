@@ -81,6 +81,8 @@ namespace Ged2Reg.Model
             if (string.IsNullOrEmpty(detail) || detail.Length < 2)
                 return null;
 
+            bool wrappedAlready = detail.StartsWith('(') && detail.EndsWith(')');
+
             // don't end with a period
             if (detail.EndsWith("."))
                 detail = detail.Substring(0, detail.Length - 1);
@@ -110,13 +112,17 @@ namespace Ged2Reg.Model
 
             // reassemble, wrapped in ()s
             StringBuilder sb = new StringBuilder(detail.Length + 2);
-            sb.Append('(');
+            if (!wrappedAlready)
+                sb.Append('(');
             for (int i = 0; i < ss.Length - 1; i++)
             {
                 sb.Append(ss[i]).Append(' ');
             }
+            sb.Append(ss[ss.Length - 1]);
 
-            sb.Append(ss[ss.Length - 1]).Append(')');
+            if (!wrappedAlready)
+                sb.Append(')');
+
             return sb.ToString();
         }
 

@@ -298,6 +298,7 @@ namespace Ged2Reg.Model
             ReducedMargins = true;
             UseHostName = true;
             GenerationPrefix = true;
+            ReportSummary = true;
 
             return this;
         }

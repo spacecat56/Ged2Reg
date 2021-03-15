@@ -47,7 +47,15 @@ namespace Ged2Reg.Model
         {
             CitationResult rv = new CitationResult();
             SourceView sv = cv?.TheSourceView;
-            if (sv == null) return rv;
+            if (sv == null)
+            {
+                // citation with no source reference is just a piece of text
+                string simpleText = cv?.SourceTag?.Content;
+                if (!string.IsNullOrEmpty(simpleText))
+                    rv.Pieces.Add(new CitationResultPiece() { PieceType = PieceType.Text, Text = simpleText });
+                return rv;
+            }
+
 
             rv.SourceId = sv.Id;
 

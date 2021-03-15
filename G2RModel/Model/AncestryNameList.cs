@@ -56,8 +56,15 @@ namespace Ged2Reg.Model
             _ancestors.Clear();
             foreach (GedcomIndividual ind in _gedcomIndividuals)
             {
-                _ancestors.Add(new AncestorName(){ GivenNames = ind.SafeGivenName, Surname = ind.SafeSurname });
+                _ancestors.Add(new AncestorName(){ GivenNames = InitCaps(ind.SafeGivenName), Surname = ind.SafeSurname });
             }
         }
+        public static string InitCaps(string s)
+        {
+            if ((s?.Length ?? 0) < 2 || !char.IsLetter(s[0]))
+                return s;
+            return $"{s.Substring(0, 1).ToUpper()}{s.Substring(1).ToLower()}";
+        }
+
     }
 }

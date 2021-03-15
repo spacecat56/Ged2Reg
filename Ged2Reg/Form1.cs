@@ -53,7 +53,7 @@ namespace Ged2Reg
         private ComboBox cbAncestorChoices;
         private Button pbPickFocus;
         private Button pbTest;
-        private int rowStep = 24;
+        private int rowStep = 22;
         private int yPos = 32;
         private int lbColPos = 40;
         private int kbColPos = 320;
