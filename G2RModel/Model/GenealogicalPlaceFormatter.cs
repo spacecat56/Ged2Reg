@@ -235,6 +235,8 @@ namespace Ged2Reg.Model
 
             if (maybe.Length > 3 && maybe.EndsWith(" CO"))
                 maybe = maybe.Substring(0, maybe.LastIndexOf(" CO"));
+            if (maybe.Length > 4 && maybe.EndsWith(" CO."))
+                maybe = maybe.Substring(0, maybe.LastIndexOf(" CO."));
 
             char[] mchars = maybe.Trim().ToLower().ToCharArray();
 

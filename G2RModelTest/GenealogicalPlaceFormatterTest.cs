@@ -145,7 +145,17 @@ namespace G2RModelTest
             Exec(gpf, input, expected);
         }
 
+        [TestMethod]
+        public void TestCoDot()
+        {
+            GenealogicalPlaceFormatter gpf = new GenealogicalPlaceFormatter() { InjectWordCounty = true }.Init();
+            string input = "Lloyd, Ulster Co., NY";
+            string expected = "Lloyd, Ulster County, New York";
+            Exec(gpf, input, expected);
+        }
 
+
+        //
 
 
         private void Exec(GenealogicalPlaceFormatter gpf, string input, string expected)
