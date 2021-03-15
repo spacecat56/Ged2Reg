@@ -41,6 +41,7 @@ namespace Ged2Reg
         // GenerationHeadings
         // ...etc.
 
+        private Button pbOpenLastRunOutput;
         private TabPage tpAncestry;
         private TabPage tpIndexes;
         private TabPage tpIo;
@@ -111,9 +112,6 @@ namespace Ged2Reg
             label57.Text = "Current settings set:";
             label57.Visible = true;
 
-            teLastRunOutput.Width = textBox4.Width;
-            teLastRunOutput.Anchor = textBox4.Anchor;
-
             teGedcom.Validated += TeGedcom_Validated;
 
             tpIo.ResumeLayout();
@@ -122,6 +120,16 @@ namespace Ged2Reg
             // CHANGES TO the Content tab
             //
             TabPage tpContentOptions = tabPage2;
+
+            yPos = teLastRunOutput.Top;
+            lbColPos = textBox4.Right - 36;
+            pbOpenLastRunOutput = AddButton(tpContentOptions, "...", 36, nam: nameof(pbOpenLastRunOutput), h:teLastRunOutput.Height);
+            pbOpenLastRunOutput.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            pbOpenLastRunOutput.Click += PbOpenLastRunOutput_Click;
+
+            teLastRunOutput.Width = textBox4.Width - 40;
+            teLastRunOutput.Anchor = AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Left;
+
             yPos = label30.Top - 6;
             lbColPos = label9.Left;
             kbColPos = checkBox4.Left;
@@ -214,13 +222,15 @@ namespace Ged2Reg
             AddBoundCheckBox(tpAncestry, "Allow multiple appearances", nameof(G2RSettings.AllowMultipleAppearances));
             AddBoundCheckBox(tpAncestry, "Placeholders for unknowns", nameof(G2RSettings.Placeholders));
             AddBoundCheckBox(tpAncestry, "Space between couples", nameof(G2RSettings.SpaceBetweenCouples));
-            yPos += rowStep / 4;
+            yPos += rowStep / 2;
 
             AddBoundCheckBox(tpAncestry, "Include back references", nameof(G2RSettings.IncludeBackRefs));
             AddBoundCheckBox(tpAncestry, "    Also list siblings", nameof(G2RSettings.IncludeSiblings));
 
             //AddBoundCheckBox(tpAncestry, "All families of ancestors (non-standard)", nameof(G2RSettings.AllFamilies));
             AddBoundCheckBox(tpAncestry, "Generation prefix numbers", nameof(G2RSettings.GenerationPrefix));
+            yPos += rowStep / 2;
+
             AddBoundCheckBox(tpAncestry, "Focus on one ancestor (see below*)", nameof(G2RSettings.Focus));
             AddBoundCheckBox(tpAncestry, "Omit focus spouse(s)", nameof(G2RSettings.OmitFocusSpouses));
             AddBoundCheckBox(tpAncestry, "Continue past focal ancestor", nameof(G2RSettings.ContinuePastFocus));
@@ -330,15 +340,15 @@ namespace Ged2Reg
             return cb;
         }
 
-        private Button AddButton(TabPage tp, string txt, int w = 100, int x = -1)
+        private Button AddButton(TabPage tp, string txt, int w = 100, int x = -1, string nam = null, int h = 33)
         {
             Button pb = new Button();
 
             pb.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             pb.Location = new Point(x>=0?x:lbColPos, yPos);
             pb.Margin = new Padding(2);
-            pb.Name = $"pb{txt.Replace(" ", "")}";
-            pb.Size = new Size(w, 33);
+            pb.Name = nam ?? $"pb{txt.Replace(" ", "")}";
+            pb.Size = new Size(w, h);
             pb.Text = txt;
             pb.UseVisualStyleBackColor = true;
             tp.Controls.Add(pb);
@@ -785,6 +795,25 @@ namespace Ged2Reg
                 catch { }
             }
         }
+
+        private void PbOpenLastRunOutput_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string fn = _rrm.Settings.LastFileCreated;
+                if (string.IsNullOrEmpty(fn)) 
+                    throw new Exception("No file to open");
+                if (!File.Exists(fn))
+                    throw new Exception("File no longer exists");
+                StartDefaultProcess(_rrm.Settings.OutFile);
+            }
+            catch (Exception ex)
+            {
+                Log(ex);
+                MessageBox.Show($"Exception:{ex}");
+            }
+        }
+
         private void pbOpenStylesDoc_Click(object sender, EventArgs e)
         {
             try
@@ -1310,7 +1339,11 @@ namespace Ged2Reg
             {
                 Cursor = Cursors.WaitCursor;
                 Application.DoEvents();
-                _rrm.Settings.GedcomFile = teGedcom.Text = RegisterReportModel.PathToFileResource("sample.ged");
+                _rrm.Settings.LastPersonFile = _rrm.Settings.GedcomFile = teGedcom.Text = RegisterReportModel.PathToFileResource("sample.ged");
+                if (_rrm.Settings.AncestorsReport)
+                    _rrm.Settings.LastPersonId = "@I376@";
+                else
+                    _rrm.Settings.LastPersonId = "@I2392@";
                 pbInit_Click(sender, e);
             }
             catch (Exception ex)
