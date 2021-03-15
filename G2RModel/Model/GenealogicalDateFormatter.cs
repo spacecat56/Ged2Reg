@@ -56,6 +56,8 @@ namespace Ged2Reg.Model
             {"dec", "December"},
         };
 
+        private static Regex LongMonthNamesRex = new Regex(@"(?i)(?<month>January|February|March|April|June|July|August|September|October|November|December)");
+
         public GenealogicalDateFormatter()
         {
             _crfAboutBeforeAfter = ReportContext.Instance.Settings.DateRules.Find(i => i.Role == PatternRole.DateAboutBeforeAfter);
@@ -65,7 +67,17 @@ namespace Ged2Reg.Model
 
         public string Reformat(string d)
         {
+            d = (d ?? "").Trim().ToUpper();
             if (string.IsNullOrEmpty(d)) return "";
+
+            // "somehow, sometimes" we get full-length month 
+            // names in the input.  truncate them to make the 
+            // rest of this processing word:
+            Match lm = LongMonthNamesRex.Match(d);
+            if (lm.Success)
+            {
+                d = d.Replace(lm.Value, lm.Value.Substring(0, 3));
+            }
 
             Match m = _crfBetween?.Extractor?.Match(d);
             if (m?.Success ?? false)
@@ -94,7 +106,7 @@ namespace Ged2Reg.Model
         private string ReformatDate(string d, bool applyPreposistion = true)
         {
             if (string.IsNullOrEmpty(d)) return "";
-            Match m = _crfDate?.Extractor?.Match(d);
+            Match m = _crfDate?.Extractor?.Match(d.ToUpper());
             if (!(m?.Success ?? false)) return "";
 
             string prep = applyPreposistion ? (string.IsNullOrEmpty(m.Groups["day"].Value) ? "in " : "on ") : null;

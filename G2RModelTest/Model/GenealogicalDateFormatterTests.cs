@@ -54,5 +54,30 @@ namespace Ged2Reg.Model.Tests
             }
 
         }
+
+        [TestMethod()]
+        public void LongMonthNameTest()
+        {
+            G2RSettings settings = new G2RSettings().Init();
+            ReportContext rc = ReportContext.Init(settings);
+            GenealogicalDateFormatter gdf = new GenealogicalDateFormatter();
+            string input = "7 April 1823";
+            string expected = "on 7 April 1823";
+            string result = gdf.Reformat(input);
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod()]
+        public void UntrimmedTest()
+        {
+            G2RSettings settings = new G2RSettings().Init();
+            ReportContext rc = ReportContext.Init(settings);
+            GenealogicalDateFormatter gdf = new GenealogicalDateFormatter();
+            string input = "10 September 1910 ";
+            string expected = "on 10 September 1910";
+            string result = gdf.Reformat(input);
+            Assert.AreEqual(expected, result);
+        }
     }
+
 }

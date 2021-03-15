@@ -359,7 +359,7 @@ namespace Ged2Reg.Model
                 {
                     Role = PatternRole.Date,
                     RecognizerPattern =
-                        @"\A((?<day>\d{1,2})\s+)?((?<month>[A-Z]{3})\s+)?(?<year>\d{1,4}(/\d{1,2})?)?(?<era>\s*(AD|BC|BCE|CE))?\z",
+                        @"\A(?i)((?<day>\d{1,2})\s+)?((?<month>[A-Z]{3})\s+)?(?<year>\d{1,4}(/\d{1,2})?)?(?<era>\s*(AD|BC|BCE|CE))?\z",
                     Emitter = @"${day} {0} ${year}${era}"
                 },
                 new ContentReformatter()
