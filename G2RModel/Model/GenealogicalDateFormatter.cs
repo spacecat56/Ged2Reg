@@ -65,27 +65,27 @@ namespace Ged2Reg.Model
             _crfDate = ReportContext.Instance.Settings.DateRules.Find(i => i.Role == PatternRole.Date);
         }
 
-        public string Reformat(string d)
+        public string Reformat(string d, bool returnUnrecognizableInput = false)
         {
-            d = (d ?? "").Trim().ToUpper();
-            if (string.IsNullOrEmpty(d)) return "";
+            string dParm = (d ?? "").Trim();
+            if (string.IsNullOrEmpty(dParm)) return "";
 
             // "somehow, sometimes" we get full-length month 
             // names in the input.  truncate them to make the 
             // rest of this processing word:
-            Match lm = LongMonthNamesRex.Match(d);
+            Match lm = LongMonthNamesRex.Match(dParm);
             if (lm.Success)
             {
-                d = d.Replace(lm.Value, lm.Value.Substring(0, 3));
+                d = dParm = dParm.Replace(lm.Value, lm.Value.Substring(0, 3));
             }
 
-            Match m = _crfBetween?.Extractor?.Match(d);
+            Match m = _crfBetween?.Extractor?.Match(dParm);
             if (m?.Success ?? false)
             {
                 return m.Result(_crfBetween.Emitter);
             }
 
-            m = _crfAboutBeforeAfter?.Extractor?.Match(d);
+            m = _crfAboutBeforeAfter?.Extractor?.Match(dParm);
             if (m?.Success ?? false)
             {
                 string op = m.Result(_crfAboutBeforeAfter.Emitter);
@@ -100,14 +100,14 @@ namespace Ged2Reg.Model
                 return rv;
             }
 
-            return ReformatDate(d);
+            return ReformatDate(d, returnUnrecognizable: returnUnrecognizableInput);
         }
 
-        private string ReformatDate(string d, bool applyPreposistion = true)
+        private string ReformatDate(string d, bool applyPreposistion = true, bool returnUnrecognizable = false)
         {
             if (string.IsNullOrEmpty(d)) return "";
             Match m = _crfDate?.Extractor?.Match(d.ToUpper());
-            if (!(m?.Success ?? false)) return "";
+            if (!(m?.Success ?? false)) return returnUnrecognizable ? d : "";
 
             string prep = applyPreposistion ? (string.IsNullOrEmpty(m.Groups["day"].Value) ? "in " : "on ") : null;
 

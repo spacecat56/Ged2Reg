@@ -352,7 +352,7 @@ namespace Ged2Reg.Model
                 {
                     Role = PatternRole.DateBetween,
                     RecognizerPattern =
-                        @"(?i)BET\s+(?<year>\d+)(?<era>\s*(AD|BC|BCE|CE))?\s+AND\s+(?<year2>\d+)(?<era2>\s*(AD|BC|BCE|CE))?",
+                        @"(?i)(BET\s+(?<year>\d+)(?<era>\s*(AD|BC|BCE|CE))?\s+AND\s+(?<year2>\d+)(?<era2>\s*(AD|BC|BCE|CE))?)|((?<year>\d{1,4})\s*-\s*(?<year2>\d{1,4}))",
                     Emitter = @"between ${year}${era} and ${year2}${era2}"
                 },
                 new ContentReformatter()

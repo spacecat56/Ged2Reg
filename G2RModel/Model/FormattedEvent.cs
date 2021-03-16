@@ -40,8 +40,14 @@ namespace Ged2Reg.Model
 
             void ApplyNonEmptyDate(StringBuilder stringBuilder)
             {
-                if (!omitDate && !string.IsNullOrEmpty(dayt))
-                    stringBuilder.Append(' ').Append(GenealogicalDateFormatter.Instance.Reformat(dayt));
+                if (omitDate || string.IsNullOrEmpty(dayt?.Trim()))
+                    return;
+                // here, anything that is SUPPOSED TO BE a date will be 
+                // output, EVEN IF we can't parse and reformat it
+                string d = GenealogicalDateFormatter.Instance.Reformat(dayt);
+                if (string.IsNullOrEmpty(d)) 
+                    d = dayt.Trim();
+                stringBuilder.Append(' ').Append(d);
             }
 
             if (string.IsNullOrEmpty(dayt) && string.IsNullOrEmpty(place))
