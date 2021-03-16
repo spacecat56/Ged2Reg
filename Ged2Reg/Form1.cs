@@ -25,6 +25,7 @@ namespace Ged2Reg
         private frmSettingsSets.ListOfNamedSettingSets _settingsSetsBound = new frmSettingsSets.ListOfNamedSettingSets();
 
         private Uri _githubUrl = new Uri("https://github.com/spacecat56/Ged2Reg");
+        private bool _forceClose = false;
 
         #region WinformsDesigner Fails - Workaround 
 
@@ -471,6 +472,51 @@ namespace Ged2Reg
             teLog.Height = panel1.Height - (teLog.Top + 10);
         }
 
+        #region Overrides of Form
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            Agreement agreed = null;
+            frmAgreement fa = null;
+            bool didAgree = false;
+            try
+            {
+                try
+                {
+                    agreed = Agreement.Load();
+                    didAgree = agreed.AgreedOn != null;
+                }
+                catch (FileNotFoundException fex)
+                {
+                    didAgree = false;
+                }
+                if (didAgree)
+                    return;
+                agreed = new Agreement();
+                string path = RegisterReportModel.PathToFileResource("eul.txt");
+                agreed.AgreedEul = File.ReadAllText(path);
+                path = RegisterReportModel.PathToFileResource("YouAreTheAuthor.txt");
+                agreed.AgreedAuthorship = File.ReadAllText(path);
+                fa = new frmAgreement().Init(agreed);
+                DialogResult dra = fa.ShowDialog(this);
+                if (dra != DialogResult.OK || agreed.Status != StateOfPlay.Authorship)
+                {
+                    MessageBox.Show($"User '{agreed.AgreedUser}' has not accepted the license and terms.", "Ged2Red - Closing", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    _forceClose = true;
+                    Application.Exit();
+                }
+
+                agreed.Save();
+            }
+            catch (Exception ex)
+            {
+                //
+            }
+        }
+
+        #endregion
+
         private void LoadSettingsSets(bool preferLastActive = false)
         {
             // load the list of settings sets and start with the default set
@@ -585,6 +631,7 @@ namespace Ged2Reg
         {
             try
             {
+                if (_forceClose) return;
                 var dr = MessageBox.Show("Save Settings?", "Ged2Reg is Closing", MessageBoxButtons.YesNoCancel);
                 if (dr == DialogResult.Cancel)
                 {
@@ -1383,7 +1430,9 @@ namespace Ged2Reg
             {
                 Cursor = Cursors.WaitCursor;
                 Application.DoEvents();
-                throw new NotImplementedException();
+                Agreement agreed = Agreement.Load();
+                frmAgreement fa = new frmAgreement().Init(agreed);
+                fa.ShowDialog();
             }
             catch (Exception ex)
             {

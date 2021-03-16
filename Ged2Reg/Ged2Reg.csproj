@@ -73,13 +73,23 @@
   
     <None Remove="Resources\Custom-Icon-Design-Pretty-Office-5-Glossary.ico" />
   
+    <None Remove="Resources\eul.txt" />
+  
     <None Remove="Resources\Ged2Reg User Guide.pdf" />
+  
+    <None Remove="Resources\YouAreTheAuthor.txt" />
   
     <None Remove="stylesFile.docx" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Resources\eul.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\Ged2Reg User Guide.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\YouAreTheAuthor.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

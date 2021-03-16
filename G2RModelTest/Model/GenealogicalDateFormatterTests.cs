@@ -78,6 +78,21 @@ namespace Ged2Reg.Model.Tests
             string result = gdf.Reformat(input);
             Assert.AreEqual(expected, result);
         }
+
+        // 
+
+        [TestMethod()]
+        public void NoSpaceTest()
+        {
+            G2RSettings settings = new G2RSettings().Init();
+            ReportContext rc = ReportContext.Init(settings);
+            GenealogicalDateFormatter gdf = new GenealogicalDateFormatter();
+            string input = "31Jul 1880";
+            string expected = "on 31 July 1880";
+            string result = gdf.Reformat(input);
+            Assert.AreEqual(expected, result);
+        }
+
     }
 
 }
