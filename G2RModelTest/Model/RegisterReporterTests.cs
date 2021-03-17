@@ -24,8 +24,10 @@ namespace G2RModelTest.Model
             #endregion
         }
 
+        // todo: these must be externalized / abstracted
         public string OutputPath = @"c:\test\ged2reg";
         public string FocusAncestorId = "@I4961@";
+        public string SampleFilePath = @"D:\projects\public\retarget\Ged2Reg\G2RModel\Resources\sample.ged";
 
         G2RSettings _settings;
         ReportContext _rc;
@@ -38,7 +40,7 @@ namespace G2RModelTest.Model
         [TestInitialize]
         public void InitModel()
         {
-            _settings = new G2RSettings().Init();
+            _settings = new G2RSettings().Init().ApplyVersionUpdates();
             _settings.ReportSummary = true;
             _rc = ReportContext.Init(_settings);
             _rrm = new RegisterReportModel();
@@ -62,8 +64,11 @@ namespace G2RModelTest.Model
             _settings.Generations = 5;
 
             _settings.AncestorsReport = needed == ModelState.AncestorReady;
+            string samplePath = RegisterReportModel.PathToFileResource("sample.ged") ?? SampleFilePath;
+            if (!File.Exists(samplePath))
+                throw new FileNotFoundException("Cannot locate sample file");
             if (_currentModelState != needed)
-                _rrm.ConfigureSampleFile(RegisterReportModel.PathToFileResource("sample.ged"));
+                _rrm.ConfigureSampleFile(samplePath);
             _rrm.Init();
             _currentModelState = needed;
             return true;
@@ -99,10 +104,9 @@ namespace G2RModelTest.Model
             _rrm.Doc.Dispose();
         }
 
-        private void ExecSampleReport(ReportConfig cfg, bool both)
+        private void ExecSampleReport(ReportConfig cfg, string[] exts = null)
         {
-            string[] exts = both ? new[] {".docx", ".odt"} : new[] {".docx"};
-
+            exts ??= new[] {".docx", ".odt"};
             foreach (string ext in exts)
             {
                 _settings.OutFile = Path.ChangeExtension(_settings.OutFile, ext);
@@ -157,7 +161,7 @@ namespace G2RModelTest.Model
             }.Init();
 
             ReadyModel(cfg.ModelState);
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
 
             cfg = new ReportConfig()
@@ -172,7 +176,7 @@ namespace G2RModelTest.Model
             }.Init();
 
             ReadyModel(cfg.ModelState);
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
         }
 
@@ -191,7 +195,7 @@ namespace G2RModelTest.Model
             }.Init();
 
             ReadyModel(cfg.ModelState);
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
 
             cfg = new ReportConfig()
@@ -206,7 +210,7 @@ namespace G2RModelTest.Model
             }.Init();
 
             ReadyModel(cfg.ModelState);
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
         }
 
@@ -234,7 +238,7 @@ namespace G2RModelTest.Model
             }.Init();
 
             ReadyModel(cfg.ModelState);
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
 
             cfg = new ReportConfig()
@@ -261,7 +265,7 @@ namespace G2RModelTest.Model
             }.Init();
 
             ReadyModel(cfg.ModelState);
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
         }
 
@@ -290,7 +294,7 @@ namespace G2RModelTest.Model
             _settings.BaptismOption = BaptismOptions.Always;
 
             ReadyModel(cfg.ModelState);
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
 
             cfg = new ReportConfig()
@@ -314,7 +318,7 @@ namespace G2RModelTest.Model
             _settings.BaptismOption = BaptismOptions.None;
 
             ReadyModel(cfg.ModelState);
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
         }
 
@@ -341,7 +345,7 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
 
             cfg = new ReportConfig()
@@ -363,7 +367,7 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
         }
 
@@ -389,7 +393,7 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg);
             _settings.DebuggingOutput = false;
             Assert.IsTrue(cfg.Eval());
         }
@@ -421,7 +425,7 @@ namespace G2RModelTest.Model
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
             _settings.FocusId = FocusAncestorId;
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
 
 
@@ -448,7 +452,7 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
         }
 
@@ -478,7 +482,7 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
             cfg = new ReportConfig()
             {
@@ -503,7 +507,7 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
 
         }
@@ -537,10 +541,12 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
             // todo: need an effective evaluation
         }
+        string[] justDoc = { ".docx" };
+        string[] justOdt = { ".odt" };
 
         [TestMethod]
         public void CombinedCitationOptionsTest()
@@ -571,7 +577,13 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg, justDoc);
+            Assert.IsTrue(cfg.Eval());
+
+            // the footnotes are in the main doc body in odt, making the Restrict ineffective
+            cfg.RegexesToAssertTrue.Clear();
+            cfg.MustOccur = new List<string>() { ">[<text:note" };
+            ExecSampleReport(cfg, justOdt);
             Assert.IsTrue(cfg.Eval());
 
             cfg = new ReportConfig()
@@ -583,6 +595,7 @@ namespace G2RModelTest.Model
                 Title = "Defer, Brackets, Placeholders, Summarize - No",
                 FlagsOn = new List<string>()
                 {
+                    nameof(G2RSettings.UseHostName), // catch this en passant, to cover it
                 },
                 FlagsOff = new List<string>()
                 {
@@ -600,16 +613,50 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport(cfg, true);
+            ExecSampleReport(cfg, justDoc);
             Assert.IsTrue(cfg.Eval());
 
+            // the footnotes are in the main doc body in odt, making the Restrict ineffective
+            cfg.RegexesToAssertFalse.Clear();
+            cfg.MustNotOccur = new List<string>(){ ">[<text:note" };
+            ExecSampleReport(cfg, justOdt);
+            Assert.IsTrue(cfg.Eval());
         }
 
 
         [TestMethod]
-        public void OdtOutputTest()
+        public void NotesEndnotesHostMinimizeTest()
         {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A005_NotesEndnotesHostMinimize.docx",
+                Title = "Notes, Endnotes, Host, Minimize - Yes",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.MainPersonNotes),
+                    nameof(G2RSettings.SpousesNotes),
+                    nameof(G2RSettings.AsEndnotes),
+                    nameof(G2RSettings.NotesDividers),
+                    nameof(G2RSettings.ConvertDividers),
+                    nameof(G2RSettings.IncludeBackRefs),
+                    nameof(G2RSettings.IncludeSiblings),
+                    nameof(G2RSettings.GenerationPrefix),
+                },
+                FlagsOff = new List<string>()
+                {
+                },
+                MustOccur = new List<string>() { @"iii.", "iv.", },
+            }.Init();
 
+            _settings.MinimizeFromGeneration = 8;
+
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
         }
 
         [TestCleanup]

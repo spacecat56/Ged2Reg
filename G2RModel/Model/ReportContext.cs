@@ -19,11 +19,11 @@ namespace Ged2Reg.Model
 
         public G2RSettings Settings { get; private set; }
 
-        public int LastPersonNumber { get; set; }
+        //public int LastPersonNumber { get; set; }
 
-        public int CurrentGeneration { get; set; }
+        //public int CurrentGeneration { get; set; }
 
-        public Dictionary<string, string> MappedNames { get; } = new Dictionary<string, string>();
+        //public Dictionary<string, string> MappedNames { get; } = new Dictionary<string, string>();
 
         public RegisterReportModel Model { get; set; }
 

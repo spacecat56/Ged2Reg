@@ -7,16 +7,16 @@ namespace Ged2Reg.Model
     public class GedcomCitationSet
     {
         public Dictionary<string, List<CitationView>> MyCitations = new Dictionary<string, List<CitationView>>();
-        public GedcomCitationSet(GedcomIndividual indi, CitationsMap allCitationsMap)
-        {
-            foreach (TagCode code in allCitationsMap.PersonEvents)
-            {
-                string evKey = TagMapper.Map(code).ToString();
-                List<CitationView> cites = allCitationsMap.Find(indi.IndividualView.Id, code);
-                if (cites == null) continue;
-                MyCitations.Add(evKey, cites);
-            }
-        }
+        //public GedcomCitationSet(GedcomIndividual indi, CitationsMap allCitationsMap)
+        //{
+        //    foreach (TagCode code in allCitationsMap.PersonEvents)
+        //    {
+        //        string evKey = TagMapper.Map(code).ToString();
+        //        List<CitationView> cites = allCitationsMap.Find(indi.IndividualView.Id, code);
+        //        if (cites == null) continue;
+        //        MyCitations.Add(evKey, cites);
+        //    }
+        //}
 
         public GedcomCitationSet(GedcomFamily fam, CitationsMap allCitationsMap)
         {
@@ -26,18 +26,18 @@ namespace Ged2Reg.Model
             MyCitations.Add(evKey, cites);
         }
 
-        public string BestCitation(string evnt, bool appendSummary)
-        {
-            StringBuilder sb = new StringBuilder();
-            CitationView best = pickBest(evnt);
-            if (best == null) return null;
+        //public string BestCitation(string evnt, bool appendSummary)
+        //{
+        //    StringBuilder sb = new StringBuilder();
+        //    CitationView best = pickBest(evnt);
+        //    if (best == null) return null;
 
-            string data = best.SourceTag.GetChild(TagCode.DATA)?.GetChild(TagCode.TEXT)?.FullText();
-            string title = best.Source.GetChild(TagCode.TITL)?.FullText();
-            string detail = best.Detail;
+        //    string data = best.SourceTag.GetChild(TagCode.DATA)?.GetChild(TagCode.TEXT)?.FullText();
+        //    string title = best.Source.GetChild(TagCode.TITL)?.FullText();
+        //    string detail = best.Detail;
 
-            return $"{data}, {title}; {detail}";
-        }
+        //    return $"{data}, {title}; {detail}";
+        //}
 
         private CitationView pickBest(string evnt)
         {
@@ -48,7 +48,7 @@ namespace Ged2Reg.Model
             return cites[0];
         }
 
-        public Tag MyTag { get; set; }
+        //public Tag MyTag { get; set; }
     }
 
 

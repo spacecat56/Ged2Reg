@@ -133,15 +133,15 @@ namespace Ged2Reg.Model
             return rv;
         }
 
-        public CitationFormatter AutoSequence()
-        {
-            for (int i = 0; i < Parts.Count; i++)
-            {
-                Parts[i].Sequence = i + 1;
-            }
+        //public CitationFormatter AutoSequence()
+        //{
+        //    for (int i = 0; i < Parts.Count; i++)
+        //    {
+        //        Parts[i].Sequence = i + 1;
+        //    }
 
-            return this;
-        }
+        //    return this;
+        //}
     }
 
     public class CitationPart

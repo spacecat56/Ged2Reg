@@ -393,7 +393,7 @@ namespace Ged2Reg.Model
             return this;
         }
 
-        public void ApplyVersionUpdates()
+        public G2RSettings ApplyVersionUpdates()
         {
             void AddIfMissing(StyleSlots styleSlots)
             {
@@ -403,13 +403,14 @@ namespace Ged2Reg.Model
                     StyleMap.Add(new StyleAssignment(styleSlots));
                 }
             }
-            if (StyleMap == null) return; // some odd circumstance
+            if (StyleMap == null) return this; // some odd circumstance
             AddIfMissing(StyleSlots.KidsAlt);
             AddIfMissing(StyleSlots.GenerationDivider);
             AddIfMissing(StyleSlots.GenerationDivider3Plus);
             AddIfMissing(StyleSlots.BodyTextNotes);
             if (AssumedMaxLivingGenerations == 0)
                 AssumedMaxLivingGenerations = 6;
+            return this;
         }
 
         public void InitPageMetrics()

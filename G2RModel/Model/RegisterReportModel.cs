@@ -246,10 +246,26 @@ namespace Ged2Reg.Model
         public static string PathToFileResource(string fn)
         {
             string appPath = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
-            string rezPath = Path.Combine(appPath, "Resources");
-            string fname = Path.Combine(rezPath, fn);
-            return fname;
+            string fname = BuildPath();
+            if (File.Exists(fname))
+                return fname;
+            appPath = System.AppDomain.CurrentDomain.BaseDirectory;
+            fname = BuildPath();
+
+            if (File.Exists(fname))
+                return fname;
+
+            return null;
+
+            string BuildPath()
+            {
+                string rezPath = Path.Combine(appPath, "Resources");
+                string fname = Path.Combine(rezPath, fn);
+                return fname;
+            }
         }
+
+        //System.AppDomain.CurrentDomain.BaseDirectory
 
         private Dictionary<IndividualView, GedcomIndividual> GetIndiMap()
         {
