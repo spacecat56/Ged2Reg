@@ -1318,7 +1318,7 @@ namespace Ged2Reg.Model
             sb.AppendLine("NB - REVIEW THIS SETTING:");
             Append(sb, "Gen number on all children", this.GenNbrAllChildren);
             Append(sb, "Full place name/gen", this.FullPlaceOncePerGen);
-            Append(sb, "Drop USA", this.DropUsa);
+            Append(sb, "Drop 'USA'", this.DropUsa);
             Append(sb, "Inject county", this.InjectCounty);
             Append(sb, "Place before Date", this.PlaceFirst);
             Append(sb, "Lineage list in italics", this.ItalicsNamesInLineageList);
@@ -1395,7 +1395,7 @@ namespace Ged2Reg.Model
             }
             Append(sb, "Obscure living", this.ObscureLiving);
             Append(sb, "Reduce place names", this.ReducePlaceNames);
-            Append(sb, "Drop USA", this.DropUsa);
+            Append(sb, "Drop 'USA'", this.DropUsa);
             Append(sb, "Inject county", this.InjectCounty);
             Append(sb, "Place before Date", this.PlaceFirst);
             Append(sb, "First Generation Number", this.FirstGenNbr);
