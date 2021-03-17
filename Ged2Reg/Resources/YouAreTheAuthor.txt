@@ -1,9 +1,9 @@
 ﻿You Are the Author
 
-You, the User of Ged2Reg, agree that You are the author of any document(s) that you create using Ged2Reg.
+You, the User of Ged2Reg, agree that You are the author of any document(s) that You (meaning, yourself and any other person using your computer) chooses to create using Ged2Reg.
 
-You will indemnify and hold harmless the Developer(s) of Ged2Reg against any claim of any kind arising from your use of Ged2Reg and/or arising in connection with the content, use, or publication of any document(s) that you create using Ged2Reg.
+You agree that You will indemnify and hold harmless the Developer(s) of Ged2Reg against any claim of any kind arising from your use of Ged2Reg and/or arising in connection with the content, use, or publication of any document(s) that you create using Ged2Reg.
 
 This includes, without limitation, any claim by any third party of any privacy violation, copyright violation, or plagiarism, that may be made in connection with any output You create using Ged2Reg.
 
-User is warned, without limitation, to consider what rights User may or may not hold with respect to any text in the input GEDCOM file, such as text in "event description" fields and in "notes", which User may choose to include in the output documents.
+As a courtesy, You are warned, without limitation, to consider what rights You may or may not hold with respect to any text in the input GEDCOM file, such as text in "event description" fields and in "notes", which You may choose to include in the output documents.

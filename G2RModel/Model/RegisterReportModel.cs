@@ -32,6 +32,34 @@ namespace Ged2Reg.Model
         public ILocalLogger Logger { get; set; }
 
         public RegisterReporter Reporter { get; private set; }
+        public void ConfigureSampleFile(string path)
+        {
+            Settings.LastPersonFile = Settings.GedcomFile = path;
+            if (Settings.AncestorsReport)
+                Settings.LastPersonId = "@I376@";
+            else
+                Settings.LastPersonId = "@I2392@";
+            if (Settings.TextCleaners != null && Settings.TextCleaners.Count == 0)
+            {
+                Settings.TextCleaners.Add(new TextCleanerEntry()
+                {
+                    Context = TextCleanerContext.Everywhere,
+                    FirstUseUnchanged = true,
+                    Input = "(Brede, Sussex, England), Parish Registers",
+                    Output = "Brede Parish Registers",
+                    ReplaceEntire = true
+                });
+
+                Settings.TextCleaners.Add(new TextCleanerEntry()
+                {
+                    Context = TextCleanerContext.Everywhere,
+                    FirstUseUnchanged = false,
+                    Input = "United States Federal Census",
+                    Output = "US Census",
+                    ReplaceEntire = false
+                });
+            }
+        }
 
         public bool Init()
         {
@@ -89,10 +117,17 @@ namespace Ged2Reg.Model
             ActionDelegates?.PostStatusReport(s);
         }
 
+        public bool Exec()
+        {
+            object o = Individuals.Where(i => i.IndividualView.Id == Settings.LastPersonId).First();
+            return Exec(o);
+        }
+
         public bool Exec(object oRoot, AsyncActionDelegates aad = null, bool testing = false)
         {
             DateTime started = DateTime.Now;
             GedcomIndividual root = oRoot as GedcomIndividual;
+            
             if (root == null) 
                 throw new ArgumentException("Must select a person with some descendant(s)");
 

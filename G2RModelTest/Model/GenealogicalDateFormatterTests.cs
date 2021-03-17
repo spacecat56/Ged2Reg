@@ -1,12 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Ged2Reg.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Ged2Reg.Model;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Ged2Reg.Model.Tests
+namespace G2RModelTest.Model
 {
     [TestClass()]
     public class GenealogicalDateFormatterTests

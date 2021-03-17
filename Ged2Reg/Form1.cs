@@ -1386,31 +1386,8 @@ namespace Ged2Reg
             {
                 Cursor = Cursors.WaitCursor;
                 Application.DoEvents();
-                _rrm.Settings.LastPersonFile = _rrm.Settings.GedcomFile = teGedcom.Text = RegisterReportModel.PathToFileResource("sample.ged");
-                if (_rrm.Settings.AncestorsReport)
-                    _rrm.Settings.LastPersonId = "@I376@";
-                else
-                    _rrm.Settings.LastPersonId = "@I2392@";
-                if (_rrm.Settings.TextCleaners != null && _rrm.Settings.TextCleaners.Count == 0) 
-                {
-                    _rrm.Settings.TextCleaners.Add(new TextCleanerEntry()
-                    {
-                        Context = TextCleanerContext.Everywhere,
-                        FirstUseUnchanged = true,
-                        Input = "(Brede, Sussex, England), Parish Registers",
-                        Output = "Brede Parish Registers",
-                        ReplaceEntire = true
-                    });
-
-                    _rrm.Settings.TextCleaners.Add(new TextCleanerEntry()
-                    {
-                        Context = TextCleanerContext.Everywhere,
-                        FirstUseUnchanged = false,
-                        Input = "United States Federal Census",
-                        Output = "US Census",
-                        ReplaceEntire = false
-                    });
-                }
+                teGedcom.Text = RegisterReportModel.PathToFileResource("sample.ged" );
+                _rrm.ConfigureSampleFile(teGedcom.Text);
                 pbInit_Click(sender, e);
             }
             catch (Exception ex)
@@ -1423,6 +1400,35 @@ namespace Ged2Reg
                 Cursor = Cursors.Default;
             }
         }
+
+        //public void ConfigureSampleFile(string path)
+        //{
+        //    _rrm.Settings.LastPersonFile = _rrm.Settings.GedcomFile = path;
+        //    if (_rrm.Settings.AncestorsReport)
+        //        _rrm.Settings.LastPersonId = "@I376@";
+        //    else
+        //        _rrm.Settings.LastPersonId = "@I2392@";
+        //    if (_rrm.Settings.TextCleaners != null && _rrm.Settings.TextCleaners.Count == 0)
+        //    {
+        //        _rrm.Settings.TextCleaners.Add(new TextCleanerEntry()
+        //        {
+        //            Context = TextCleanerContext.Everywhere,
+        //            FirstUseUnchanged = true,
+        //            Input = "(Brede, Sussex, England), Parish Registers",
+        //            Output = "Brede Parish Registers",
+        //            ReplaceEntire = true
+        //        });
+
+        //        _rrm.Settings.TextCleaners.Add(new TextCleanerEntry()
+        //        {
+        //            Context = TextCleanerContext.Everywhere,
+        //            FirstUseUnchanged = false,
+        //            Input = "United States Federal Census",
+        //            Output = "US Census",
+        //            ReplaceEntire = false
+        //        });
+        //    }
+        //}
 
         private void MiLicenseInfo_Click(object sender, EventArgs e)
         {

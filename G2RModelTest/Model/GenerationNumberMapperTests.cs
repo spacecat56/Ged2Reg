@@ -1,12 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using G2RModel.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using G2RModel.Model;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace G2RModel.Model.Tests
+namespace G2RModelTest.Model
 {
     [TestClass()]
     public class GenerationNumberMapperTests
