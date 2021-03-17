@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\G2RModel\G2RModel.csproj" />
+    <ProjectReference Include="..\OdtAdapterLib\OdtAdapterLib.csproj" />
   </ItemGroup>
 
 </Project>

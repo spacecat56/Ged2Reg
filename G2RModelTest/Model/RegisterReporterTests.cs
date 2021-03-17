@@ -5,6 +5,8 @@ using DocxAdapterLib;
 using G2RModel.Model;
 using Ged2Reg.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OdtAdapterLib;
+using WpdInterfaceLib;
 
 namespace G2RModelTest.Model
 {
@@ -97,6 +99,24 @@ namespace G2RModelTest.Model
             _rrm.Doc.Dispose();
         }
 
+        private void ExecSampleReport(ReportConfig cfg, bool both)
+        {
+            string[] exts = both ? new[] {".docx", ".odt"} : new[] {".docx"};
+
+            foreach (string ext in exts)
+            {
+                _settings.OutFile = Path.ChangeExtension(_settings.OutFile, ext);
+                if (File.Exists(_settings.OutFile))
+                    File.Delete(_settings.OutFile);
+                _rrm.Settings.Reset();
+                _rrm.DocFactory = ext == ".docx" ? (IWpdFactory) new OoxDocFactory() : new OalDocFactory();
+                _rrm.Exec();
+                _rrm.Doc.Save();
+                _rrm.Doc.Dispose();
+                Assert.IsTrue(cfg.Eval());
+            }
+        }
+
         [TestMethod]
         public void DescendantTest2()
         {
@@ -137,7 +157,7 @@ namespace G2RModelTest.Model
             }.Init();
 
             ReadyModel(cfg.ModelState);
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             Assert.IsTrue(cfg.Eval());
 
             cfg = new ReportConfig()
@@ -152,7 +172,7 @@ namespace G2RModelTest.Model
             }.Init();
 
             ReadyModel(cfg.ModelState);
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             Assert.IsTrue(cfg.Eval());
         }
 
@@ -171,7 +191,7 @@ namespace G2RModelTest.Model
             }.Init();
 
             ReadyModel(cfg.ModelState);
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             Assert.IsTrue(cfg.Eval());
 
             cfg = new ReportConfig()
@@ -186,7 +206,7 @@ namespace G2RModelTest.Model
             }.Init();
 
             ReadyModel(cfg.ModelState);
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             Assert.IsTrue(cfg.Eval());
         }
 
@@ -214,7 +234,7 @@ namespace G2RModelTest.Model
             }.Init();
 
             ReadyModel(cfg.ModelState);
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             Assert.IsTrue(cfg.Eval());
 
             cfg = new ReportConfig()
@@ -241,7 +261,7 @@ namespace G2RModelTest.Model
             }.Init();
 
             ReadyModel(cfg.ModelState);
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             Assert.IsTrue(cfg.Eval());
         }
 
@@ -270,7 +290,7 @@ namespace G2RModelTest.Model
             _settings.BaptismOption = BaptismOptions.Always;
 
             ReadyModel(cfg.ModelState);
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             Assert.IsTrue(cfg.Eval());
 
             cfg = new ReportConfig()
@@ -294,7 +314,7 @@ namespace G2RModelTest.Model
             _settings.BaptismOption = BaptismOptions.None;
 
             ReadyModel(cfg.ModelState);
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             Assert.IsTrue(cfg.Eval());
         }
 
@@ -321,7 +341,7 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             Assert.IsTrue(cfg.Eval());
 
             cfg = new ReportConfig()
@@ -343,7 +363,7 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             Assert.IsTrue(cfg.Eval());
         }
 
@@ -369,7 +389,7 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             _settings.DebuggingOutput = false;
             Assert.IsTrue(cfg.Eval());
         }
@@ -401,7 +421,7 @@ namespace G2RModelTest.Model
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
             _settings.FocusId = FocusAncestorId;
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             Assert.IsTrue(cfg.Eval());
 
 
@@ -428,7 +448,7 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             Assert.IsTrue(cfg.Eval());
         }
 
@@ -458,7 +478,7 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             Assert.IsTrue(cfg.Eval());
             cfg = new ReportConfig()
             {
@@ -483,7 +503,7 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             Assert.IsTrue(cfg.Eval());
 
         }
@@ -491,7 +511,35 @@ namespace G2RModelTest.Model
         [TestMethod]
         public void NoteNumberInlineTest()
         {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.DescendantReady,
+                OutputPath = OutputPath,
+                FileName = "F003_RepeatInline_On.docx",
+                Title = "Re-Use Note Number Inline - Yes",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.RepeatNoteRefInline)
+                },
+                FlagsOff = new List<string>()
+                {
+                    nameof(G2RSettings.DeferConsecutiveRepeats),
+                    nameof(G2RSettings.Brackets),
+                    nameof(G2RSettings.CitationPlaceholders),
+                    nameof(G2RSettings.SummarizeAdditionalCitations),
+                    nameof(G2RSettings.UseSeeNote),
+                },
+                //MustOccur = new List<string>() { "Cited for:", "***Citation needed", "Other sources include" },
+                //RegexesToAssertTrue = new List<string>() { @"(\[.+?\].*?){10,}", }, // nb probably not definitive: same pattern in page info removed
+                //RestrictRexToMainDoc = true,
+            }.Init();
 
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            ExecSampleReport(cfg, true);
+            Assert.IsTrue(cfg.Eval());
+            // todo: need an effective evaluation
         }
 
         [TestMethod]
@@ -523,7 +571,7 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             Assert.IsTrue(cfg.Eval());
 
             cfg = new ReportConfig()
@@ -531,8 +579,8 @@ namespace G2RModelTest.Model
                 Settings = _settings,
                 ModelState = ModelState.DescendantReady,
                 OutputPath = OutputPath,
-                FileName = "F002_Defer,Brackets,Placeholders,Summarize_On.docx",
-                Title = "Defer, Brackets, Placeholders, Summarize - Yes",
+                FileName = "F002_Defer,Brackets,Placeholders,Summarize_Off.docx",
+                Title = "Defer, Brackets, Placeholders, Summarize - No",
                 FlagsOn = new List<string>()
                 {
                 },
@@ -552,7 +600,7 @@ namespace G2RModelTest.Model
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
-            ExecSampleReport();
+            ExecSampleReport(cfg, true);
             Assert.IsTrue(cfg.Eval());
 
         }
