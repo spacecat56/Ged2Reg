@@ -154,6 +154,16 @@ namespace G2RModelTest.Model
             Exec(gpf, input, expected);
         }
 
+        [TestMethod]
+        public void TestUSA()
+        {
+            GenealogicalPlaceFormatter gpf = new GenealogicalPlaceFormatter() { InjectWordCounty = true }.Init();
+            string input = "United States";
+            string expected = "in the United States";
+            var fpn = gpf.Reformat(input);
+            string result = $"{fpn.Preposition} {fpn.PreferredName}";
+            Assert.AreEqual(expected, result);
+        }
 
         //
 

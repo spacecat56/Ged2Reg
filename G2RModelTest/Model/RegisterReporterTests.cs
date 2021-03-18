@@ -40,7 +40,12 @@ namespace G2RModelTest.Model
         [TestInitialize]
         public void InitModel()
         {
-            _settings = new G2RSettings().Init().ApplyVersionUpdates();
+            _settings = new G2RSettings()
+            {
+                SetName = "Unit Testing",
+                ProgramName = nameof(RegisterReporterTests),
+            }.Init().ApplyVersionUpdates();
+
             _settings.ReportSummary = true;
             _rc = ReportContext.Init(_settings);
             _rrm = new RegisterReportModel();
@@ -660,6 +665,35 @@ namespace G2RModelTest.Model
             }.Init();
 
             _settings.MinimizeFromGeneration = 8;
+
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
+        }
+
+
+        [TestMethod]
+        public void EndnotesInlineRerefTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A005_EndnotesInlineReref.docx",
+                Title = "Endnotes, Inline - Yes",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.AsEndnotes),
+                    nameof(G2RSettings.RepeatNoteRefInline),
+                    nameof(G2RSettings.UseHostName),
+                },
+                FlagsOff = new List<string>()
+                {
+                },
+                MustOccur = new List<string>() { },
+            }.Init();
 
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;

@@ -357,6 +357,8 @@ namespace Ged2Reg.Model
             p = doc.InsertParagraph();
             p.StyleName = "ReportInfo";
             p.Append(GetStatsSummary().Replace("\t", ""));
+            if (_c.Settings.AsEndnotes)
+                doc.InsertPageBreak();
         }
 
         public string GetStatsSummary()
@@ -666,6 +668,8 @@ namespace Ged2Reg.Model
                 if (!_allFamilies && !family.IsIncluded)
                     continue;
                 int numberToList = family.Children.Count;
+                if (_ancestryReport && !_includeSibsOfBackrefs)
+                    numberToList = 1;
                 EmitFamilyIntroLine(doc, numberToList, family);
                 foreach (ReportEntry child in family.Children)
                 {

@@ -107,9 +107,16 @@ namespace Ged2Reg.Model
 
             rv.SpecificLocation = cp.City ?? ((cp.Locality?.Count??0) > 0 ? cp.Locality[0] : null);
             if (string.IsNullOrEmpty(rv.SpecificLocation))
-                rv.Preposition = "in";
+            {
+                if (cp.IsUsaPlace && string.IsNullOrEmpty(cp.County))
+                    rv.Preposition = "in the";
+                else
+                    rv.Preposition = "in";
+            }
             else
+            {
                 rv.Preposition = cp.IsAmbiguous || LargestCities.Contains(rv.SpecificLocation) ? "in" : "at";
+            }
 
             return rv;
         }
@@ -133,7 +140,11 @@ namespace Ged2Reg.Model
             if (pps.Length==1 && p.Contains("."))
                 pps = p.Split(_splitterAlt, StringSplitOptions.RemoveEmptyEntries);
             if (pps.Length < 2)
+            {
+                if (pps.Length == 1)
+                    cp.IsUsaPlace = NamesForUsa.Contains(pps[0], _stringEqual);
                 return rv;
+            }
 
             for (int i = 0; i < pps.Length; i++)
             {

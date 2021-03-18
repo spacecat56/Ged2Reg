@@ -83,7 +83,7 @@ namespace Ged2Reg.Model
             {
                 CitationResult cr = settings.CitationShortFormatter.Apply(SelectedItem.CitationViews[0]); // no URL in this format
                 string noteText = ReportContext.Instance.Settings.DebuggingOutput
-                    ? $"{cr.SourceId} {cr.Text}"
+                    ? $"[{cr.SourceId}] {cr.Text}"
                     : cr.Text;
                 //OoxFootnote laterNote = settings.AsEndnotes
                 //    ? new OoxEndnote(doc, noteText, settings.BracketArray)
