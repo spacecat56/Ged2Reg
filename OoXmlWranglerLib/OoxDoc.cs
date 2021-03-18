@@ -238,11 +238,18 @@ namespace DocxAdapterLib
                 Code = 1
             };
 
+            // there's just no point in this app, to the roman numerals for endnotes
+            EndnoteProperties ep = new EndnoteProperties()
+            {
+                NumberingFormat = new NumberingFormat(){Val = NumberFormatValues.Decimal}
+            };
+
             _sectionProperties.Append(pz);
             _sectionProperties.Append(pageMargin);
             _sectionProperties.Append(new PageNumberType() {Start = 1});
             _sectionProperties.Append(new Columns() {Space = "720"});
             _sectionProperties.Append(new TitlePage());
+            _sectionProperties.Append(ep);
         }
 
         public void InsertPageBreak()
