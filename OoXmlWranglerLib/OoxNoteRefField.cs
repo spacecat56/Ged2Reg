@@ -29,19 +29,7 @@ namespace DocxAdapterLib
         public override void Apply(IWpdParagraph p)
         {
             Build();
-
             FieldHelper.ApplyField(p as OoxParagraph, this);
-        }
-
-        internal void ApplyField(OoxParagraph oxpara)
-        {
-            FieldCode fc = new FieldCode(FieldText) {Space = SpaceProcessingModeValues.Preserve};
-            oxpara.Append(new Run(new FieldChar() {FieldCharType = FieldCharValues.Begin}));
-            oxpara.Append(new Run(fc));
-            oxpara.Append(new Run(new FieldChar() {FieldCharType = FieldCharValues.Separate}));
-            if (!string.IsNullOrEmpty(ContentText))
-                oxpara.Append(new Run(new Text(ContentText)));
-            oxpara.Append(new Run(new FieldChar() {FieldCharType = FieldCharValues.End}));
         }
 
         #endregion
@@ -53,23 +41,26 @@ namespace DocxAdapterLib
     {
         internal static void ApplyField(OoxParagraph oxpara, WpdFieldBase f)
         {
+            // if we try to apply the style just to the run with the number,
+            // when Word executes processes like print, export, ... it 
+            // actually DELETES the style and reverts the stupid thing
+            // back to the paragraph's char style.  "nice", Microsoft (NOT!)
+            RunProperties rp = string.IsNullOrEmpty(f.ContentStyleName)
+                ? new RunProperties()
+                : new RunProperties(new RunStyle() { Val = f.ContentStyleName });
+
             FieldCode fc = new FieldCode(f.FieldText) { Space = SpaceProcessingModeValues.Preserve };
-            oxpara.Append(new Run(new FieldChar() { FieldCharType = FieldCharValues.Begin }));
-            oxpara.Append(new Run(fc));
-            oxpara.Append(new Run(new FieldChar() { FieldCharType = FieldCharValues.Separate }));
+            oxpara.Append(new Run(new FieldChar() { FieldCharType = FieldCharValues.Begin }) 
+                { RunProperties = rp.Clone() as RunProperties });
+            oxpara.Append(new Run(fc) { RunProperties = rp.Clone() as RunProperties });
+            oxpara.Append(new Run(new FieldChar() { FieldCharType = FieldCharValues.Separate })
+                { RunProperties = rp.Clone() as RunProperties });
             if (!string.IsNullOrEmpty(f.ContentText))
             {
-                if (string.IsNullOrEmpty(f.ContentStyleName))
-                {
-                    oxpara.Append(new Run(new Text(f.ContentText)));
-                }
-                else
-                {
-                    RunStyle rs = new RunStyle() { Val = f.ContentStyleName };
-                    oxpara.Append(new Run(new Text(f.ContentText)){RunProperties = new RunProperties(rs)});
-                }
+                oxpara.Append(new Run(new Text(f.ContentText)) { RunProperties = rp.Clone() as RunProperties });
             }
-            oxpara.Append(new Run(new FieldChar() { FieldCharType = FieldCharValues.End }));
+            oxpara.Append(new Run(new FieldChar() { FieldCharType = FieldCharValues.End }) 
+                { RunProperties = rp.Clone() as RunProperties });
         }
 
     }
