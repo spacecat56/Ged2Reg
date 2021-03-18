@@ -194,7 +194,10 @@ namespace G2RModelTest.Model
                 MustOccur = new List<string>() { "(Living)" }
             }.Init();
 
+
             ReadyModel(cfg.ModelState);
+            int regen = _settings.Generations;
+            _settings.Generations = 15;
             ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
 
@@ -210,7 +213,9 @@ namespace G2RModelTest.Model
             }.Init();
 
             ReadyModel(cfg.ModelState);
+            _settings.Generations = 15;
             ExecSampleReport(cfg);
+            _settings.Generations = regen;
             Assert.IsTrue(cfg.Eval());
         }
 
@@ -659,6 +664,68 @@ namespace G2RModelTest.Model
             ReadyModel(cfg.ModelState);
             _settings.Generations = 99;
             ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
+        }
+
+        [TestMethod]
+        public void LineageitalicSummarizemoreIndexoff()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.DescendantReady,
+                OutputPath = OutputPath,
+                FileName = "D005_LineageitalicSummarizemoreIndexname_On.docx",
+                Title = "Lineage italics, Summarize more, Index name - Yes",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.ItalicsNamesInLineageList),
+                    nameof(G2RSettings.SummarizeAdditionalCitations),
+                },
+                FlagsOff = new List<string>()
+                {
+                },
+                MustOccur = new List<string>() { "theNameIndex", "Other sources include", },
+                MustNotOccur = new List<string>() { "thePlaceIndex", },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            _settings.NameIndexSettings.Enabled = true;
+            _settings.NameIndexSettings.IndexName = "theNameIndex";
+            _settings.PlaceIndexSettings.Enabled = false;
+            _settings.PlaceIndexSettings.IndexName = "thePlaceIndex";
+            _settings.NumberCitesToSumamrize = 4;
+
+            ExecSampleReport(cfg, justDoc);
+            Assert.IsTrue(cfg.Eval());
+
+            cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.DescendantReady,
+                OutputPath = OutputPath,
+                FileName = "D005_LineageitalicSummarizemoreIndexname_Off.docx",
+                Title = "Lineage italics, Summarize more, Index name - No",
+                FlagsOn = new List<string>()
+                {
+                },
+                FlagsOff = new List<string>()
+                {
+                    nameof(G2RSettings.ItalicsNamesInLineageList),
+                    nameof(G2RSettings.SummarizeAdditionalCitations),
+                },
+                MustOccur = new List<string>() { },
+                MustNotOccur = new List<string>() { "thePlaceIndex", "theNameIndex", "Other sources include", },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            _settings.NameIndexSettings.Enabled = false;
+            _settings.NameIndexSettings.IndexName = "theNameIndex";
+            _settings.PlaceIndexSettings.Enabled = false;
+            _settings.PlaceIndexSettings.IndexName = "thePlaceIndex";
+            _settings.NumberCitesToSumamrize = 4;
+
+            ExecSampleReport(cfg, justDoc);
             Assert.IsTrue(cfg.Eval());
         }
 
