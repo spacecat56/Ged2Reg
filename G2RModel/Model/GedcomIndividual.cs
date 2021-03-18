@@ -10,20 +10,99 @@ namespace Ged2Reg.Model
 
     public class GedcomIndividual
     {
-        public GedcomIndividual() { }
-
         public static bool ConsiderLivingStatus = false;
-
         public static string UnknownName => ReportContext.Instance.Settings.UnknownInReport;
 
         private static G2RSettings _settings;
-        internal static G2RSettings Settings => _settings ?? (_settings = ReportContext.Instance?.Settings);
+        internal static G2RSettings Settings => _settings ??= ReportContext.Instance?.Settings;
+        public static bool DownshiftName;
+
+        public GedcomIndividual() { }
+
+        /// <summary>
+        /// The next-lower level of the model;
+        /// the vital events are pre-processed here in the set {} function.
+        /// </summary>
+        public IndividualView IndividualView
+        {
+            get => _iView;
+            set
+            {
+                // this assumes that Settings is NOT determined yet
+                _iView = value;
+                if (_iView == null) return;
+
+                Tag tag = _iView.IndiTag.GetChild(TagCode.BIRT);
+                Born = tag?.GetChild(TagCode.DATE)?.Content;
+                PlaceBorn = tag?.GetChild(TagCode.PLAC)?.Content;
+                BirthDescription = tag?.FullText();
+
+                Tag tagD = _iView.IndiTag.GetChild(TagCode.DEAT);
+                Died = tagD?.GetChild(TagCode.DATE)?.Content;
+                PlaceDied = tagD?.GetChild(TagCode.PLAC)?.Content;
+                DeathDescription = tagD?.FullText();
+
+                ActualYearBorn = GedDate.ExtractYear(Born, defaultVal: null);
+                YearBorn = ActualYearBorn ?? "0000";
+                //YearBorn = GedDate.ExtractYear(Born, defaultVal: "0000");
+                YearDied = GedDate.ExtractYear(Died, defaultVal: "0000");
+                LifeSpan = $"{ParseAndPad(YearBorn)} - {ParseAndPad(YearDied)}";
+                if (NullSpan.Equals(LifeSpan)) LifeSpan = "";
+
+                tag = _iView.IndiTag.GetChild(TagCode.BURI);
+                Buried = tag?.GetChild(TagCode.DATE)?.Content;
+                PlaceBuried = tag?.GetChild(TagCode.PLAC)?.Content;
+                BurialDescription = tag?.FullText();
+
+                tag = _iView.IndiTag.GetChild(TagCode.BAPM) ?? _iView.IndiTag.GetChild(TagCode.CHR);
+                Baptized = tag?.GetChild(TagCode.DATE)?.Content;
+                PlaceBaptized = tag?.GetChild(TagCode.PLAC)?.Content;
+                BaptizedDescription = tag?.FullText();
+                BaptismTagCode = tag?.Code ?? TagCode.BAPM;
+
+                InitPersonalName();
+            }
+        }
+        private string ParseAndPad(string year)
+        {
+            if (!int.TryParse(year, out int y))
+                return null;
+            return $"{y:0000}";
+        }
+
+        private string _givenName;
+        private string _surname;
+        private bool _noSurname;
+        private bool _unknownGivenName;
+        private bool _unknownSurname;
+
+        private void InitPersonalName()
+        {
+            // we're going paper over an omission in the library and 
+            // see the GIVN and SURN tags if they exist
+            _givenName = _iView.IndiTag.GetChild(TagCode.NAME)?.GetChild(TagCode.GIVN)?.Content;
+            _givenName ??= _iView.GivenName;
+            _surname = _iView.IndiTag.GetChild(TagCode.NAME)?.GetChild(TagCode.SURN)?.Content;
+            _surname ??= _iView.Surname;
+
+            _noSurname = string.IsNullOrEmpty(_surname);
+            if (Settings == null) 
+                return; // no context yet
+            _unknownGivenName = IsUnknown(_givenName);
+            _unknownSurname = IsUnknown(_surname);
+
+            if (!DownshiftName)
+                return;
+
+            // todo: 
+
+        }
 
         public string Name => $"{Surname}, {GivenName}";
         public string NameForward => string.IsNullOrEmpty(Surname) ? GivenName : $"{GivenName} {Surname}";
-        public string GivenName => IsUnknown(IndividualView?.GivenName)
+        public string GivenName => _unknownGivenName
             ? Settings.UnknownInReport
-            : $"{IndividualView?.GivenName}";
+            : _givenName;
 
         /// <summary>
         /// If we fail to consider the given name here we wind up with nonsense
@@ -31,10 +110,9 @@ namespace Ged2Reg.Model
         /// Heh.  this can be called when there IS NO 'report context"
         /// making rather a mess for the grid... todo make better sense of this...
         /// </summary>
-        public string Surname => 
-            IsUnknown(IndividualView?.Surname, IndividualView?.GivenName) || IndividualView?.Surname == Settings?.UnknownInSource
-            ? Settings?.UnknownInReport ?? $"{IndividualView?.Surname}"
-            : $"{IndividualView?.Surname}";
+        public string Surname => _unknownGivenName && _unknownSurname || _unknownSurname
+            ? Settings?.UnknownInReport ?? _surname
+            : _surname;
 
         internal bool IsUnknown(params string[] s)
         {
@@ -66,7 +144,7 @@ namespace Ged2Reg.Model
 
         public static string NoSurnameIndexValue { get; set; } = "(No surname)";
 
-        public bool HasNoSurname => IndividualView?.Surname == string.Empty; // the NAME tag has a // (empty surname)
+        public bool HasNoSurname => _noSurname; // the NAME tag has a // (empty surname)
 
         //public bool MayBeLiving { get; set; }
         private bool _presumedDeceased;
@@ -174,10 +252,12 @@ namespace Ged2Reg.Model
 
         private const string NullSpan = "0000 - 0000";
 
-        private IndividualView _individualView;
+        private IndividualView _iView;
 
         public void Reset()
         {
+            InitPersonalName();
+
             foreach (GedcomFamily family in SafeFamilies)
             {
                 family.Reset();
@@ -197,58 +277,13 @@ namespace Ged2Reg.Model
             SortFamilies();
         }
 
-        public IndividualView IndividualView
-        {
-            get => _individualView;
-            set
-            {
-                _individualView = value;
-                if (_individualView == null) return;
-                
-                Tag tag = _individualView.IndiTag.GetChild(TagCode.BIRT);
-                Born = tag?.GetChild(TagCode.DATE)?.Content;
-                PlaceBorn = tag?.GetChild(TagCode.PLAC)?.Content;
-                BirthDescription = tag?.FullText();
-                
-                Tag tagD = _individualView.IndiTag.GetChild(TagCode.DEAT);
-                Died = tagD?.GetChild(TagCode.DATE)?.Content;
-                PlaceDied = tagD?.GetChild(TagCode.PLAC)?.Content;
-                DeathDescription = tagD?.FullText();
-                
-                ActualYearBorn = GedDate.ExtractYear(Born, defaultVal: null);
-                YearBorn = ActualYearBorn ?? "0000";
-                //YearBorn = GedDate.ExtractYear(Born, defaultVal: "0000");
-                YearDied = GedDate.ExtractYear(Died, defaultVal: "0000");
-                LifeSpan = $"{ParseAndPad(YearBorn)} - {ParseAndPad(YearDied)}";
-                if (NullSpan.Equals(LifeSpan)) LifeSpan = "";
-
-                tag = _individualView.IndiTag.GetChild(TagCode.BURI);
-                Buried = tag?.GetChild(TagCode.DATE)?.Content;
-                PlaceBuried = tag?.GetChild(TagCode.PLAC)?.Content;
-                BurialDescription = tag?.FullText();
-
-                tag = _individualView.IndiTag.GetChild(TagCode.BAPM) ?? _individualView.IndiTag.GetChild(TagCode.CHR);
-                Baptized = tag?.GetChild(TagCode.DATE)?.Content;
-                PlaceBaptized = tag?.GetChild(TagCode.PLAC)?.Content;
-                BaptizedDescription = tag?.FullText();
-                BaptismTagCode = tag?.Code ?? TagCode.BAPM; 
-            }
-        }
-
-        private string ParseAndPad(string year)
-        {
-            if (!int.TryParse(year, out int y))
-                return null;
-            return $"{y:0000}";
-        }
-
         public void EvalLivingStatus()
         {
             if (DidEvaluateLivingStatus)
                 return;
 
             // decide if the person is, or may possibly be, still living
-            if (_individualView.IndiTag.GetChild(TagCode.DEAT) != null)
+            if (_iView.IndiTag.GetChild(TagCode.DEAT) != null)
             {
                 // take this to mean, some basis to suppose not living
                 _presumedDeceased = true;

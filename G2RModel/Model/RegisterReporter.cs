@@ -180,6 +180,7 @@ namespace Ged2Reg.Model
 
         internal void ProcessLivingStatus()
         {
+            // ugh.  assignment of static as side effect
             if (!(GedcomIndividual.ConsiderLivingStatus = _c.Settings.ObscureLiving))
                 return;
             

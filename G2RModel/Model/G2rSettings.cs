@@ -249,6 +249,8 @@ namespace Ged2Reg.Model
         private bool _GenNbrAllChildren;
         private bool _placeFirst;
         private string _firstGenNbr;
+        private bool _downshiftNames;
+
         #endregion
 
         #region initializations
@@ -639,6 +641,12 @@ namespace Ged2Reg.Model
                 OnPropertyChanged();
                 ApplyMarginOption();
             }
+        }
+        [DataMember]
+        public bool DownshiftNames
+        {
+            get { return _downshiftNames; }
+            set { _downshiftNames = value; OnPropertyChanged(); }
         }
 
         [DataMember]
