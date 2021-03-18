@@ -58,7 +58,17 @@ namespace DocxAdapterLib
             oxpara.Append(new Run(fc));
             oxpara.Append(new Run(new FieldChar() { FieldCharType = FieldCharValues.Separate }));
             if (!string.IsNullOrEmpty(f.ContentText))
-                oxpara.Append(new Run(new Text(f.ContentText)));
+            {
+                if (string.IsNullOrEmpty(f.ContentStyleName))
+                {
+                    oxpara.Append(new Run(new Text(f.ContentText)));
+                }
+                else
+                {
+                    RunStyle rs = new RunStyle() { Val = f.ContentStyleName };
+                    oxpara.Append(new Run(new Text(f.ContentText)){RunProperties = new RunProperties(rs)});
+                }
+            }
             oxpara.Append(new Run(new FieldChar() { FieldCharType = FieldCharValues.End }));
         }
 

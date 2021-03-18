@@ -644,6 +644,9 @@ namespace G2RModelTest.Model
                     nameof(G2RSettings.IncludeBackRefs),
                     nameof(G2RSettings.IncludeSiblings),
                     nameof(G2RSettings.GenerationPrefix),
+                    nameof(G2RSettings.IntroItalic),
+                    nameof(G2RSettings.IntroBold),
+                    nameof(G2RSettings.UseHostName),
                 },
                 FlagsOff = new List<string>()
                 {

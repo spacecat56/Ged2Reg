@@ -269,7 +269,7 @@ namespace DocxAdapterLib
 
         public WpdNoteRefField BuildNoteRef(WpdFootnoteBase fn)
         {
-            return new OoxNoteRefField(this);
+            return new OoxNoteRefField(this); // shouldn't it do this?: {Footnote = fn};
         }
 
         public WpdIndexField BuildIndexField()

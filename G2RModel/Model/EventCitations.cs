@@ -60,6 +60,7 @@ namespace Ged2Reg.Model
             if (settings.RepeatNoteRefInline && SelectedItem.IsEmitted && SelectedItem.FirstFootnote != null)
             {
                 WpdNoteRefField nrf = doc.BuildNoteRef(SelectedItem.FirstFootnote);
+                nrf.ContentStyleName = OoxFootnote.FootnoteRefstyle.Val;
                 nrf.MarkName = SelectedItem.FirstFootnote.BookmarkName;
                 nrf.ContentText = settings.Brackets
                     ? $"[{SelectedItem.FirstFootnote.Id}]"
