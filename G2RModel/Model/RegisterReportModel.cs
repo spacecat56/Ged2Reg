@@ -135,6 +135,7 @@ namespace Ged2Reg.Model
             CitationCoordinator.DeferConsecutiveRepeats = s.DeferConsecutiveRepeats;
             FormattedEvent.IncludeFactDescription = s.IncludeFactDescriptions;
             FormattedEvent.PlaceBeforeDate = s.PlaceFirst;
+            FormattedEvent.EditFactDescription = s.EditDescriptions;
         }
 
         public bool Exec()
@@ -146,6 +147,7 @@ namespace Ged2Reg.Model
         public bool Exec(object oRoot, AsyncActionDelegates aad = null, bool testing = false)
         {
             ApplySettingsToStaticPolicies(Settings);
+            NameSurveyor.Survey(Individuals);
 
             DateTime started = DateTime.Now;
             GedcomIndividual root = oRoot as GedcomIndividual;

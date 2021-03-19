@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Text.RegularExpressions;
 using G2RModel.Model;
 using SimpleGedcomLib;
 
@@ -8,7 +9,9 @@ namespace Ged2Reg.Model
     public class FormattedEvent
     {
         public static bool IncludeFactDescription { get; set; } = true;
+        public static bool EditFactDescription { get; set; }
         public static bool PlaceBeforeDate { get; set; }
+        public static Regex Word1Regex { get;  } = new Regex(@"(?-i)^[(](?<word1>[A-Z][a-z]*)[ ,][^A-Z]");
 
         public string EventString { get; set; }
         public string PlaceIndexEntry { get; set; }
@@ -90,8 +93,29 @@ namespace Ged2Reg.Model
             bool wrappedAlready = detail.StartsWith('(') && detail.EndsWith(')');
 
             // don't end with a period
-            if (detail.EndsWith("."))
+            if (!wrappedAlready && detail.EndsWith("."))
                 detail = detail.Substring(0, detail.Length - 1);
+            else if (detail.EndsWith(".)"))
+                detail = $"{detail.Substring(0, detail.Length - 2)})";
+
+            if (!EditFactDescription)
+            {
+                detail = wrappedAlready ? detail : $"({detail})";
+
+                // even "unedited: we REALLY want to get rid of intrusive leading uppercase letters
+                Match m = Word1Regex.Match(detail);
+                if (m.Success)
+                {
+                    if (!NameSurveyor.IsKnown(m.Groups["word1"].Value))
+                    {
+                        // relying on the regex being pinned to the START of the string
+                        // and being wrapped in ()s simplifies this a lot
+                        detail = $"({char.ToLower(detail[1])}{detail.Substring(2)}";
+                    }
+                }
+
+                return detail;
+            }
 
             string[] ss = detail.Split(_splitSpace, StringSplitOptions.RemoveEmptyEntries);
 

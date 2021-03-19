@@ -64,6 +64,7 @@ namespace Ged2Reg
         private CheckBox kbIndexMarriedNames;
         private CheckBox kbPlaceFirst;
         private CheckBox kbDownshift;
+        private CheckBox kbEditDescr;
         private TextBox teFirstGen;
         private ToolStripMenuItem miTools;
         private ToolStripMenuItem miObfuscate;
@@ -183,6 +184,15 @@ namespace Ged2Reg
                 "Shift all-caps names to mixed case",
                 nameof(G2RSettings.DownshiftNames));
 
+            label8.Text = "Include (event descriptions) / edited";
+            kbColPos = checkBox3.Right + 4;
+            yPos = checkBox3.Top;
+            kbEditDescr = AddBoundCheckBox(tpContentOptions,
+                null,
+                nameof(G2RSettings.EditDescriptions),
+                nameof(kbEditDescr));
+
+            comboBox2.Top -= 2;
 
             // extra copy of this setting, not needed
             kbAncestorsReport.Visible = label65.Visible = false;
@@ -384,9 +394,10 @@ namespace Ged2Reg
             tp.Controls.Add(kb);
             return kb;
         }
-        private CheckBox AddBoundCheckBox(TabPage tp, string lbl, string boundSetting)
+        private CheckBox AddBoundCheckBox(TabPage tp, string lbl, string boundSetting, string nam = null)
         {
-            AddLabel(tp, lbl);
+            if (lbl != null)
+                AddLabel(tp, lbl);
 
             CheckBox kb = new CheckBox
             {
@@ -395,7 +406,7 @@ namespace Ged2Reg
                 CheckState = CheckState.Checked,
                 Location = new Point(kbColPos, yPos),
                 Margin = new Padding(2),
-                Name = $"kb{lbl.Replace(" ", "")}",
+                Name = nam??$"kb{lbl.Replace(" ", "")}",
                 RightToLeft = RightToLeft.Yes,
                 Size = new Size(22, 21),
                 TabIndex = 83,

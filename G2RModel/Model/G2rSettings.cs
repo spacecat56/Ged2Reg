@@ -157,6 +157,7 @@ namespace Ged2Reg.Model
         private bool _omitBurialDate = true;
         private BaptismOptions _baptismOption = BaptismOptions.Always;
         private bool _includeFactDescriptions = true;
+        private bool _editDescriptions;
         private bool _italicsInLineage;
         private bool _reduceContinuedChildren = true;
         private bool _minimizeContinuedChildren;
@@ -647,6 +648,13 @@ namespace Ged2Reg.Model
         {
             get { return _downshiftNames; }
             set { _downshiftNames = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public bool EditDescriptions
+        {
+            get { return _editDescriptions; }
+            set { _editDescriptions = value; OnPropertyChanged(); }
         }
 
         [DataMember]
