@@ -24,6 +24,7 @@ namespace G2RModel.Model
         public static Regex NameSplitter { get; } = new Regex(@"(?i)(?<givn>.*?)\s/(?<surn>.*)/");
         public static Regex RexNameWords { get; } = new Regex(@"(?i)(\b(?<givn>\w+)\b)");
         public static Regex RexMac { get; } = new Regex(@"(?i)((?<mc>m(a)?c\s?)(?<base>\w+)\b)");
+        public static Regex RexNotMac { get; } = new Regex(@"(?i)\b(mack|mackey)\b");
         public static HashSet<string> SpecialSurnameParts { get; set; } = new HashSet<string>()
         {
             "ST",
@@ -52,26 +53,35 @@ namespace G2RModel.Model
             RawGivenName = rg;
             RawSurname = rs;
             RawName = rn;
-            
 
-            var match = NameSplitter.Match(RawName);
-            if (match.Success)
+            if (!string.IsNullOrEmpty(RawName))
             {
-                if (string.IsNullOrEmpty(RawGivenName) && match.Groups["givn"].Success)
-                    Givn = match.Groups["givn"].Value;
-                else
-                    Givn = RawGivenName;
-                if (string.IsNullOrEmpty(RawSurname) && match.Groups["surn"].Success)
-                    Surn = match.Groups["surn"].Value;
-                else
-                    Surn = RawSurname;
+                var match = NameSplitter.Match(RawName);
+                if (match.Success)
+                {
+                    if (string.IsNullOrEmpty(RawGivenName) && match.Groups["givn"].Success)
+                        Givn = match.Groups["givn"].Value;
+                    else
+                        Givn = RawGivenName;
+                    if (string.IsNullOrEmpty(RawSurname) && match.Groups["surn"].Success)
+                        Surn = match.Groups["surn"].Value;
+                    else
+                        Surn = RawSurname;
+                }
+            }
+            else
+            {
+                Givn = RawGivenName;
+                Surn = RawSurname;
             }
 
             CapsSurn = Surn?.IsAllUpper() ?? false;
             CapsGivn = Givn?.IsAllUpper() ?? false;
 
             NoSurname = string.IsNullOrEmpty(Surn) && (rn??"").Trim().EndsWith("//");
-            IsMacName = !string.IsNullOrEmpty(Surn) && RexMac.IsMatch(Surn);
+            IsMacName = !string.IsNullOrEmpty(Surn) 
+                        && RexMac.IsMatch(Surn) 
+                        && !RexNotMac.IsMatch(Surn);
         }
 
         public static GenealogicalNameFormatter Reformat(string rawName, string givn, string surn)

@@ -63,6 +63,7 @@ namespace Ged2Reg
         private CheckBox kbGenNbrAll;
         private CheckBox kbIndexMarriedNames;
         private CheckBox kbPlaceFirst;
+        private CheckBox kbDownshift;
         private TextBox teFirstGen;
         private ToolStripMenuItem miTools;
         private ToolStripMenuItem miObfuscate;
@@ -173,6 +174,14 @@ namespace Ged2Reg
             teFirstGen = AddBoundTextBox(tpContentOptions, 
                 "Starter generation 'number' (optional)", 
                 nameof(G2RSettings.FirstGenNbr), 60, RightToLeft.No);
+
+
+            lbColPos = label27.Left;
+            kbColPos = checkBox21.Left;
+            yPos = label27.Top - (label19.Top - label18.Top);
+            kbDownshift = AddBoundCheckBox(tpContentOptions,
+                "Shift all-caps names to mixed case",
+                nameof(G2RSettings.DownshiftNames));
 
 
             // extra copy of this setting, not needed

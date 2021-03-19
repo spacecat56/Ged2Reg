@@ -19,6 +19,7 @@ namespace G2RModelTest.Model
             public string Surn { get; set; }
             public string GivenNames { get; set; }
             public string Surname { get; set; }
+            public GenealogicalNameFormatter FormattedName { get; set; }
         }
 
 
@@ -49,6 +50,7 @@ namespace G2RModelTest.Model
                 var name = GenealogicalNameFormatter.Reformat(nc.Name, nc.Givn, nc.Surn);
                 Assert.AreEqual(nc.GivenNames, name.GivenNames, $"case: {nc.Name}");
                 Assert.AreEqual(nc.Surname, name.Surname, $"case: {nc.Name}");
+                nc.FormattedName = name;
             }
         }
 
@@ -149,8 +151,27 @@ namespace G2RModelTest.Model
                 new NameCase() {Name = "ROBERT E. /MacJONES/", Givn = null, Surn = null, GivenNames = "Robert E.", Surname = "MacJones"},
                 new NameCase() {Name = "ROBERT E. /Mc JONES/", Givn = null, Surn = null, GivenNames = "Robert E.", Surname = "Mc Jones"},
                 new NameCase() {Name = "ROBERT E. /Mac JONES/", Givn = null, Surn = null, GivenNames = "Robert E.", Surname = "Mac Jones"},
+                new NameCase() {Name = "JOHN /MACKEY/", Givn = null, Surn = null, GivenNames = "John", Surname = "Mackey"},
+                new NameCase() {Name = "JOHN /MACK/", Givn = null, Surn = null, GivenNames = "John", Surname = "Mack"},
             };
             ExecTests(cases);
+        }
+
+
+        [TestMethod]
+        public void NullNamesTest()
+        {
+            GenealogicalNameFormatter.SetPolicies(true, true, "_", "_____");
+
+            NameCase[] cases = new[]
+            {
+                new NameCase() {Name = null, Givn = null, Surn = null, GivenNames = "_____", Surname = null},
+            };
+            ExecTests(cases);
+            Assert.IsTrue(cases[0].FormattedName.UnknownGivenName);
+            // hmm.  are these other conditions needed?
+            //Assert.IsTrue(cases[0].FormattedName.NoSurname);
+            //Assert.IsTrue(cases[0].FormattedName.UnknownName);
         }
     }
 }

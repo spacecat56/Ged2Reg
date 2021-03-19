@@ -72,12 +72,6 @@ namespace Ged2Reg.Model
             return $"{y:0000}";
         }
 
-        //private string _givenName;
-        //private string _surname;
-        //private bool _noSurname;
-        //private bool _unknownGivenName;
-        //private bool _unknownSurname;
-
         private GenealogicalNameFormatter InitPersonalName()
         {
             Tag nameTag = _iView.IndiTag.GetChild(TagCode.NAME);
@@ -87,24 +81,6 @@ namespace Ged2Reg.Model
                 nameTag?.GetChild(TagCode.SURN)?.Content
                 );
             return FormattedName;
-            //// we're going paper over an omission in the library and 
-            //// see the GIVN and SURN tags if they exist
-            //_givenName = _iView.IndiTag.GetChild(TagCode.NAME)?.GetChild(TagCode.GIVN)?.Content;
-            //_givenName ??= _iView.GivenName;
-            //_surname = _iView.IndiTag.GetChild(TagCode.NAME)?.GetChild(TagCode.SURN)?.Content;
-            //_surname ??= _iView.Surname;
-
-            //_noSurname = string.IsNullOrEmpty(_surname);
-            //if (Settings == null) 
-            //    return; // no context yet
-            //_unknownGivenName = IsUnknown(_givenName);
-            //_unknownSurname = IsUnknown(_surname);
-
-            //if (!DownshiftName)
-            //    return;
-
-            //// todo: 
-
         }
 
         public string Name => $"{Surname}, {GivenName}";
@@ -139,10 +115,6 @@ namespace Ged2Reg.Model
 
         public bool NameIsUnknown => IsUnknown(IndividualView?.Surname, IndividualView?.GivenName);
 
-        //public string SafeName => IsUnknown(IndividualView?.GivenName, IndividualView?.Surname)
-        //    ? Settings.UnknownInReport
-        //    : $"{SafeSurname}, {SafeGivenName}";
-
         public string SafeNameForward => IsUnknown(IndividualView?.GivenName, IndividualView?.Surname)
             ? Settings.UnknownInReport
             : (string.IsNullOrEmpty(SafeSurname) ? SafeGivenName : $"{SafeGivenName} {SafeSurname}");
@@ -155,9 +127,7 @@ namespace Ged2Reg.Model
 
         public bool HasNoSurname => FormattedName.NoSurname; // the NAME tag has a // (empty surname)
 
-        //public bool MayBeLiving { get; set; }
         private bool _presumedDeceased;
-
         public bool PresumedDeceased
         {
             get
@@ -190,22 +160,6 @@ namespace Ged2Reg.Model
         public string BaptizedDescription { get; set; }
 
         #region transients
-        //public BigInteger AssignedMainNumber { get; set; }
-        //public int AssignedChildNumber { get; set; }
-        //public AncestryNameList Ancestry { get; set; }
-
-        //// these are used to control output positioning 
-        //// on the Ancestors report
-        //public bool SuppressSpouseInfo { get; set; }
-        //public bool EmitChildrenAfter { get; set; }
-
-        //// this is used on ancestry report to implement
-        //// options and repositioning of list(s) of children
-        //public List<GedcomFamily> FamiliesToReport { get; set; }
-        //// this is used where we stop exploding to avoid repetition /
-        //// recursion, to reference the number of the repeated ancestor
-        //public List<GedcomIndividual> ContinuesWith { get; set; }
-        //public int GenerationInCurrentReport { get; set; }
         public ReportEntry FirstReportEntry { get; set; }
         public bool FamiliesAreSorted { get; set; }
         #endregion
@@ -220,7 +174,6 @@ namespace Ged2Reg.Model
 
         public string Gender => IndividualView?.IndiTag?.GetChild(TagCode.SEX)?.Content ?? "U";
 
-        //public string ChildNumberRoman => AssignedChildNumber.ToRoman();
         public bool ChildEntryEmitted { get; set; }
 
         private string _reportableSpan;
@@ -253,11 +206,6 @@ namespace Ged2Reg.Model
         public GedcomFamily ChildhoodFamily { get; set; }
 
         public CitablePersonEvents CitableEvents { get; set; }
-
-
-        //public string GetNumber(bool withGeneration) => withGeneration 
-        //    ? $"{GenerationInCurrentReport:00}-{AssignedMainNumber}" 
-        //    : $"{AssignedMainNumber}";
 
         private const string NullSpan = "0000 - 0000";
 
@@ -571,28 +519,6 @@ namespace Ged2Reg.Model
             return rvl;
         }
 
-        //public void SetContinuation(GedcomIndividual indi)
-        //{
-        //    (ContinuesWith ??= new List<GedcomIndividual>()).Add(indi);
-        //}
-
-        //public string GetContinuation(bool withGeneration)
-        //{
-        //    if ((ContinuesWith?.Count ?? 0) == 0) return null;
-
-        //    StringBuilder sb = new StringBuilder();
-        //    string sep = " ";
-        //    sb.Append("(Continues with");
-        //    foreach (GedcomIndividual indi in ContinuesWith)
-        //    {
-        //        sb.Append(sep).Append(indi.GetNumber(withGeneration));
-        //        sep = ", ";
-        //    }
-
-        //    sb.Append(".)");
-
-        //    return sb.ToString();
-        //}
         public string PresentationName()
         {
             string rv = $"{Name} {ReportableSpan}";
