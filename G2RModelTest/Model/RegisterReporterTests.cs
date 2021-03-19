@@ -763,6 +763,84 @@ namespace G2RModelTest.Model
             Assert.IsTrue(cfg.Eval());
         }
 
+        [TestMethod]
+        public void MiscCasesTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.DescendantReady,
+                OutputPath = OutputPath,
+                FileName = "D006_MiscCases.docx",
+                Title = "Misc Cases",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.ItalicsNamesInLineageList),
+                },
+                FlagsOff = new List<string>()
+                {
+                },
+                RegexesToAssertFalse = new List<string>() { @"(?-i)\bEugene w\b" },
+                MustOccur = new List<string>() {  },
+                MustNotOccur = new List<string>() {  },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            ExecSampleReport(cfg, justDoc);
+            Assert.IsTrue(cfg.Eval());
+        }
+        [TestMethod]
+        public void DownshiftTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.DescendantReady,
+                OutputPath = OutputPath,
+                FileName = "D007_Downshift-off.docx",
+                Title = "Downshift - Off",
+                FlagsOn = new List<string>()
+                {
+                },
+                FlagsOff = new List<string>()
+                {
+                    nameof(G2RSettings.DownshiftNames),
+                },
+                RegexesToAssertTrue = new List<string>() { @"(?-i)\bWILMA\b.*?ADAMS\b" },
+                MustOccur = new List<string>() { },
+                MustNotOccur = new List<string>() { },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            ExecSampleReport(cfg, justDoc);
+            Assert.IsTrue(cfg.Eval());
+
+            cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.DescendantReady,
+                OutputPath = OutputPath,
+                FileName = "D007_Downshift-on.docx",
+                Title = "Downshift - On",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.DownshiftNames),
+                },
+                FlagsOff = new List<string>()
+                {
+                },
+                RegexesToAssertFalse = new List<string>() { @"(?-i)\bWILMA\b.*?ADAMS\b" },
+                MustOccur = new List<string>() { },
+                MustNotOccur = new List<string>() { },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            ExecSampleReport(cfg, justDoc);
+            Assert.IsTrue(cfg.Eval());
+
+        }
+
+
         [TestCleanup]
         public void LogResults()
         {

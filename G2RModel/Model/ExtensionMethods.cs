@@ -26,5 +26,11 @@ namespace Ged2Reg.Model
             if (number >= 4) return "iv" + ToRoman(number - 4);
             return "i" + ToRoman(number - 1);
         }
+
+        public static bool IsAllUpper(this string input)
+        {
+            return input.All(t => !char.IsLetter(t) || char.IsUpper(t));
+        }
+
     }
 }

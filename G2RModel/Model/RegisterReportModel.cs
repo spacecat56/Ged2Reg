@@ -13,7 +13,19 @@ namespace Ged2Reg.Model
     {
         public AsyncActionDelegates ActionDelegates { get; private set; }
         public ListOfSettingsSets SettingsSets { get; set; }
-        public G2RSettings Settings { get; set; }
+        
+        private G2RSettings _settings;
+
+        public G2RSettings Settings
+        {
+            get => _settings;
+            set
+            {
+                _settings = value; 
+                ApplySettingsToStaticPolicies(value);
+            }
+        }
+
         public IWpdDocument Doc { get; set; }
 
         public GedcomFile GedcomFile { get; set; }
@@ -117,6 +129,14 @@ namespace Ged2Reg.Model
             ActionDelegates?.PostStatusReport(s);
         }
 
+        public static void ApplySettingsToStaticPolicies(G2RSettings s)
+        {
+            GenealogicalNameFormatter.SetPolicies(s.DownshiftNames, s.HandleUnknownNames, s.UnknownInSource, s.UnknownInReport);
+            CitationCoordinator.DeferConsecutiveRepeats = s.DeferConsecutiveRepeats;
+            FormattedEvent.IncludeFactDescription = s.IncludeFactDescriptions;
+            FormattedEvent.PlaceBeforeDate = s.PlaceFirst;
+        }
+
         public bool Exec()
         {
             object o = Individuals.Where(i => i.IndividualView.Id == Settings.LastPersonId).First();
@@ -125,6 +145,8 @@ namespace Ged2Reg.Model
 
         public bool Exec(object oRoot, AsyncActionDelegates aad = null, bool testing = false)
         {
+            ApplySettingsToStaticPolicies(Settings);
+
             DateTime started = DateTime.Now;
             GedcomIndividual root = oRoot as GedcomIndividual;
             

@@ -90,7 +90,7 @@ namespace Ged2Reg.Model
             MyReportStats = new ReportStats().Init(prep);
             _c = ReportContext.Instance;
 
-            // configure policies that are held in statics
+            // configure policies that are held in statics (now redundant here...)
             CitationCoordinator.DeferConsecutiveRepeats = _c.Settings.DeferConsecutiveRepeats;
             FormattedEvent.IncludeFactDescription = _factDesc = _c.Settings.IncludeFactDescriptions;
             FormattedEvent.PlaceBeforeDate = _placeFirst = _c.Settings.PlaceFirst;

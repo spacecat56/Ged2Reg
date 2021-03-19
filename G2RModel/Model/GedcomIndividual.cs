@@ -17,6 +17,8 @@ namespace Ged2Reg.Model
         internal static G2RSettings Settings => _settings ??= ReportContext.Instance?.Settings;
         public static bool DownshiftName;
 
+        public GenealogicalNameFormatter FormattedName { get; set; }
+
         public GedcomIndividual() { }
 
         /// <summary>
@@ -70,39 +72,46 @@ namespace Ged2Reg.Model
             return $"{y:0000}";
         }
 
-        private string _givenName;
-        private string _surname;
-        private bool _noSurname;
-        private bool _unknownGivenName;
-        private bool _unknownSurname;
+        //private string _givenName;
+        //private string _surname;
+        //private bool _noSurname;
+        //private bool _unknownGivenName;
+        //private bool _unknownSurname;
 
-        private void InitPersonalName()
+        private GenealogicalNameFormatter InitPersonalName()
         {
-            // we're going paper over an omission in the library and 
-            // see the GIVN and SURN tags if they exist
-            _givenName = _iView.IndiTag.GetChild(TagCode.NAME)?.GetChild(TagCode.GIVN)?.Content;
-            _givenName ??= _iView.GivenName;
-            _surname = _iView.IndiTag.GetChild(TagCode.NAME)?.GetChild(TagCode.SURN)?.Content;
-            _surname ??= _iView.Surname;
+            Tag nameTag = _iView.IndiTag.GetChild(TagCode.NAME);
+            FormattedName = GenealogicalNameFormatter.Reformat(
+                nameTag?.Content,
+                nameTag?.GetChild(TagCode.GIVN)?.Content,
+                nameTag?.GetChild(TagCode.SURN)?.Content
+                );
+            return FormattedName;
+            //// we're going paper over an omission in the library and 
+            //// see the GIVN and SURN tags if they exist
+            //_givenName = _iView.IndiTag.GetChild(TagCode.NAME)?.GetChild(TagCode.GIVN)?.Content;
+            //_givenName ??= _iView.GivenName;
+            //_surname = _iView.IndiTag.GetChild(TagCode.NAME)?.GetChild(TagCode.SURN)?.Content;
+            //_surname ??= _iView.Surname;
 
-            _noSurname = string.IsNullOrEmpty(_surname);
-            if (Settings == null) 
-                return; // no context yet
-            _unknownGivenName = IsUnknown(_givenName);
-            _unknownSurname = IsUnknown(_surname);
+            //_noSurname = string.IsNullOrEmpty(_surname);
+            //if (Settings == null) 
+            //    return; // no context yet
+            //_unknownGivenName = IsUnknown(_givenName);
+            //_unknownSurname = IsUnknown(_surname);
 
-            if (!DownshiftName)
-                return;
+            //if (!DownshiftName)
+            //    return;
 
-            // todo: 
+            //// todo: 
 
         }
 
         public string Name => $"{Surname}, {GivenName}";
         public string NameForward => string.IsNullOrEmpty(Surname) ? GivenName : $"{GivenName} {Surname}";
-        public string GivenName => _unknownGivenName
+        public string GivenName => FormattedName.UnknownGivenName
             ? Settings.UnknownInReport
-            : _givenName;
+            : FormattedName.GivenNames;
 
         /// <summary>
         /// If we fail to consider the given name here we wind up with nonsense
@@ -110,9 +119,9 @@ namespace Ged2Reg.Model
         /// Heh.  this can be called when there IS NO 'report context"
         /// making rather a mess for the grid... todo make better sense of this...
         /// </summary>
-        public string Surname => _unknownGivenName && _unknownSurname || _unknownSurname
-            ? Settings?.UnknownInReport ?? _surname
-            : _surname;
+        public string Surname => FormattedName.UnknownGivenName && FormattedName.UnknownSurname || FormattedName.UnknownSurname
+            ? Settings?.UnknownInReport ?? FormattedName.Surname
+            : FormattedName.Surname;
 
         internal bool IsUnknown(params string[] s)
         {
@@ -144,7 +153,7 @@ namespace Ged2Reg.Model
 
         public static string NoSurnameIndexValue { get; set; } = "(No surname)";
 
-        public bool HasNoSurname => _noSurname; // the NAME tag has a // (empty surname)
+        public bool HasNoSurname => FormattedName.NoSurname; // the NAME tag has a // (empty surname)
 
         //public bool MayBeLiving { get; set; }
         private bool _presumedDeceased;
@@ -256,7 +265,8 @@ namespace Ged2Reg.Model
 
         public void Reset()
         {
-            InitPersonalName();
+            //InitPersonalName();
+            (FormattedName ??= InitPersonalName()).Reformat();
 
             foreach (GedcomFamily family in SafeFamilies)
             {

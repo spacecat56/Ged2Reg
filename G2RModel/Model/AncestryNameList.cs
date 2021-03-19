@@ -54,17 +54,24 @@ namespace Ged2Reg.Model
         private void Build()
         {
             _ancestors.Clear();
+            // we are going to shift-down the given names, regardless of 
+            // the overall policy, on the design belief that the names in 
+            // the lineage list are not supposed to be UPPER CASE, regardless
             foreach (GedcomIndividual ind in _gedcomIndividuals)
             {
-                _ancestors.Add(new AncestorName(){ GivenNames = InitCaps(ind.SafeGivenName), Surname = ind.SafeSurname });
+                _ancestors.Add(new AncestorName()
+                { 
+                    GivenNames = GenealogicalNameFormatter.NameShift(ind.SafeGivenName, false), 
+                    Surname = ind.SafeSurname
+                });
             }
         }
-        public static string InitCaps(string s)
-        {
-            if ((s?.Length ?? 0) < 2 || !char.IsLetter(s[0]))
-                return s;
-            return $"{s.Substring(0, 1).ToUpper()}{s.Substring(1).ToLower()}";
-        }
+        //public static string InitCaps(string s)
+        //{
+        //    if ((s?.Length ?? 0) < 2 || !char.IsLetter(s[0]))
+        //        return s;
+        //    return $"{s.Substring(0, 1).ToUpper()}{s.Substring(1).ToLower()}";
+        //}
 
     }
 }
