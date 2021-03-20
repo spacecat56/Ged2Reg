@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CommonClassesLib;
 using SimpleGedcomLib;
@@ -10,6 +11,9 @@ namespace Ged2Reg.Model
 {
     public class CitationResult
     {
+        public static bool DetectHyperlinksInTextPieces { get; set; } = true;
+        public static Regex UrlRex = new Regex(@"(?i)\b(?<root>https?://.*?[.][a-z]+)/\S+\b");
+
         public string Text => Pieces.Count == 1 && Pieces[0].PieceType == PieceType.Text
             ? Pieces[0].Text
             : null;
@@ -20,7 +24,39 @@ namespace Ged2Reg.Model
 
         public void AppendText(string t)
         {
-            Pieces.Add(new CitationResultPiece(){PieceType = PieceType.Text, Text = t});
+            if (!DetectHyperlinksInTextPieces || string.IsNullOrEmpty(t))
+            {
+                AppendTextPiece(t);
+                return;
+            }
+            MatchCollection matches = UrlRex.Matches(t);
+            if (matches.Count == 0)
+            {
+                AppendTextPiece(t);
+                return;
+            }
+
+            int nextCharToEmit = 0;
+            for (int i = 0; i < matches.Count; i++)
+            {
+                Match m = matches[i];
+                if (nextCharToEmit < m.Index)
+                    AppendTextPiece(t.Substring(nextCharToEmit, m.Index - nextCharToEmit));
+                AppendLink(m.Value);
+                nextCharToEmit = m.Index + m.Length;
+            }
+            if (nextCharToEmit < t.Length)
+                AppendTextPiece(t.Substring(nextCharToEmit));
+        }
+
+        public void AppendLink(string t)
+        {
+            Pieces.Add(new CitationResultPiece() { PieceType = PieceType.Hyperlink, Text = t });
+        }
+
+        private void AppendTextPiece(string t)
+        {
+            Pieces.Add(new CitationResultPiece() {PieceType = PieceType.Text, Text = t});
         }
     }
 
@@ -52,7 +88,7 @@ namespace Ged2Reg.Model
                 // citation with no source reference is just a piece of text
                 string simpleText = cv?.SourceTag?.Content;
                 if (!string.IsNullOrEmpty(simpleText))
-                    rv.Pieces.Add(new CitationResultPiece() { PieceType = PieceType.Text, Text = simpleText });
+                    rv.AppendText(simpleText);
                 return rv;
             }
 
@@ -109,10 +145,10 @@ namespace Ged2Reg.Model
                         } 
                         if (sb.Length > 0)
                         {
-                            rv.Pieces.Add(new CitationResultPiece() { PieceType = PieceType.Text, Text = sb.ToString() });
+                            rv.AppendText(sb.ToString());
                             sb.Clear();
                         }
-                        rv.Pieces.Add(new CitationResultPiece() { PieceType = PieceType.Hyperlink, Text = url });
+                        rv.AppendLink(url);
                         if (!string.IsNullOrEmpty(part.Suffix))
                         {
                             sb.Append(part.Suffix);
@@ -129,7 +165,7 @@ namespace Ged2Reg.Model
 
             sb.Append(pendingAnotherPiece); // ugh.  'must be' a '.' supplied by a nullvalue at the end, otherwise, not working
             if (sb.Length > 0)
-                rv.Pieces.Add(new CitationResultPiece() {PieceType = PieceType.Text, Text = sb.ToString()});
+                rv.AppendText(sb.ToString());
             return rv;
         }
 
