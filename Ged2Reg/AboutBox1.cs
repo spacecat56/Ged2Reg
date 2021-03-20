@@ -24,7 +24,8 @@ namespace Ged2Reg
             //}
             //else
             {
-                this.labelVersion.Text = $"Version {AssemblyVersion}";
+                //this.labelVersion.Text = $"Version {AssemblyVersion}";
+                this.labelVersion.Text = $"Version {AssemblyFileVersion()}";
             }
             this.labelCopyright.Text = AssemblyCopyright;
             this.labelCompanyName.Text = AssemblyCompany;
@@ -48,6 +49,13 @@ namespace Ged2Reg
                 }
                 return System.IO.Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
             }
+        }
+
+        public static string AssemblyFileVersion()
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
+            return fvi.FileVersion;
         }
 
         public static string AssemblyVersion
