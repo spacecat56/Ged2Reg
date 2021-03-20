@@ -461,6 +461,23 @@ namespace G2RModel.Model
                             NonContinued.Add(child.Individual);
                             continue;
                         }
+
+                        // when two descendants marry, the second one 
+                        // should list the children with the numbers already assigned
+                        // and stop exploding
+                        if (child.Individual.FirstReportEntry == null)
+                        {
+                            child.Individual.FirstReportEntry = child;
+                        }
+                        else
+                        {
+                            if ((child.Individual.FirstReportEntry?.AssignedMainNumber ?? 0) > 0)
+                            {
+                                child.AssignedMainNumber = child.Individual.FirstReportEntry.AssignedMainNumber;
+                                continue;
+                            }
+                        }
+
                         if (child.AssignedMainNumber == 0)
                             child.AssignedMainNumber = ++greatestId;
                         //op.Add(child);
