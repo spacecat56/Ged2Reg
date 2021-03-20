@@ -76,16 +76,6 @@ namespace G2RModel.Model
                 Surn = RawSurname;
             }
 
-            if (NameFixer != null)
-            {
-                try
-                {
-                    Surn = NameFixer.Exec(Surn);
-                    Givn = NameFixer.Exec(Givn);
-                }
-                catch  { }
-            }
-
             CapsSurn = Surn?.IsAllUpper() ?? false;
             CapsGivn = Givn?.IsAllUpper() ?? false;
 
@@ -113,6 +103,16 @@ namespace G2RModel.Model
 
             GivenNames = UnknownGivenName ? UnknownOut : Givn;
             Surname = UnknownSurname ? UnknownOut : Surn;
+
+            if (NameFixer != null)
+            {
+                try
+                {
+                    Surname = NameFixer.Exec(Surname);
+                    GivenNames = NameFixer.Exec(GivenNames);
+                }
+                catch { }
+            }
 
             if (!DownshiftAllCaps)
                 return this;

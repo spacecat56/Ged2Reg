@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
+using G2RModel.Model;
 
 
 namespace Ged2Reg.Model
@@ -1470,6 +1471,22 @@ namespace Ged2Reg.Model
             Append(sb, "Notes / main persons", this.MainPersonNotes);
             Append(sb, "Notes / spouses", this.SpousesNotes);
             Append(sb, "Convert dividers", this.ConvertDividers);
+
+            if (!string.IsNullOrEmpty(FinderForNames))
+            {
+                Append(sb, "Name rewrite - finder", this.FinderForNames);
+                Append(sb, "Name rewrite - fixer", this.FixerForNames);
+                Append(sb, "Name rewrite - valid regex", 
+                    new TextFixer(){FinderText = FinderForNames, Fixer = FixerForNames}.Init() != null);
+            }
+            if (!string.IsNullOrEmpty(FinderForEvents))
+            {
+                Append(sb, "Event rewrite - finder", this.FinderForEvents);
+                Append(sb, "Event rewrite - fixer", this.FixerForEvents);
+                Append(sb, "Event rewrite - valid regex",
+                    new TextFixer() { FinderText = FinderForEvents, Fixer = FixerForEvents }.Init() != null);
+            }
+
             Append(sb, "Name index", this.NameIndexSettings?.Enabled??false);
             Append(sb, " + married names", IndexMarriedNames);
             Append(sb, "Place index", this.PlaceIndexSettings?.Enabled ?? false);

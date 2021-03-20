@@ -244,18 +244,24 @@ namespace Ged2Reg
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.manageSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripSeparator();
+            this.miSampleInput = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.miUserGuide = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.miLicenseInfo = new System.Windows.Forms.ToolStripMenuItem();
             this.miUpdates = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.installedLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bsSettingsSets = new System.Windows.Forms.BindingSource(this.components);
-            this.miUserGuide = new System.Windows.Forms.ToolStripMenuItem();
-            this.miSampleInput = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.label66 = new System.Windows.Forms.Label();
+            this.teFinderNames = new System.Windows.Forms.TextBox();
+            this.teFixerNames = new System.Windows.Forms.TextBox();
+            this.teFixerEvents = new System.Windows.Forms.TextBox();
+            this.teFinderEvents = new System.Windows.Forms.TextBox();
+            this.label67 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.bsG2RSettings)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvStartPerson)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bsIndi)).BeginInit();
@@ -2325,6 +2331,12 @@ namespace Ged2Reg
             // 
             // tabPage5
             // 
+            this.tabPage5.Controls.Add(this.teFixerEvents);
+            this.tabPage5.Controls.Add(this.teFinderEvents);
+            this.tabPage5.Controls.Add(this.label67);
+            this.tabPage5.Controls.Add(this.teFixerNames);
+            this.tabPage5.Controls.Add(this.teFinderNames);
+            this.tabPage5.Controls.Add(this.label66);
             this.tabPage5.Controls.Add(this.dgTitleCleaners);
             this.tabPage5.Location = new System.Drawing.Point(4, 27);
             this.tabPage5.Margin = new System.Windows.Forms.Padding(2);
@@ -2332,7 +2344,7 @@ namespace Ged2Reg
             this.tabPage5.Padding = new System.Windows.Forms.Padding(2);
             this.tabPage5.Size = new System.Drawing.Size(759, 631);
             this.tabPage5.TabIndex = 4;
-            this.tabPage5.Text = "Title Rewrites";
+            this.tabPage5.Text = "Rewrites";
             this.tabPage5.UseVisualStyleBackColor = true;
             // 
             // dgTitleCleaners
@@ -2350,12 +2362,12 @@ namespace Ged2Reg
             this.outputDataGridViewTextBoxColumn,
             this.parentDataGridViewTextBoxColumn});
             this.dgTitleCleaners.DataSource = this.bsTitleCleaners;
-            this.dgTitleCleaners.Location = new System.Drawing.Point(17, 35);
+            this.dgTitleCleaners.Location = new System.Drawing.Point(17, 210);
             this.dgTitleCleaners.Margin = new System.Windows.Forms.Padding(2);
             this.dgTitleCleaners.Name = "dgTitleCleaners";
             this.dgTitleCleaners.RowHeadersWidth = 62;
             this.dgTitleCleaners.RowTemplate.Height = 28;
-            this.dgTitleCleaners.Size = new System.Drawing.Size(630, 573);
+            this.dgTitleCleaners.Size = new System.Drawing.Size(720, 398);
             this.dgTitleCleaners.TabIndex = 0;
             this.dgTitleCleaners.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgTitleCleaners_DataError);
             // 
@@ -2754,6 +2766,17 @@ namespace Ged2Reg
             this.toolStripMenuItem4.Name = "toolStripMenuItem4";
             this.toolStripMenuItem4.Size = new System.Drawing.Size(178, 6);
             // 
+            // miSampleInput
+            // 
+            this.miSampleInput.Name = "miSampleInput";
+            this.miSampleInput.Size = new System.Drawing.Size(181, 22);
+            this.miSampleInput.Text = "Sample input file";
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(178, 6);
+            // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
@@ -2775,17 +2798,23 @@ namespace Ged2Reg
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 22);
             this.helpToolStripMenuItem.Text = "Help";
             // 
+            // miUserGuide
+            // 
+            this.miUserGuide.Name = "miUserGuide";
+            this.miUserGuide.Size = new System.Drawing.Size(179, 22);
+            this.miUserGuide.Text = "User guide";
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(176, 6);
+            // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
             this.aboutToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(173, 6);
             // 
             // miLicenseInfo
             // 
@@ -2815,22 +2844,67 @@ namespace Ged2Reg
             // 
             this.bsSettingsSets.DataSource = typeof(Ged2Reg.frmSettingsSets.ListOfNamedSettingSets);
             // 
-            // miUserGuide
+            // label66
             // 
-            this.miUserGuide.Name = "miUserGuide";
-            this.miUserGuide.Size = new System.Drawing.Size(179, 22);
-            this.miUserGuide.Text = "User guide";
+            this.label66.AutoSize = true;
+            this.label66.Location = new System.Drawing.Point(12, 20);
+            this.label66.Name = "label66";
+            this.label66.Size = new System.Drawing.Size(265, 18);
+            this.label66.TabIndex = 1;
+            this.label66.Text = "Name fixer (regex / replace expression)";
             // 
-            // miSampleInput
+            // teFinderNames
             // 
-            this.miSampleInput.Name = "miSampleInput";
-            this.miSampleInput.Size = new System.Drawing.Size(181, 22);
-            this.miSampleInput.Text = "Sample input file";
+            this.teFinderNames.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.teFinderNames.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bsG2RSettings, "FinderForNames", true));
+            this.teFinderNames.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.teFinderNames.Location = new System.Drawing.Point(12, 41);
+            this.teFinderNames.Name = "teFinderNames";
+            this.teFinderNames.Size = new System.Drawing.Size(725, 23);
+            this.teFinderNames.TabIndex = 2;
             // 
-            // toolStripSeparator2
+            // teFixerNames
             // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(178, 6);
+            this.teFixerNames.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.teFixerNames.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bsG2RSettings, "FixerForNames", true));
+            this.teFixerNames.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.teFixerNames.Location = new System.Drawing.Point(12, 71);
+            this.teFixerNames.Name = "teFixerNames";
+            this.teFixerNames.Size = new System.Drawing.Size(725, 23);
+            this.teFixerNames.TabIndex = 3;
+            // 
+            // teFixerEvents
+            // 
+            this.teFixerEvents.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.teFixerEvents.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bsG2RSettings, "FixerForEvents", true));
+            this.teFixerEvents.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.teFixerEvents.Location = new System.Drawing.Point(12, 160);
+            this.teFixerEvents.Name = "teFixerEvents";
+            this.teFixerEvents.Size = new System.Drawing.Size(725, 23);
+            this.teFixerEvents.TabIndex = 6;
+            // 
+            // teFinderEvents
+            // 
+            this.teFinderEvents.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.teFinderEvents.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bsG2RSettings, "FinderForEvents", true));
+            this.teFinderEvents.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.teFinderEvents.Location = new System.Drawing.Point(12, 130);
+            this.teFinderEvents.Name = "teFinderEvents";
+            this.teFinderEvents.Size = new System.Drawing.Size(725, 23);
+            this.teFinderEvents.TabIndex = 5;
+            // 
+            // label67
+            // 
+            this.label67.AutoSize = true;
+            this.label67.Location = new System.Drawing.Point(12, 109);
+            this.label67.Name = "label67";
+            this.label67.Size = new System.Drawing.Size(338, 18);
+            this.label67.TabIndex = 4;
+            this.label67.Text = "Event description fixer (regex / replace expression)";
             // 
             // Form1
             // 
@@ -2878,6 +2952,7 @@ namespace Ged2Reg
             ((System.ComponentModel.ISupportInitialize)(this.nudColumnsNameIndex)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bsNameIndexSettings)).EndInit();
             this.tabPage5.ResumeLayout(false);
+            this.tabPage5.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgTitleCleaners)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bsTitleCleaners)).EndInit();
             this.tabPage4.ResumeLayout(false);
@@ -3128,6 +3203,12 @@ namespace Ged2Reg
         private System.Windows.Forms.ToolStripMenuItem miSampleInput;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem miUserGuide;
+        private System.Windows.Forms.TextBox teFixerNames;
+        private System.Windows.Forms.TextBox teFinderNames;
+        private System.Windows.Forms.Label label66;
+        private System.Windows.Forms.TextBox teFixerEvents;
+        private System.Windows.Forms.TextBox teFinderEvents;
+        private System.Windows.Forms.Label label67;
         //private LabeledInputPanel.LabeledInputPanel labeledInputPanel1;
     }
 }
