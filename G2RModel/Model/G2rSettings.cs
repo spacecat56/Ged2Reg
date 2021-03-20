@@ -632,6 +632,43 @@ namespace Ged2Reg.Model
 
         #endregion
 
+        #region TextFixers
+        private string _finderForNames;
+        private string _fixerForNames;
+
+        private string _finderForEvents;
+        private string _fixerForEvents;
+
+        [DataMember]
+        public string FinderForNames
+        {
+            get { return _finderForNames; }
+            set { _finderForNames = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public string FixerForNames
+        {
+            get { return _fixerForNames; }
+            set { _fixerForNames = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public string FinderForEvents
+        {
+            get { return _finderForEvents; }
+            set { _finderForEvents = value; OnPropertyChanged(); }
+        }
+
+        [DataMember]
+        public string FixerForEvents
+        {
+            get { return _fixerForEvents; }
+            set { _fixerForEvents = value; OnPropertyChanged(); }
+        }
+        #endregion
+
+
         [DataMember]
         public bool ReducedMargins
         {

@@ -136,6 +136,8 @@ namespace Ged2Reg.Model
             FormattedEvent.IncludeFactDescription = s.IncludeFactDescriptions;
             FormattedEvent.PlaceBeforeDate = s.PlaceFirst;
             FormattedEvent.EditFactDescription = s.EditDescriptions;
+            FormattedEvent.DescriptionFixer = new TextFixer() { FinderText = s.FinderForEvents, Fixer = s.FixerForEvents }.Init();
+            GenealogicalNameFormatter.NameFixer = new TextFixer() { FinderText = s.FinderForNames, Fixer = s.FixerForNames }.Init();
         }
 
         public bool Exec()

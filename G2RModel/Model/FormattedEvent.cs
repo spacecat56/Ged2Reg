@@ -11,6 +11,13 @@ namespace Ged2Reg.Model
         public static bool IncludeFactDescription { get; set; } = true;
         public static bool EditFactDescription { get; set; }
         public static bool PlaceBeforeDate { get; set; }
+        public static TextFixer DescriptionFixer { get; set; }
+        /// <summary>
+        /// Regex picks out the first word in a parenthetical clause, iff
+        /// it starts with one uppercase letter, continues with 0 or more lower
+        /// case letters, and is NOT followed by another word starting with an
+        /// upper case letter 
+        /// </summary>
         public static Regex Word1Regex { get;  } = new Regex(@"(?-i)^[(](?<word1>[A-Z][a-z]*)[ ,][^A-Z]");
 
         public string EventString { get; set; }
@@ -74,6 +81,8 @@ namespace Ged2Reg.Model
             if (IncludeFactDescription && !string.IsNullOrEmpty(detail))
             {
                 string det = OptimizeEventDetail(detail);
+                if (DescriptionFixer != null)
+                    det = DescriptionFixer.Exec(det);
                 if (!string.IsNullOrEmpty(det))
                     sb.Append(" ").Append(det);
             }

@@ -12,6 +12,7 @@ namespace G2RModel.Model
         public static bool HandleUnknownNames { get; set; }
         public static string UnknownIn { get; set; }
         public static string UnknownOut { get; set; }
+        public static TextFixer NameFixer { get; set; }
 
         public static void SetPolicies(bool down, bool unks, string unkIn, string unkOut)
         {
@@ -24,7 +25,7 @@ namespace G2RModel.Model
         public static Regex NameSplitter { get; } = new Regex(@"(?i)(?<givn>.*?)\s/(?<surn>.*)/");
         public static Regex RexNameWords { get; } = new Regex(@"(?i)(\b(?<givn>\w+)\b)");
         public static Regex RexMac { get; } = new Regex(@"(?i)((?<mc>m(a)?c\s?)(?<base>\w+)\b)");
-        public static Regex RexNotMac { get; } = new Regex(@"(?i)\b(mack|mackey)\b");
+        public static Regex RexNotMac { get; } = new Regex(@"(?i)\b(mack|mackey|macias)\b");
         public static HashSet<string> SpecialSurnameParts { get; set; } = new HashSet<string>()
         {
             "ST",
@@ -73,6 +74,16 @@ namespace G2RModel.Model
             {
                 Givn = RawGivenName;
                 Surn = RawSurname;
+            }
+
+            if (NameFixer != null)
+            {
+                try
+                {
+                    Surn = NameFixer.Exec(Surn);
+                    Givn = NameFixer.Exec(Givn);
+                }
+                catch  { }
             }
 
             CapsSurn = Surn?.IsAllUpper() ?? false;
