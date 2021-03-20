@@ -22,7 +22,7 @@ namespace G2RModel.Model
             UnknownOut = unkOut;
         }
 
-        public static Regex NameSplitter { get; } = new Regex(@"(?i)(?<givn>.*?)\s/(?<surn>.*)/");
+        public static Regex NameSplitter { get; } = new Regex(@"(?i)((?<givn>.*?)\s)?/(?<surn>.*)/");
         public static Regex RexNameWords { get; } = new Regex(@"(?i)(\b(?<givn>\w+)\b)");
         public static Regex RexMac { get; } = new Regex(@"(?i)((?<mc>m(a)?c\s?)(?<base>\w+)\b)");
         public static Regex RexNotMac { get; } = new Regex(@"(?i)\b(mack|mackey|macias)\b");

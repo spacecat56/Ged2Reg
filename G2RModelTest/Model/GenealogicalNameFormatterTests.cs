@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using G2RModel.Model;
+﻿using G2RModel.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace G2RModelTest.Model
@@ -125,6 +120,18 @@ namespace G2RModelTest.Model
                 new NameCase() {Name = "ROBERT E /DE JONES/", Givn = "BOBBY", Surn = "JONESY", GivenNames = "Bobby", Surname = "Jonesy"},
                 new NameCase() {Name = "ROBERT E /DE JONES/", Givn = "BOBBY", Surn = "DE JONESY", GivenNames = "Bobby", Surname = "de Jonesy"},
                 new NameCase() {Name = "ROBERT E /DE JONES/", Givn = "BOBBY", Surn = "de JONESY", GivenNames = "Bobby", Surname = "de JONESY"}, // twist here
+            };
+            ExecTests(cases);
+        }
+
+        [TestMethod]
+        public void SurnameOnlyTest()
+        {
+            GenealogicalNameFormatter.SetPolicies(true, true, "_", "_____");
+            // if provided, the pre-split name parts have priority
+            NameCase[] cases = new[]
+            {
+                new NameCase() {Name = "/INGLETRUDE/", Givn = null, Surn = null, GivenNames = "_____", Surname = "Ingletrude"},
             };
             ExecTests(cases);
         }

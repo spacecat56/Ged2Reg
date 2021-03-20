@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using G2RModel.Model;
 using SimpleGedcomLib;
 using WpdInterfaceLib;
@@ -11,6 +12,14 @@ namespace Ged2Reg.Model
 {
     public class RegisterReportModel
     {
+        static RegisterReportModel()
+        {
+            // the regex in the library is defective
+            // in not allowing for no given name
+            // here we temporarily fix that...
+            IndividualView.NameRex = new Regex(@"((?<given>.*?)\s)?/(?<surn>.*)/");
+        }
+
         public AsyncActionDelegates ActionDelegates { get; private set; }
         public ListOfSettingsSets SettingsSets { get; set; }
         
