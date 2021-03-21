@@ -204,6 +204,12 @@ namespace Ged2Reg
             this.label39 = new System.Windows.Forms.Label();
             this.textBox3 = new System.Windows.Forms.TextBox();
             this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.teFixerEvents = new System.Windows.Forms.TextBox();
+            this.teFinderEvents = new System.Windows.Forms.TextBox();
+            this.label67 = new System.Windows.Forms.Label();
+            this.teFixerNames = new System.Windows.Forms.TextBox();
+            this.teFinderNames = new System.Windows.Forms.TextBox();
+            this.label66 = new System.Windows.Forms.Label();
             this.dgTitleCleaners = new System.Windows.Forms.DataGridView();
             this.colTitleRewriteContext = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.firstUseUnchangedDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
@@ -256,12 +262,8 @@ namespace Ged2Reg
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.installedLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bsSettingsSets = new System.Windows.Forms.BindingSource(this.components);
-            this.label66 = new System.Windows.Forms.Label();
-            this.teFinderNames = new System.Windows.Forms.TextBox();
-            this.teFixerNames = new System.Windows.Forms.TextBox();
-            this.teFixerEvents = new System.Windows.Forms.TextBox();
-            this.teFinderEvents = new System.Windows.Forms.TextBox();
-            this.label67 = new System.Windows.Forms.Label();
+            this.pbNameRex = new System.Windows.Forms.Button();
+            this.pbEventRex = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.bsG2RSettings)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvStartPerson)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bsIndi)).BeginInit();
@@ -2331,6 +2333,8 @@ namespace Ged2Reg
             // 
             // tabPage5
             // 
+            this.tabPage5.Controls.Add(this.pbEventRex);
+            this.tabPage5.Controls.Add(this.pbNameRex);
             this.tabPage5.Controls.Add(this.teFixerEvents);
             this.tabPage5.Controls.Add(this.teFinderEvents);
             this.tabPage5.Controls.Add(this.label67);
@@ -2344,8 +2348,70 @@ namespace Ged2Reg
             this.tabPage5.Padding = new System.Windows.Forms.Padding(2);
             this.tabPage5.Size = new System.Drawing.Size(759, 631);
             this.tabPage5.TabIndex = 4;
-            this.tabPage5.Text = "Rewrites";
+            this.tabPage5.Text = "Rewriters";
             this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // teFixerEvents
+            // 
+            this.teFixerEvents.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.teFixerEvents.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bsG2RSettings, "FixerForEvents", true));
+            this.teFixerEvents.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.teFixerEvents.Location = new System.Drawing.Point(12, 160);
+            this.teFixerEvents.Name = "teFixerEvents";
+            this.teFixerEvents.Size = new System.Drawing.Size(725, 23);
+            this.teFixerEvents.TabIndex = 6;
+            // 
+            // teFinderEvents
+            // 
+            this.teFinderEvents.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.teFinderEvents.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bsG2RSettings, "FinderForEvents", true));
+            this.teFinderEvents.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.teFinderEvents.Location = new System.Drawing.Point(12, 130);
+            this.teFinderEvents.Name = "teFinderEvents";
+            this.teFinderEvents.Size = new System.Drawing.Size(725, 23);
+            this.teFinderEvents.TabIndex = 5;
+            // 
+            // label67
+            // 
+            this.label67.AutoSize = true;
+            this.label67.Location = new System.Drawing.Point(12, 109);
+            this.label67.Name = "label67";
+            this.label67.Size = new System.Drawing.Size(338, 18);
+            this.label67.TabIndex = 4;
+            this.label67.Text = "Event description fixer (regex / replace expression)";
+            // 
+            // teFixerNames
+            // 
+            this.teFixerNames.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.teFixerNames.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bsG2RSettings, "FixerForNames", true));
+            this.teFixerNames.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.teFixerNames.Location = new System.Drawing.Point(12, 71);
+            this.teFixerNames.Name = "teFixerNames";
+            this.teFixerNames.Size = new System.Drawing.Size(725, 23);
+            this.teFixerNames.TabIndex = 3;
+            // 
+            // teFinderNames
+            // 
+            this.teFinderNames.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.teFinderNames.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bsG2RSettings, "FinderForNames", true));
+            this.teFinderNames.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.teFinderNames.Location = new System.Drawing.Point(12, 41);
+            this.teFinderNames.Name = "teFinderNames";
+            this.teFinderNames.Size = new System.Drawing.Size(725, 23);
+            this.teFinderNames.TabIndex = 2;
+            // 
+            // label66
+            // 
+            this.label66.AutoSize = true;
+            this.label66.Location = new System.Drawing.Point(12, 20);
+            this.label66.Name = "label66";
+            this.label66.Size = new System.Drawing.Size(265, 18);
+            this.label66.TabIndex = 1;
+            this.label66.Text = "Name fixer (regex / replace expression)";
             // 
             // dgTitleCleaners
             // 
@@ -2844,67 +2910,27 @@ namespace Ged2Reg
             // 
             this.bsSettingsSets.DataSource = typeof(Ged2Reg.frmSettingsSets.ListOfNamedSettingSets);
             // 
-            // label66
+            // pbNameRex
             // 
-            this.label66.AutoSize = true;
-            this.label66.Location = new System.Drawing.Point(12, 20);
-            this.label66.Name = "label66";
-            this.label66.Size = new System.Drawing.Size(265, 18);
-            this.label66.TabIndex = 1;
-            this.label66.Text = "Name fixer (regex / replace expression)";
+            this.pbNameRex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.pbNameRex.Location = new System.Drawing.Point(695, 9);
+            this.pbNameRex.Name = "pbNameRex";
+            this.pbNameRex.Size = new System.Drawing.Size(42, 26);
+            this.pbNameRex.TabIndex = 7;
+            this.pbNameRex.Text = "...";
+            this.pbNameRex.UseVisualStyleBackColor = true;
+            this.pbNameRex.Click += new System.EventHandler(this.pbNameRex_Click);
             // 
-            // teFinderNames
+            // pbEventRex
             // 
-            this.teFinderNames.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.teFinderNames.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bsG2RSettings, "FinderForNames", true));
-            this.teFinderNames.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.teFinderNames.Location = new System.Drawing.Point(12, 41);
-            this.teFinderNames.Name = "teFinderNames";
-            this.teFinderNames.Size = new System.Drawing.Size(725, 23);
-            this.teFinderNames.TabIndex = 2;
-            // 
-            // teFixerNames
-            // 
-            this.teFixerNames.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.teFixerNames.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bsG2RSettings, "FixerForNames", true));
-            this.teFixerNames.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.teFixerNames.Location = new System.Drawing.Point(12, 71);
-            this.teFixerNames.Name = "teFixerNames";
-            this.teFixerNames.Size = new System.Drawing.Size(725, 23);
-            this.teFixerNames.TabIndex = 3;
-            // 
-            // teFixerEvents
-            // 
-            this.teFixerEvents.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.teFixerEvents.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bsG2RSettings, "FixerForEvents", true));
-            this.teFixerEvents.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.teFixerEvents.Location = new System.Drawing.Point(12, 160);
-            this.teFixerEvents.Name = "teFixerEvents";
-            this.teFixerEvents.Size = new System.Drawing.Size(725, 23);
-            this.teFixerEvents.TabIndex = 6;
-            // 
-            // teFinderEvents
-            // 
-            this.teFinderEvents.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.teFinderEvents.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bsG2RSettings, "FinderForEvents", true));
-            this.teFinderEvents.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.teFinderEvents.Location = new System.Drawing.Point(12, 130);
-            this.teFinderEvents.Name = "teFinderEvents";
-            this.teFinderEvents.Size = new System.Drawing.Size(725, 23);
-            this.teFinderEvents.TabIndex = 5;
-            // 
-            // label67
-            // 
-            this.label67.AutoSize = true;
-            this.label67.Location = new System.Drawing.Point(12, 109);
-            this.label67.Name = "label67";
-            this.label67.Size = new System.Drawing.Size(338, 18);
-            this.label67.TabIndex = 4;
-            this.label67.Text = "Event description fixer (regex / replace expression)";
+            this.pbEventRex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.pbEventRex.Location = new System.Drawing.Point(695, 101);
+            this.pbEventRex.Name = "pbEventRex";
+            this.pbEventRex.Size = new System.Drawing.Size(42, 26);
+            this.pbEventRex.TabIndex = 8;
+            this.pbEventRex.Text = "...";
+            this.pbEventRex.UseVisualStyleBackColor = true;
+            this.pbEventRex.Click += new System.EventHandler(this.pbEventRex_Click);
             // 
             // Form1
             // 
@@ -3209,6 +3235,8 @@ namespace Ged2Reg
         private System.Windows.Forms.TextBox teFixerEvents;
         private System.Windows.Forms.TextBox teFinderEvents;
         private System.Windows.Forms.Label label67;
+        private System.Windows.Forms.Button pbEventRex;
+        private System.Windows.Forms.Button pbNameRex;
         //private LabeledInputPanel.LabeledInputPanel labeledInputPanel1;
     }
 }

@@ -309,6 +309,12 @@ namespace Ged2Reg
 
 
             //
+            // Scaling related tweaks to Rewriters tab
+            //
+            pbNameRex.Top = teFinderNames.Top - (2 + pbNameRex.Height);
+            pbEventRex.Top = teFinderEvents.Top - (2 + pbEventRex.Height);
+
+            //
             // CHANGES TO the menu
             //
             miTools = new ToolStripMenuItem()
@@ -1169,6 +1175,62 @@ namespace Ged2Reg
             catch (Exception ex)
             {
                 MessageBox.Show($"Exception:{ex}");
+            }
+        }
+
+        private void pbNameRex_Click(object sender, EventArgs e)
+        {
+            frmRegexTester fr = null;
+            try
+            {
+                fr = new frmRegexTester()
+                {
+                    TheRegex = teFinderNames.Text,
+                    TheReplacer = teFixerNames.Text,
+                    TheContext = "Rewriting Names"
+                };
+                if (fr.ShowDialog(this) != DialogResult.OK)
+                    return;
+                _rrm.Settings.FinderForNames = fr.TheRegex;
+                _rrm.Settings.FixerForNames = fr.TheReplacer;
+                Log("Rewriter for Names updated");
+                fr.Dispose();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception:{ex}");
+            }
+            finally
+            {
+                fr?.Dispose();
+            }
+        }
+
+        private void pbEventRex_Click(object sender, EventArgs e)
+        {
+            frmRegexTester fr = null;
+            try
+            {
+                fr = new frmRegexTester()
+                {
+                    TheRegex = teFinderEvents.Text,
+                    TheReplacer = teFixerEvents.Text,
+                    TheContext = "Rewriting Event Descriptions"
+                };
+                if (fr.ShowDialog(this) != DialogResult.OK)
+                    return;
+                _rrm.Settings.FinderForEvents = fr.TheRegex;
+                _rrm.Settings.FixerForEvents = fr.TheReplacer;
+                Log("Rewriter for Event Descriptions updated");
+                fr.Dispose();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception:{ex}");
+            }
+            finally
+            {
+                fr?.Dispose();
             }
         }
         #endregion
