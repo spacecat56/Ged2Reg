@@ -1050,7 +1050,8 @@ namespace Ged2Reg.Model
                 return false;
 
             GedcomFamily spousesChildhoodFamily = ReportContext.Instance.Model.FindAsChildInFamily(spouse.Individual);
-            if (spousesChildhoodFamily == null) return false;
+            // no, this shuts off the spouse's entire story!
+            // if (spousesChildhoodFamily == null) return false;
 
             // here we will list the baptism iff there is no birth 
             FormattedEvent p1BirtBapm = new FormattedEvent() { EventTagCode = TagCode.BIRT, Owner = spouse}.Init("born", spouse.Individual.Born, spouse.Individual.PlaceBorn, spouse.Individual.BirthDescription);
@@ -1071,8 +1072,8 @@ namespace Ged2Reg.Model
             bool hasDb = p3DeatBuri != null;
             bool hasContent = hasBb || hasDb;
 
-            bool hasPere = !string.IsNullOrEmpty(spousesChildhoodFamily.Husband?.SafeNameForward);
-            bool hasMere = !string.IsNullOrEmpty(spousesChildhoodFamily.Wife?.SafeNameForward);
+            bool hasPere = !string.IsNullOrEmpty(spousesChildhoodFamily?.Husband?.SafeNameForward);
+            bool hasMere = !string.IsNullOrEmpty(spousesChildhoodFamily?.Wife?.SafeNameForward);
             bool hasRents = hasMere || hasPere;
 
             hasContent |= hasRents;

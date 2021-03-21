@@ -246,7 +246,8 @@ namespace DocxAdapterLib
 
             _sectionProperties.Append(pz);
             _sectionProperties.Append(pageMargin);
-            _sectionProperties.Append(new PageNumberType() {Start = 1});
+            // NO: this makes a mess of numbering in later sections e.g. for indexes
+            //_sectionProperties.Append(new PageNumberType() {Start = 1});
             _sectionProperties.Append(new Columns() {Space = "720"});
             _sectionProperties.Append(new TitlePage());
             _sectionProperties.Append(ep);
