@@ -789,6 +789,138 @@ namespace G2RModelTest.Model
             ExecSampleReport(cfg, justDoc);
             Assert.IsTrue(cfg.Eval());
         }
+
+        class OptionCycler
+        {
+            public ReportConfig ModelConfig { get; set; }
+            public List<string> MutuallyExclusive { get; set; }
+            public List<string> OptionsOff { get; set; }
+            public List<string> OptionsOn { get; set; }
+            public string FileNamePattern { get; set; }
+            public string TitlePattern { get; set; }
+            public bool ProcessAllOffCase { get; set; }
+
+            public IEnumerable<ReportConfig> CycleOptions()
+            {
+                
+                for (int i = 0; i < MutuallyExclusive.Count; i++)
+                {
+                    ReportConfig rv;
+                    if (ProcessAllOffCase && i == 0)
+                    {
+                        rv = BuildReportConfig(i, "None");
+                        rv.FlagsOff.AddRange(MutuallyExclusive);
+                        // assume the checks do not 
+                        // work with the all-off case?
+                        rv.MustNotOccur.Clear();
+                        rv.MustOccur.Clear();
+                        rv.RegexesToAssertFalse.Clear();
+                        rv.RegexesToAssertTrue.Clear();
+                        yield return rv;
+                    }
+
+                    string uniq = $"{MutuallyExclusive[i]}-On";
+                    rv = BuildReportConfig(i, uniq);
+                    rv.FlagsOn.Add(MutuallyExclusive[i]);
+                    for (int j = 0; j < MutuallyExclusive.Count; j++)
+                    {
+                        if (j==i) continue;
+                        rv.FlagsOff.Add(MutuallyExclusive[j]);
+                    }
+
+                    yield return rv;
+                }
+                yield break;
+
+                ReportConfig BuildReportConfig(int i, string uniq)
+                {
+                    ReportConfig rv = (ReportConfig) ModelConfig.Clone();
+                    rv.FileName = string.Format(FileNamePattern, uniq);
+                    rv.Title = string.Format(TitlePattern, uniq);
+                    rv.FlagsOff.Clear();
+                    rv.FlagsOn.Clear();
+                    rv.FlagsOff.AddRange(OptionsOff ??= new List<string>());
+                    rv.FlagsOn.AddRange(OptionsOn ??= new List<string>());
+                    return rv;
+                }
+            }
+        }
+
+        [TestMethod]
+        public void ChildSectionVariationsTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.DescendantReady,
+                OutputPath = OutputPath,
+                FileName = "D007_AbbrevOn__{0}.docx",
+                Title = "Abbreviation on, {0}",
+                FlagsOn = new List<string>()
+                {
+                },
+                FlagsOff = new List<string>()
+                {
+                },
+                RegexesToAssertTrue = new List<string>() { @"b[.](?!.*(w:p)).*d[.]" },
+                MustOccur = new List<string>() { },
+                MustNotOccur = new List<string>() { },
+            }.Init();
+
+            OptionCycler optionCycler = new OptionCycler()
+            {
+                OptionsOn = new List<string>() {nameof(G2RSettings.AbbreviateChildEvents)},
+                MutuallyExclusive = new List<string>()
+                {
+                    nameof(G2RSettings.ReduceContinuedChildren),
+                    nameof(G2RSettings.MinimizeContinuedChildren),
+                    nameof(G2RSettings.StandardBriefContinued),
+                },
+                FileNamePattern = "D007_AbbrevOn__{0}.docx",
+                ModelConfig = cfg,
+                TitlePattern = "Abbreviation on, {0}",
+                ProcessAllOffCase = true,
+            };
+
+            foreach (ReportConfig rc in optionCycler.CycleOptions())
+            {
+                ReadyModel(rc.Init().ModelState);
+                ExecSampleReport(rc);
+                Assert.IsTrue(rc.Eval());
+            }
+
+
+            optionCycler = new OptionCycler()
+            {
+                OptionsOff = new List<string>() { nameof(G2RSettings.AbbreviateChildEvents) },
+                MutuallyExclusive = new List<string>()
+                {
+                    nameof(G2RSettings.ReduceContinuedChildren),
+                    nameof(G2RSettings.MinimizeContinuedChildren),
+                    nameof(G2RSettings.StandardBriefContinued),
+                },
+                FileNamePattern = "D007_AbbrevOff_{0}.docx",
+                ModelConfig = cfg,
+                TitlePattern = "Abbreviation off, {0}",
+                ProcessAllOffCase = true,
+            };
+            cfg.RegexesToAssertFalse = cfg.RegexesToAssertTrue;
+            cfg.RegexesToAssertTrue = new List<string>();
+
+            foreach (ReportConfig rc in optionCycler.CycleOptions())
+            {
+                ReadyModel(rc.Init().ModelState);
+                ExecSampleReport(rc);
+                Assert.IsTrue(rc.Eval());
+            }
+
+
+
+
+        }
+
+
+
         [TestMethod]
         public void DownshiftTest()
         {

@@ -1311,6 +1311,8 @@ namespace Ged2Reg.Model
 
         #region public convenience functions
 
+        public bool NoOption { get; set; } // helper for test case cycler - all off state
+
         public void ApplyMarginOption()
         {
             if (_reduceMargins)

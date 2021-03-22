@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -8,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace G2RModelTest.Model
 {
-    public class ReportConfig
+    public class ReportConfig : ICloneable
     {
         private static Dictionary<string, PropertyInfo> Props;
 
@@ -82,5 +83,29 @@ namespace G2RModelTest.Model
             return true;
         }
 
+        #region Implementation of ICloneable
+
+        public object Clone()
+        {
+            ReportConfig other = new ReportConfig()
+            {
+                FileName = FileName,
+                FlagsOff = FlagsOff ?? new List<string>(),
+                FlagsOn = FlagsOn ?? new List<string>(),
+                MinSize = MinSize,
+                ModelState = ModelState,
+                MustNotOccur = MustNotOccur ?? new List<string>(),
+                MustOccur = MustOccur ?? new List<string>(),
+                OutputPath = OutputPath,
+                RegexesToAssertFalse = RegexesToAssertFalse ?? new List<string>(),
+                RegexesToAssertTrue = RegexesToAssertTrue ?? new List<string>(),
+                RestrictRexToMainDoc = RestrictRexToMainDoc,
+                Settings = Settings,
+                Title = Title
+            };
+            return other;
+        }
+
+        #endregion
     }
 }
