@@ -147,7 +147,9 @@ namespace Ged2Reg.Model
             FormattedEvent.EditFactDescription = s.EditDescriptions;
             FormattedEvent.DescriptionFixer = new TextFixer() { FinderText = s.FinderForEvents, Fixer = s.FixerForEvents }.Init();
             GenealogicalNameFormatter.NameFixer = new TextFixer() { FinderText = s.FinderForNames, Fixer = s.FixerForNames }.Init();
-            
+            AbbreviationManager.AbbreviationsForChildEvents = s.AbbreviateChildEvents 
+                 && (s.MinimizeContinuedChildren || s.StandardBriefContinued || s.ReduceContinuedChildren);
+
             // option not exposed in the UI
             CitationResult.DetectHyperlinksInTextPieces = true;
         }

@@ -70,6 +70,7 @@ namespace Ged2Reg
         private ToolStripMenuItem miObfuscate;
         private CheckBox kbOpenAfter;
         private CheckBox kbPlaceholderCites;
+        private CheckBox kbAbrreviations;
 
         private void AdjustForm ()
         {
@@ -142,11 +143,21 @@ namespace Ged2Reg
                 nameof(G2RSettings.ItalicsNamesInLineageList));
             //kbItalicsLineage.Top += 20;  // sigh.  not sure why.
 
+
+            yPos = label9.Top - (label20.Top - label9.Top) + 4;
+            lbColPos = label9.Left;
+            kbColPos = checkBox4.Left;
+            kbAbrreviations = AddBoundCheckBox(tpContentOptions,
+                "Abbreviate event names for children",
+                nameof(G2RSettings.AbbreviateChildEvents));
+
+
+
             yPos = label61.Top + 4;
             lbColPos = label61.Left;
             kbColPos = kbIncludeEvents.Left;
             kbStdBriefContd = AddBoundCheckBox(tpContentOptions,
-                "Brief (standard) output for continued",
+                "Brief (standard) output for children",
                 nameof(G2RSettings.StandardBriefContinued));
             //kbStdBriefContd.Top += 10;  // sigh.  not sure why.
 

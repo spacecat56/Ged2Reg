@@ -29,10 +29,10 @@ namespace Ged2Reg.Model
 
         private static char[] _splitSpace = { ' ' };
 
-        public static FormattedEvent ConditionalEvent(string ev, string dayt, string place, string detail = null, bool omitDate = false)
-        {
-            return new FormattedEvent().Init(ev, dayt, place, detail, omitDate);
-        }
+        //public static FormattedEvent ConditionalEvent(string ev, string dayt, string place, string detail = null, bool omitDate = false)
+        //{
+        //    return new FormattedEvent().Init(ev, dayt, place, detail, omitDate);
+        //}
 
         public FormattedEvent Init(string ev, string dayt, string place, string detail = null, bool omitDate = false)
         {

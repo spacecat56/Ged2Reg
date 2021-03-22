@@ -772,9 +772,12 @@ namespace Ged2Reg.Model
         private List<GedcomIndividual> AppendPersonDetails(IWpdDocument doc, IWpdParagraph p, ReportEntry re, bool isChild = false)
         {
             // short-stop: optional standard / brief child line if so configured and the child is continued
-            if (isChild && _standardBriefContdChild && re.AssignedMainNumber > 0)
+            if (isChild && _standardBriefContdChild )
             {
-                return EmitStandardBriefChildLine(p, re);
+                if (re.AssignedMainNumber > 0)
+                    return EmitStandardBriefChildLine(p, re);
+                else
+                    return EmitStandardFullChildLine(p, re, ",");
             }
 
             List<GedcomIndividual> toDoNotes = new List<GedcomIndividual>();
@@ -807,9 +810,13 @@ namespace Ged2Reg.Model
             if (!isChild && _ancestryReport && re.HasParents)
             {
                 comma = EmitChildOfClause(p, re);
+            } 
+            else if (isChild)
+            {
+                comma = _standardBriefContdChild || AbbreviationManager.AbbreviationsForChildEvents ? "," : null;
             }
 
-            EmitVitalEvents(p, re, reduced, localCitations, comma);
+            EmitVitalEvents(p, re, reduced, localCitations, comma, isChild);
 
             if (reduced) 
                 return toDoNotes;
@@ -823,28 +830,38 @@ namespace Ged2Reg.Model
             return toDoNotes;
         }
 
-        private void EmitVitalEvents(IWpdParagraph p, ReportEntry re, bool reduced, LocalCitationCoordinator lCite, string conn)
+        private void EmitVitalEvents(IWpdParagraph p, ReportEntry re, bool reduced, LocalCitationCoordinator lCite, string conn, bool isChild)
         {
+            // take account of possible abbreviations in event names, and changes to the narrative 
+            string[] evNames = new[]
+            {
+                AbbreviationManager.TextFor(TagCode.BIRT, isChild, "was "),
+                AbbreviationManager.TextFor(TagCode.BAPM, isChild),
+                AbbreviationManager.TextFor(TagCode.DEAT, isChild),
+                AbbreviationManager.TextFor(TagCode.BURI, isChild, "was "),
+            };
+            bool narrating = !(isChild && AbbreviationManager.AbbreviationsForChildEvents);
+
             // to position footnote superscripts in the running text correctly (especially,
             // in relation to punctuation), we need to know IN ADVANCE all of the pieces that 
             // will be emitted.  So, figure all that out FIRST and then start outputting it
             FormattedEvent p1_birt = new FormattedEvent() {EventTagCode = TagCode.BIRT, Owner = re}
-                .Init("was born", re.Individual.Born, re.Individual.PlaceBorn, reduced ? null : re.Individual.BirthDescription);
+                .Init(evNames[0], re.Individual.Born, re.Individual.PlaceBorn, reduced ? null : re.Individual.BirthDescription);
 
             // list the baptism for non-reduced output OR if there is no birth and option set to substitute it
             // note: CHR and BAPM are treated as equivalent in layer(s) below 
             FormattedEvent p2_bapt = (_listBapt && !reduced) || (_c.Settings.BaptIfNoBirt && p1_birt == null)
                 ? new FormattedEvent() {EventTagCode = re.Individual.BaptismTagCode, Owner = re }
-                    .Init("baptized", re.Individual.Baptized, re.Individual.PlaceBaptized,
+                    .Init(evNames[1], re.Individual.Baptized, re.Individual.PlaceBaptized,
                         reduced ? null : re.Individual.BaptizedDescription)
                 : null;
 
             FormattedEvent p3_deat = new FormattedEvent() {EventTagCode = TagCode.DEAT, Owner = re }
-                .Init("died", re.Individual.Died, re.Individual.PlaceDied, reduced ? null : re.Individual.DeathDescription);
+                .Init(evNames[2], re.Individual.Died, re.Individual.PlaceDied, reduced ? null : re.Individual.DeathDescription);
 
             FormattedEvent p4_buri = (!reduced && _listBuri)
                 ? new FormattedEvent() {EventTagCode = TagCode.BURI, Owner = re }
-                    .Init("was buried", re.Individual.Buried, re.Individual.PlaceBuried, re.Individual.BurialDescription,
+                    .Init(evNames[3], re.Individual.Buried, re.Individual.PlaceBuried, re.Individual.BurialDescription,
                         _c.Settings.OmitBurialDate)
                 : null;
 
@@ -859,7 +876,9 @@ namespace Ged2Reg.Model
 
             // BIRT event
             string clauseOpener = null;
-            string clauseEnder = (!reduced && (p2_bapt ?? p3_deat) != null) ? "," : ".";
+            string clauseEnder = (!reduced && (p2_bapt ?? p3_deat) != null) || (reduced && p3_deat != null)
+                ? "," 
+                : ".";
             EmitEvent(p, p1_birt, lCite, clauseEnder, clauseOpener);
 
             // BAPM event;
@@ -874,7 +893,7 @@ namespace Ged2Reg.Model
             EmitEvent(p, p2_bapt, lCite, clauseEnder, clauseOpener);
 
             // DEAT event
-            clauseOpener = ((p1_birt ?? p2_bapt) != null)
+            clauseOpener = (narrating && (p1_birt ?? p2_bapt) != null)
                 ? $" and {re.Individual.Pronoun.ToLower()}"
                 : null;
             clauseEnder = ".";
@@ -917,12 +936,14 @@ namespace Ged2Reg.Model
         private List<GedcomIndividual> EmitStandardBriefChildLine(IWpdParagraph p, ReportEntry re)
         {
             List<GedcomIndividual> toDoNotes = new List<GedcomIndividual>();
-            string conn = ", m.";
-            FormattedEvent p0_bbp = new FormattedEvent() { EventTagCode = TagCode.BIRT }.Init(", b.", re.Individual.Born, re.Individual.PlaceBorn);
+            string conn = $", {AbbreviationManager.TextFor(TagCode.MARR, true)}";
+            FormattedEvent p0_bbp = new FormattedEvent() { EventTagCode = TagCode.BIRT }.Init($", {AbbreviationManager.TextFor(TagCode.BIRT, true)}", 
+                re.Individual.Born, re.Individual.PlaceBorn);
             if (string.IsNullOrEmpty(p0_bbp?.EventString))
             {
                 // note: CHR and BAPM are treated as equivalent in layer(s) below 
-                p0_bbp = new FormattedEvent() { EventTagCode = re.Individual.BaptismTagCode }.Init(", bp.", re.Individual.Baptized, re.Individual.PlaceBaptized);
+                p0_bbp = new FormattedEvent() { EventTagCode = re.Individual.BaptismTagCode }.Init($", {AbbreviationManager.TextFor(TagCode.BAPM, true)}", 
+                    re.Individual.Baptized, re.Individual.PlaceBaptized);
             }
 
             if (!string.IsNullOrEmpty(p0_bbp?.EventString))
@@ -930,9 +951,17 @@ namespace Ged2Reg.Model
                 p.Append(p0_bbp.EventString.TrimStart()
                     .Replace(" on ", " ")); // ugly little tweaks; this needs to all be smarter
                 ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p0_bbp);
-                conn = "; m.";
+                conn = $"; {AbbreviationManager.TextFor(TagCode.MARR, true)}";
             }
 
+            EmitStandardChildsMarriageClause(p, re, conn);
+
+            p.Append(".");
+            return toDoNotes;
+        }
+
+        private void EmitStandardChildsMarriageClause(IWpdParagraph p, ReportEntry re, string conn)
+        {
             string mnbr = re.SafeFamilyEntries.Count > 1 ? $" {_wordsForNumbers[1]}" : "";
             for (int i = 0; i < re.SafeFamilyEntries.Count; i++)
             {
@@ -943,9 +972,78 @@ namespace Ged2Reg.Model
                 conn = ", ";
                 mnbr = $"{_wordsForNumbers[i + 2]}";
             }
+        }
 
-            p.Append(".");
-            return toDoNotes;
+        private List<GedcomIndividual> EmitStandardFullChildLine(IWpdParagraph p, ReportEntry re, string conn = null)
+        {
+            // take account of possible abbreviations in event names, and changes to the narrative 
+            string[] evNames = new[]
+            {
+                AbbreviationManager.TextFor(TagCode.BIRT, true),
+                AbbreviationManager.TextFor(TagCode.BAPM, true),
+                AbbreviationManager.TextFor(TagCode.DEAT, true),
+                AbbreviationManager.TextFor(TagCode.BURI, true),
+            };
+
+            bool doCite = _c.Settings.Citations
+                          && (!_c.Settings.ObscureLiving || !_c.Settings.OmitLivingCitations || re.Individual.PresumedDeceased);
+            LocalCitationCoordinator lCite = BuildLocalCitationCoordinator(re, doCite, _allCitableEvents);
+
+            // to position footnote superscripts in the running text correctly (especially,
+            // in relation to punctuation), we need to know IN ADVANCE all of the pieces that 
+            // will be emitted.  So, figure all that out FIRST and then start outputting it
+            FormattedEvent p1_birt = new FormattedEvent() { EventTagCode = TagCode.BIRT, Owner = re }
+                .Init(evNames[0], re.Individual.Born, re.Individual.PlaceBorn, re.Individual.BirthDescription);
+
+            // list the baptism for non-reduced output OR if there is no birth and option set to substitute it
+            // note: CHR and BAPM are treated as equivalent in layer(s) below 
+            FormattedEvent p2_bapt = (_listBapt) || (_c.Settings.BaptIfNoBirt && p1_birt == null)
+                ? new FormattedEvent() { EventTagCode = re.Individual.BaptismTagCode, Owner = re }
+                    .Init(evNames[1], re.Individual.Baptized, re.Individual.PlaceBaptized, re.Individual.BaptizedDescription)
+                : null;
+
+            FormattedEvent p3_deat = new FormattedEvent() { EventTagCode = TagCode.DEAT, Owner = re }
+                .Init(evNames[2], re.Individual.Died, re.Individual.PlaceDied, re.Individual.DeathDescription);
+
+            FormattedEvent p4_buri = (_listBuri)
+                ? new FormattedEvent() { EventTagCode = TagCode.BURI, Owner = re }
+                    .Init(evNames[3], re.Individual.Buried, re.Individual.PlaceBuried, re.Individual.BurialDescription,
+                        _c.Settings.OmitBurialDate)
+                : null;
+
+            if (conn != null && (p1_birt ?? p2_bapt ?? p3_deat ?? p4_buri) != null)
+            {
+                p.Append(conn);
+            }
+
+            bool marriagesToFollow = re.SafeFamilyEntries.Count > 0;
+            // close the name if no BBD to follow
+            if ((p4_buri ?? p3_deat ?? p2_bapt ?? p1_birt) == null)
+                p.Append(".");
+
+            // BIRT event
+            string clauseOpener = null;
+            string clauseEnder = (marriagesToFollow || (p2_bapt ?? p3_deat ?? p4_buri) != null) ? "," : ".";
+            EmitEvent(p, p1_birt, lCite, clauseEnder);
+
+            // BAPM event;
+            clauseOpener = null;
+            clauseEnder = (marriagesToFollow || (p3_deat ?? p4_buri) != null) ? "," : ".";
+            EmitEvent(p, p2_bapt, lCite, clauseEnder);
+
+            // DEAT event
+            clauseOpener = null;
+            clauseEnder = (marriagesToFollow || (p4_buri) != null) ? "," : ".";
+            EmitEvent(p, p3_deat, lCite, clauseEnder);
+
+            // BURI event
+            clauseOpener = null;
+            clauseEnder = marriagesToFollow ? "," : ".";
+            EmitEvent(p, p4_buri, lCite, clauseEnder);
+
+            EmitStandardChildsMarriageClause(p, re, ";");
+            
+            return new List<GedcomIndividual>();
         }
 
         private void AppendMarriagesSentences(IWpdParagraph p, ReportEntry re, bool isChild, List<GedcomIndividual> toDoNotes,

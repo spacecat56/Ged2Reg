@@ -252,6 +252,7 @@ namespace Ged2Reg.Model
         private bool _placeFirst;
         private string _firstGenNbr;
         private bool _downshiftNames;
+        private bool _abbreviate;
 
         #endregion
 
@@ -669,6 +670,13 @@ namespace Ged2Reg.Model
         }
         #endregion
 
+
+        [DataMember]
+        public bool AbbreviateChildEvents
+        {
+            get { return _abbreviate; }
+            set { _abbreviate = value; OnPropertyChanged(); }
+        }
 
         [DataMember]
         public bool ReducedMargins
@@ -1323,6 +1331,7 @@ namespace Ged2Reg.Model
             FullPlaceOncePerGen = false;
             ItalicsNamesInLineageList = true;
 
+            AbbreviateChildEvents = true;
             ReduceContinuedChildren = false;
             MinimizeContinuedChildren = false;
             StandardBriefContinued = true;
@@ -1378,9 +1387,8 @@ namespace Ged2Reg.Model
             Append(sb, "Place before Date", this.PlaceFirst);
             Append(sb, "Lineage list in italics", this.ItalicsNamesInLineageList);
 
-            Append(sb, "Reduce continued", this.ReduceContinuedChildren);
-            Append(sb, "Minimize continued", this.MinimizeContinuedChildren);
-            Append(sb, "Brief (standard) continued", this.StandardBriefContinued);
+            Append(sb, "Abbreviate child events", this.AbbreviateChildEvents);
+            Append(sb, "Brief (standard) children", this.StandardBriefContinued);
 
             Append(sb, "Reformat unknowns", this.HandleUnknownNames);
             Append(sb, "Unknown name as output", this.UnknownInReport);
@@ -1454,6 +1462,8 @@ namespace Ged2Reg.Model
             Append(sb, "Inject county", this.InjectCounty);
             Append(sb, "Place before Date", this.PlaceFirst);
             Append(sb, "First Generation Number", this.FirstGenNbr);
+            Append(sb, "Abbreviate child events", this.AbbreviateChildEvents);
+            Append(sb, "Brief (standard) children", this.StandardBriefContinued);
             Append(sb, "Reformat unknowns", this.HandleUnknownNames);
             Append(sb, "Unknown input", this.UnknownInSource);
             Append(sb, "Unknown output", this.UnknownInReport);
