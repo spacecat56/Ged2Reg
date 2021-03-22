@@ -83,7 +83,13 @@ namespace Ged2Reg.Model
                 string det = OptimizeEventDetail(detail);
                 if (DescriptionFixer != null)
                     det = DescriptionFixer.Exec(det);
-                if (!string.IsNullOrEmpty(det))
+                // we ignore anything of length 1 or shorter...
+                // allowing a "Y" to be entered in order to be sure
+                // the event is on record even if nothing is known
+                // this can be needed in the struggle between e.g. 
+                // FTM and Ancestry.com over whether a person is
+                // "living" or not (ancestry is pretty dimmwitted about it)
+                if ((det??string.Empty).Length > 1)
                     sb.Append(" ").Append(det);
             }
 

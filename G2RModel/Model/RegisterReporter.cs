@@ -39,8 +39,20 @@ namespace Ged2Reg.Model
             // yeah, right. way to go, mon!
         };
 
-        #region Fields to internalize settings/policies
-        private Dictionary<StyleSlots, Formatting> _styleMap;
+        private List<TagCode> _allCitableEvents = new List<TagCode>()
+        {
+            TagCode.BIRT,
+            TagCode.BAPM,
+            TagCode.CHR,
+            TagCode.DEAT,
+            TagCode.BURI,
+            TagCode.MARR,
+            TagCode.DIV,
+        };
+
+
+    #region Fields to internalize settings/policies
+    private Dictionary<StyleSlots, Formatting> _styleMap;
         private char[] _splitSpace = { ' ' };
         private int _currentGeneration;
         private Regex _rexDivider1 = new Regex(@"^[\-_]+$");
@@ -789,7 +801,7 @@ namespace Ged2Reg.Model
                           && !doNotCite
                           && (!_c.Settings.ObscureLiving || !_c.Settings.OmitLivingCitations || re.Individual.PresumedDeceased);
 
-            LocalCitationCoordinator localCitations = BuildLocalCitationCoordinator(re, doCite);
+            LocalCitationCoordinator localCitations = BuildLocalCitationCoordinator(re, doCite, eventsToCiteFor:_allCitableEvents);
 
             string comma = null;
             if (!isChild && _ancestryReport && re.HasParents)
@@ -876,14 +888,15 @@ namespace Ged2Reg.Model
         }
 
         private void EmitEvent(IWpdParagraph p, FormattedEvent ev,
-            LocalCitationCoordinator lcc, string clauseEnder = null, string clauseOpener = null)
+            LocalCitationCoordinator lcc, string clauseEnder = null, string clauseOpener = null, 
+            string keyUniquifier = null)
         {
             if (ev == null || string.IsNullOrEmpty(ev.EventString)) return;
 
             p.Append($"{clauseOpener}{ev.EventString}{clauseEnder}");
             if (lcc.DoCite)
             {
-                CitationProposal cp = lcc[ev.EventTagCode.ToString()];
+                CitationProposal cp = lcc[$"{ev.EventTagCode.ToString()}{keyUniquifier}"];
                 EventCitations ec = cp?.Citation;
                 if (ec?.SelectedItem != null)
                 { // the lcc detects multiplicity and here we will push the extra sentence to the EmitNote
@@ -996,16 +1009,21 @@ namespace Ged2Reg.Model
                     p.Append(" (unknown)");
                 }
 
-                FormattedEvent p5_marr = new FormattedEvent() { EventTagCode = TagCode.MARR, Owner = family}.Init("", family.Family.DateMarried, family.Family.PlaceMarried,
+                FormattedEvent p5Marr = new FormattedEvent() { EventTagCode = TagCode.MARR, Owner = family}.Init("", family.Family.DateMarried, family.Family.PlaceMarried,
                     reduced ? null : family.Family.MarriageDescription);
-                if (!string.IsNullOrEmpty(p5_marr?.EventString))
-                {
-                    p.Append($"{pending}{p5_marr.EventString}");
-                    ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p5_marr);
-                }
+ 
+                FormattedEvent p6Divc = !family.Family?.Divorced ?? false
+                    ? null
+                    : new FormattedEvent() { EventTagCode = TagCode.DIV, Owner = family }.Init("they divorced", family.Family.DateDivorced, family.Family.PlaceDivorced,
+                    reduced ? null : family.Family.DivorceDescription);
 
-                // todo: divorces (complicates the punctuation and citation placement)
-                p.Append(".");
+                if (!string.IsNullOrEmpty(p5Marr?.EventString))
+                {
+                    p.Append($"{pending}{p5Marr.EventString}");
+                    ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p5Marr);
+                }
+                p.Append(p6Divc==null?".":";");                 // divorce (complicates the punctuation and citation placement)
+
                 if (doCite)
                 {
                     CitationProposal cp = lcc[TagCode.MARR.ToString() + family.Family.FamilyView.Id];
@@ -1017,13 +1035,21 @@ namespace Ged2Reg.Model
                             MyReportStats.DistinctCitations++;
                         ec.EmitNote(_c.Model.Doc, p, cp.AppliesTo());
                     } 
-                    else if (p5_marr!=null && lcc.IsUncited(family.InternalId, p5_marr.EventTagCode))
+                    else if (p5Marr!=null && lcc.IsUncited(family.InternalId, p5Marr.EventTagCode))
                     {
                         MyReportStats.UncitedEvents++;
                         if (_insertUncitedNotes)
                             EventCitations.InsertUnciteNote(p, $"{TagCode.MARR.Map()}");
                     }
                 }
+
+                if (!string.IsNullOrEmpty(p6Divc?.EventString))
+                {
+                    EmitEvent(p, p6Divc, lcc, ".", "", keyUniquifier: family.Family.FamilyView.Id);
+                    //p.Append($"{pending}{p6Divc.EventString}");
+                    //ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p6Divc);
+                }
+                //...
 
                 if (spouse?.Id == re.SpouseToMinimize?.Id) 
                     continue;
@@ -1191,6 +1217,8 @@ namespace Ged2Reg.Model
                 foreach (ReportFamilyEntry family in re.SafeFamilyEntries)
                 {
                     EventCitations ec = family.Family.CitableEvents?.Find(family.Family.EventTag(TagCode.MARR));
+                    lcc.AddNonNull(ec, family.Family.FamilyView.Id);
+                    ec = family.Family.CitableEvents?.Find(family.Family.EventTag(TagCode.DIV));
                     lcc.AddNonNull(ec, family.Family.FamilyView.Id);
                 }
             }

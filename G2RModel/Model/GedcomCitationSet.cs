@@ -20,8 +20,14 @@ namespace Ged2Reg.Model
 
         public GedcomCitationSet(GedcomFamily fam, CitationsMap allCitationsMap)
         {
-            string evKey = TagMapper.Map(TagCode.MARR).ToString();
-            List<CitationView> cites = allCitationsMap.Find(fam.FamilyView.Id, TagCode.MARR);
+            CitesForTag(fam, TagCode.MARR, allCitationsMap);
+            CitesForTag(fam, TagCode.DIV, allCitationsMap);
+        }
+
+        private void CitesForTag(GedcomFamily fam, TagCode tag, CitationsMap allCitationsMap)
+        {
+            string evKey = TagMapper.Map(tag).ToString();
+            List<CitationView> cites = allCitationsMap.Find(fam.FamilyView.Id, tag);
             if (cites == null) return;
             MyCitations.Add(evKey, cites);
         }

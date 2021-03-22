@@ -14,6 +14,12 @@ namespace Ged2Reg.Model
         public string DateMarried { get; set; }
         public string PlaceMarried { get; set; }
         public string MarriageDescription { get; set; }
+        public string DateDivorced { get; set; }
+        public string PlaceDivorced { get; set; }
+        public string DivorceDescription { get; set; }
+
+        private Tag _divorceTag;
+        public bool Divorced => _divorceTag != null;
 
         public GedcomIndividual Husband { get; set; }
         public GedcomIndividual Wife { get; set; }
@@ -90,6 +96,11 @@ namespace Ged2Reg.Model
             DateMarried = marrTag?.GetChild(TagCode.DATE)?.Content;
             PlaceMarried = marrTag?.GetChild(TagCode.PLAC)?.Content;
             MarriageDescription = marrTag?.FullText();
+
+            _divorceTag = fv.FamTag.GetChild(TagCode.DIV);
+            DateDivorced = _divorceTag?.GetChild(TagCode.DATE)?.Content;
+            PlaceDivorced = _divorceTag?.GetChild(TagCode.PLAC)?.Content;
+            DivorceDescription = _divorceTag?.FullText();
 
             Husband = ReportContext.Instance.Model.FindIndividual(fv.Husband);
             Wife = ReportContext.Instance.Model.FindIndividual(fv.Wife);
