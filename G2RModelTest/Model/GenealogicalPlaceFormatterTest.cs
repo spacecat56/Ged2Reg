@@ -176,6 +176,17 @@ namespace G2RModelTest.Model
             Assert.AreEqual(expected, result);
         }
 
+        [TestMethod]
+        public void TestAtNotIn()
+        {
+            GenealogicalPlaceFormatter gpf = new GenealogicalPlaceFormatter() { InjectWordCounty = true }.Init();
+            string input = "Brede, Sussex, England";
+            string expected = "at Brede, Sussex, England";
+            var fpn = gpf.Reformat(input);
+            string result = $"{fpn.Preposition} {fpn.PreferredName}";
+            Assert.AreEqual(expected, result);
+        }
+
 
         private void Exec(GenealogicalPlaceFormatter gpf, string input, string expected)
         {

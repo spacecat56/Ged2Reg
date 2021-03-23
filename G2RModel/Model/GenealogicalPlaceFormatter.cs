@@ -213,7 +213,7 @@ namespace Ged2Reg.Model
             for (int i = 0; i <= ix; i++)
                 cp.Locality.Add(pps[i]);
 
-            cp.IsAmbiguous = string.IsNullOrEmpty(cp.County);
+            cp.IsAmbiguous = string.IsNullOrEmpty(cp.County) && pps.Length < 3;
         }
 
         private bool LooksLikeStateName(string stateMaybe)
