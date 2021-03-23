@@ -61,7 +61,7 @@ namespace Ged2Reg
                             sb.AppendLine($"...{g.Name}, '{val}'");
                         }
                         sb.AppendLine("Apply replacement to example:");
-                        string result = rex.Replace(TheSample, TheReplacer);
+                        string result = m.Result(TheReplacer); // NO! does NOT show what the main pgm does: rex.Replace(TheSample, TheReplacer);
                         sb.AppendLine($"'{result}'");
                     }
                 }
