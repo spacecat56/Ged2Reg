@@ -141,25 +141,19 @@ namespace Ged2Reg
             kbItalicsLineage = AddBoundCheckBox(tpContentOptions, 
                 "Italicize names in lineage list", 
                 nameof(G2RSettings.ItalicsNamesInLineageList));
-            //kbItalicsLineage.Top += 20;  // sigh.  not sure why.
-
-
-            yPos = label9.Top - (label20.Top - label9.Top) + 4;
-            lbColPos = label9.Left;
-            kbColPos = checkBox4.Left;
-            kbAbrreviations = AddBoundCheckBox(tpContentOptions,
-                "Abbreviate event names for children",
-                nameof(G2RSettings.AbbreviateChildEvents));
-
-
 
             yPos = label61.Top + 4;
             lbColPos = label61.Left;
             kbColPos = kbIncludeEvents.Left;
             kbStdBriefContd = AddBoundCheckBox(tpContentOptions,
-                "Brief (standard) output for children",
+                "'Standard' output for children / abbrev.",
                 nameof(G2RSettings.StandardBriefContinued));
-            //kbStdBriefContd.Top += 10;  // sigh.  not sure why.
+            yPos = label61.Top + 4;
+            kbColPos += kbStdBriefContd.Width;
+            kbAbrreviations = AddBoundCheckBox(tpContentOptions,
+                null,
+                nameof(G2RSettings.AbbreviateChildEvents),
+                nameof(kbAbrreviations));
 
             yPos = label45.Bottom + 36;
             pbConform = AddButton(tpContentOptions, "Conform settings", 180, label45.Left);

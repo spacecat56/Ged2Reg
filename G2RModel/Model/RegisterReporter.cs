@@ -876,9 +876,7 @@ namespace Ged2Reg.Model
 
             // BIRT event
             string clauseOpener = null;
-            string clauseEnder = (!reduced && (p2_bapt ?? p3_deat) != null) || (reduced && p3_deat != null)
-                ? "," 
-                : ".";
+            string clauseEnder = (p2_bapt ?? p3_deat) != null ? "," : ".";
             EmitEvent(p, p1_birt, lCite, clauseEnder, clauseOpener);
 
             // BAPM event;
@@ -893,7 +891,7 @@ namespace Ged2Reg.Model
             EmitEvent(p, p2_bapt, lCite, clauseEnder, clauseOpener);
 
             // DEAT event
-            clauseOpener = (narrating && (p1_birt ?? p2_bapt) != null)
+            clauseOpener = ((p1_birt ?? p2_bapt) != null)
                 ? $" and {re.Individual.Pronoun.ToLower()}"
                 : null;
             clauseEnder = ".";
