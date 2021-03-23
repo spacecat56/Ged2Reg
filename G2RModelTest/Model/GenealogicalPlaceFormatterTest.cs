@@ -165,7 +165,16 @@ namespace G2RModelTest.Model
             Assert.AreEqual(expected, result);
         }
 
-        //
+        [TestMethod]
+        public void TestInNotAt()
+        {
+            GenealogicalPlaceFormatter gpf = new GenealogicalPlaceFormatter() { InjectWordCounty = true }.Init();
+            string input = "Leitrim County, Ireland";
+            string expected = "in Leitrim County, Ireland";
+            var fpn = gpf.Reformat(input);
+            string result = $"{fpn.Preposition} {fpn.PreferredName}";
+            Assert.AreEqual(expected, result);
+        }
 
 
         private void Exec(GenealogicalPlaceFormatter gpf, string input, string expected)

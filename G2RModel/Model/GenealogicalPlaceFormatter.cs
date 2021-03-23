@@ -203,7 +203,8 @@ namespace Ged2Reg.Model
                 if (--ix < 0) return;
             }
 
-            if (hasCounties && ForeignCounties.Contains(pps[ix], _stringEqual))
+            if (hasCounties 
+                && (ForeignCounties.Contains(pps[ix], _stringEqual) || (pps[ix]??"").ToUpper().Contains("COUNTY")))
             {
                 cp.County = pps[ix];
                 if (--ix < 0) return;
@@ -211,6 +212,8 @@ namespace Ged2Reg.Model
 
             for (int i = 0; i <= ix; i++)
                 cp.Locality.Add(pps[i]);
+
+            cp.IsAmbiguous = string.IsNullOrEmpty(cp.County);
         }
 
         private bool LooksLikeStateName(string stateMaybe)
