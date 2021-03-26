@@ -91,9 +91,11 @@ namespace DocxAdapterLib
             FootnoteEndnoteType f = CreateNoteInstance();
             OoxParagraph footPara = new OoxParagraph(f.AppendChild(new Paragraph())) { Document = doc };
             footPara.StyleName = NoteTextStyle;
-            //footPara.Append(BuildNoteRefMark());
-            // do this instead, to get the number at te foot in 10pt instead of in superscript
-            footPara.Append(new Run(new FootnoteReferenceMark()));
+            footPara.Append(BuildNoteRefMark());
+            // do this instead, to get the number at the foot in 10pt instead of in superscript
+            // THE PROBLEM with this is, that when you put more footnotes in using Word,
+            // they WILL be superscripts in the foot, the mix looks like crap and changing is tedious
+            //footPara.Append(new Run(new FootnoteReferenceMark()));
             string space = (Fragments[0].Content ?? "").StartsWith(" ") ? "" : " ";
             foreach (WpdNoteFragment fragment in Fragments)
             {
