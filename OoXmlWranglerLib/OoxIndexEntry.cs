@@ -12,9 +12,9 @@ namespace DocxAdapterLib
         {
             // build the contents of the field
             string fieldContents = $" XE \"{IndexValue}\" ";
-            if (SeeInstead != null)
+            if (!string.IsNullOrWhiteSpace(SeeInstead))
                 fieldContents = $"{fieldContents}\\t \"See {SeeInstead}\" ";
-            if (IndexName != null)
+            if (!string.IsNullOrWhiteSpace(IndexName))
                 fieldContents = $"{fieldContents}\\f \"{IndexName}\" ";
 
             // wrap it in the field delimiters

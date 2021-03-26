@@ -16,6 +16,8 @@ namespace Ged2Reg.Model
         public int DistinctCitations { get; set; }
         public int SpouseParents { get; set; }
         public int MaybeLiving { get; set; }
+        public int NameIndexEntries { get; set; }
+        public int PlaceIndexEntries { get; set; }
 
         public int UncitedEvents { get; set; }
 

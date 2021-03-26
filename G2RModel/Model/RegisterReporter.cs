@@ -383,6 +383,8 @@ namespace Ged2Reg.Model
             sb.AppendLine($"\tMain spouses.................{MyReportStats.MainSpouse,8:N0}");
             sb.AppendLine($"\tSpouses of non-continued.....{MyReportStats.NonContinuedSpouses,8:N0}");
             sb.AppendLine($"\tParents of spouses...........{MyReportStats.SpouseParents,8:N0}");
+            sb.AppendLine($"\tName index entries...........{MyReportStats.NameIndexEntries,8:N0}");
+            sb.AppendLine($"\tPlace index entries..........{MyReportStats.PlaceIndexEntries,8:N0}");
             sb.AppendLine($"\tPersons possibly living......{MyReportStats.MaybeLiving,8:N0}");
             sb.AppendLine($"\tCitations....................{MyReportStats.Citations,8:N0}");
             sb.AppendLine($"\tDistinct citations...........{MyReportStats.DistinctCitations,8:N0}");
@@ -455,6 +457,7 @@ namespace Ged2Reg.Model
 
             ex = doc.BuildIndexEntryField(ixn, $"{indi.IndexableSurname}:{indi.SafeGivenName}").Build();
             p.AppendField(ex);
+            MyReportStats.NameIndexEntries++;
 
             if (!_indexMarriedNames || indi.Gender != "F" || indi.HasNoSurname)
                 return true;
@@ -473,6 +476,7 @@ namespace Ged2Reg.Model
                     continue;
                 ex = doc.BuildIndexEntryField(ixn, $"{fre.Husband.Individual.IndexableSurname}:{altName}").Build();
                 p.AppendField(ex);
+                MyReportStats.NameIndexEntries++;
             }
 
             return true;
@@ -485,7 +489,8 @@ namespace Ged2Reg.Model
             if (string.IsNullOrEmpty(ixn))
                 ixn = null;
             var ex = doc.BuildIndexEntryField(ixn, fe.PlaceIndexEntry).Build();
-            p.AppendField(ex); 
+            p.AppendField(ex);
+            MyReportStats.PlaceIndexEntries++;
             return true;
         }
 
