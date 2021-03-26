@@ -922,7 +922,7 @@ namespace Ged2Reg.Model
                         MyReportStats.DistinctCitations++;
                     ec.EmitNote(p.Document, p, cp.AppliesTo());
                 } 
-                else if (lcc.IsUncited(ev.Owner.InternalId, ev.EventTagCode))
+                else if (lcc.IsUncited(ev.Owner?.InternalId, ev.EventTagCode))
                 {
                     MyReportStats.UncitedEvents++;
                     if (_insertUncitedNotes)
@@ -968,7 +968,7 @@ namespace Ged2Reg.Model
                 p.Append(s);
                 EmitNameIndexEntries(p, spouze);
                 conn = ", ";
-                mnbr = $"{_wordsForNumbers[i + 2]}";
+                mnbr = (i+2<_wordsForNumbers.Length) ? $"{_wordsForNumbers[i + 2]}" : "next";
             }
         }
 
@@ -1182,7 +1182,7 @@ namespace Ged2Reg.Model
 
             // here we will list the burial iff there is no death
             FormattedEvent p3DeatBuri = new FormattedEvent() { EventTagCode = TagCode.DEAT, Owner = spouse }.Init("died", spouse.Individual.Died, spouse.Individual.PlaceDied, spouse.Individual.DeathDescription);
-            p3DeatBuri ??= new FormattedEvent() { EventTagCode = TagCode.BURI }.Init("buried", spouse.Individual.Buried, spouse.Individual.PlaceBuried, spouse.Individual.BurialDescription, _c.Settings.OmitBurialDate);
+            p3DeatBuri ??= new FormattedEvent() { EventTagCode = TagCode.BURI, Owner = spouse }.Init("buried", spouse.Individual.Buried, spouse.Individual.PlaceBuried, spouse.Individual.BurialDescription, _c.Settings.OmitBurialDate);
             
             List<TagCode> eventsToCiteFor = new List<TagCode>();
             if (p1BirtBapm != null) eventsToCiteFor.Add(p1BirtBapm.EventTagCode);

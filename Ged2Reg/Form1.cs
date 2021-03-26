@@ -78,6 +78,10 @@ namespace Ged2Reg
 
             tabControl1.TabPages.Remove(tabPage4);
 
+            //
+            // CHANGE TO the Notes tab
+            //
+            label49.Text = "Include Each Main Person\'s Notes";
 
             //
             // CHANGES TO the Citations tab
