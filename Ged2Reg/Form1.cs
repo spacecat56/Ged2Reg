@@ -62,6 +62,7 @@ namespace Ged2Reg
         private CheckBox kbStdBriefContd;
         private CheckBox kbGenNbrAll;
         private CheckBox kbIndexMarriedNames;
+        private CheckBox kbMinusIndexChild;
         private CheckBox kbPlaceFirst;
         private CheckBox kbDownshift;
         private CheckBox kbEditDescr;
@@ -223,6 +224,15 @@ namespace Ged2Reg
             kbIndexMarriedNames = AddBoundCheckBox(tpIndexes,
                 "+ married names",
                 nameof(G2RSettings.IndexMarriedNames));
+
+            //yPos = pbDefaultNameIndex.Bottom + rowStep / 2;
+            //lbColPos = label44.Left;
+            //kbColPos = pbDefaultNameIndex.Left;
+            kbMinusIndexChild = AddBoundCheckBox(tpIndexes,
+                "- continued child",
+                nameof(G2RSettings.MinusChild));
+
+            label43.Top += label43.Height * 2;
 
             tpIndexes.ResumeLayout();
 

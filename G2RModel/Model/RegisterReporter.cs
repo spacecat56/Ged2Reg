@@ -86,6 +86,7 @@ namespace Ged2Reg.Model
         private int _maxLivingGenerations;
 
         private bool _indexMarriedNames;
+        private bool _notIndexContinuedChild;
         private bool _placeFirst;
         private bool _insertUncitedNotes;
         private bool _spaceCouples;
@@ -129,6 +130,7 @@ namespace Ged2Reg.Model
             _maxLivingGenerations = _c.Settings.AssumedMaxLivingGenerations;
 
             _indexMarriedNames = _c.Settings.IndexMarriedNames;
+            _notIndexContinuedChild = _c.Settings.MinusChild;
 
             _insertUncitedNotes = _c.Settings.CitationPlaceholders;
 
@@ -762,7 +764,8 @@ namespace Ged2Reg.Model
                     MyReportStats.MaybeLiving++;
             }
 
-            EmitNameIndexEntries(p, child);
+            if (!_notIndexContinuedChild || child.AssignedMainNumber == 0)
+                EmitNameIndexEntries(p, child);
             if (_c.Settings.DebuggingOutput)
             {
                 p.Append($" [{child.NaturalId}]");
@@ -1089,7 +1092,8 @@ namespace Ged2Reg.Model
                             MyReportStats.MaybeLiving++;
                     }
 
-                    EmitNameIndexEntries(p, spouse);
+                    if (!isChild || !_notIndexContinuedChild || re.AssignedMainNumber == 0)
+                        EmitNameIndexEntries(p, spouse);
                     if (_c.Settings.DebuggingOutput)
                     {
                         p.Append($" [{spouse.NaturalId}]");

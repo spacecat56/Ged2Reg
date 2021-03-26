@@ -730,6 +730,14 @@ namespace Ged2Reg.Model
             get { return _indexMarriedNames; }
             set { _indexMarriedNames = value; OnPropertyChanged(); }
         }
+        private bool _minusChild;
+
+        [DataMember]
+        public bool MinusChild
+        {
+            get { return _minusChild; }
+            set { _minusChild = value; OnPropertyChanged(); }
+        }
 
         [DataMember]
         public bool AllowMultipleAppearances
