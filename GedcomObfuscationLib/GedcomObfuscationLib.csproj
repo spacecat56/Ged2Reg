@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SimpleGedcomLib" Version="1.0.0.6-beta" />
+    <PackageReference Include="SimpleGedcomLib" Version="1.0.0.7-beta" />
   </ItemGroup>
 
   <ItemGroup>

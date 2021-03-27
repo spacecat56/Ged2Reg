@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using G2RModel;
 using Ged2Reg.Model;
 using SimpleGedcomLib;
 
@@ -163,6 +164,7 @@ namespace GedcomObfuscationLib
 
                 // write the file back to a memory buffer, then 
                 // truncate all URLS, ...
+                StreetAddressScrubber.Reset();
                 StringBuilder sb = new StringBuilder((int) _fileSize);
                 _cleaner = new ContentCleaner();
                 int waitOnLevel = -1;
@@ -405,6 +407,7 @@ namespace GedcomObfuscationLib
             string scrubText = _cleaner.PruneURLs(_namePool.Scrub2(fullText) ?? fullText);
             tag.Content = scrubText ?? fullText;
            string c = tag.ReAssemble();
+           c = StreetAddressScrubber.Apply(c);
             int lvl = tag.Level + 1;
 
             // output as one or more tags - original plus any needed CONC
@@ -446,16 +449,6 @@ namespace GedcomObfuscationLib
                 _immune.Add(indi.IndividualView.Id);
             Ascend(indi.ChildhoodFamily?.Husband, isImmune);
             Ascend(indi.ChildhoodFamily?.Wife, isImmune);
-        }
-    }
-
-    public static class GedcomExtensions
-    {
-        public static string ReAssemble(this Tag t)
-        {
-            string id = t.Id == null ? null : $" {t.Id}";
-            string content = t.Content == null ? null : $" {t.Content}";
-            return $"{t.Level}{id} {t.Code}{content}";
         }
     }
 }

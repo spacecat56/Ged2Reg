@@ -17,6 +17,7 @@ namespace GedcomObfuscationLib
             "CHURCH",
             "MARK",
             "STILL",
+            "IRELAND",
         };
 
         public static string[] Surnames =

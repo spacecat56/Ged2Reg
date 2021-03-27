@@ -71,6 +71,7 @@ namespace Ged2Reg
         private ToolStripMenuItem miObfuscate;
         private CheckBox kbOpenAfter;
         private CheckBox kbPlaceholderCites;
+        private CheckBox kbPreferEditedCites;
         private CheckBox kbAbrreviations;
 
         private void AdjustForm ()
@@ -101,6 +102,16 @@ namespace Ged2Reg
             {
                 control.Top += 2;
             }
+
+            // make room!
+            label13.Text = "Full citations (change Seq and sort by column to re-order)";
+            yPos = label13.Location.Y + 4;
+            lbColPos = label13.Right + 40;
+            kbColPos = dgFullCitations.Right - kbPlaceholderCites.Width;
+            kbPreferEditedCites = AddBoundCheckBox(tpCitation,
+                "Prefer edited citations",
+                nameof(G2RSettings.PreferEditedCitations));
+
             tpCitation.ResumeLayout();
 
             //

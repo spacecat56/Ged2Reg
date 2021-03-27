@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CommonClassesLib;
+using G2RModel;
 using SimpleGedcomLib;
 
 namespace Ged2Reg.Model
@@ -76,6 +77,8 @@ namespace Ged2Reg.Model
 
     public class CitationFormatter
     {
+        public static bool PreferEditedCitation { get; set; }
+
         public TextCleanerContext OperationContext { get; set; } = TextCleanerContext.FullCitation;
         public List<CitationPart> Parts { get; set; }
 
@@ -83,6 +86,17 @@ namespace Ged2Reg.Model
         {
             CitationResult rv = new CitationResult();
             SourceView sv = cv?.TheSourceView;
+
+            if (PreferEditedCitation)
+            {
+                string edText = cv?.SourceTag?.GetEditedCitationText();
+                if (!string.IsNullOrEmpty(edText))
+                {
+                    rv.AppendText(edText);
+                    return rv;
+                }
+            }
+
             if (sv == null)
             {
                 // citation with no source reference is just a piece of text

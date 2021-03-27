@@ -24,14 +24,7 @@
   </PropertyGroup>-->
 
   <ItemGroup>
-    <None Remove="Resources\sample.ged" />
     <None Remove="Resources\stylesFile.docx" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Resources\sample.ged">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -41,7 +34,7 @@
   <ItemGroup>
     <PackageReference Include="CommonClassesLib" Version="1.0.0.4-beta" />
     <PackageReference Include="DocumentFormat.OpenXml" Version="2.12.1" />
-    <PackageReference Include="SimpleGedcomLib" Version="1.0.0.6-beta" />
+    <PackageReference Include="SimpleGedcomLib" Version="1.0.0.7-beta" />
   </ItemGroup>
 
   <ItemGroup>

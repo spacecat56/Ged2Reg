@@ -767,6 +767,14 @@ namespace Ged2Reg.Model
             get { return _citePlaceholders; }
             set { _citePlaceholders = value; OnPropertyChanged(); }
         }
+        private bool _preferEdited = true;
+
+        [DataMember]
+        public bool PreferEditedCitations
+        {
+            get { return _preferEdited; }
+            set { _preferEdited = value; OnPropertyChanged(); }
+        }
 
         [DataMember]
         public bool SpaceBetweenCouples

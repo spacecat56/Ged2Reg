@@ -151,7 +151,9 @@ namespace Ged2Reg.Model
             // the mix of abbreviations and narrative is ugly and hard to make sense of the logic,
             // so, we only support the abbreviate option with "standard" child format
             AbbreviationManager.AbbreviationsForChildEvents = s.AbbreviateChildEvents && s.StandardBriefContinued;
-                 //&& (s.MinimizeContinuedChildren || s.StandardBriefContinued || s.ReduceContinuedChildren);
+            //&& (s.MinimizeContinuedChildren || s.StandardBriefContinued || s.ReduceContinuedChildren);
+
+            CitationFormatter.PreferEditedCitation = s.PreferEditedCitations;
 
             // option not exposed in the UI
             CitationResult.DetectHyperlinksInTextPieces = true;
