@@ -24,6 +24,7 @@
   </PropertyGroup>-->
 
   <ItemGroup>
+    <None Remove="Resources\sample.ged" />
     <None Remove="Resources\stylesFile.docx" />
   </ItemGroup>
 
@@ -40,6 +41,12 @@
   <ItemGroup>
     <ProjectReference Include="..\OoXmlWranglerLib\DocxAdapterLib.csproj" />
     <ProjectReference Include="..\WpdInterfaceLib\WpdInterfaceLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\sample.ged">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
