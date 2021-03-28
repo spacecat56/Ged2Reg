@@ -183,7 +183,6 @@ namespace G2RModel.Model
             {
                 spouseToDefocus.OutOfFocus = true;
             }
-
             // make sure 
             for (int i = 1; i < lastGenFound; i++)
             {
@@ -200,6 +199,15 @@ namespace G2RModel.Model
                             // note we can turn this OFF here but we cannot turn it ON here
                             ngs[i][j].SuppressSpouseInfo = false;
                     }
+                    else
+                    {
+                        // "whatever" the preceding accomplishes...
+                        // if a spouse is out of focus but had EmitChildrenAfter == true,
+                        // we need to "transfer" that setting to the remaining parent
+                        if (spousEntryThisGeneration.OutOfFocus && spousEntryThisGeneration.EmitChildrenAfter)
+                            ngs[i][j].EmitChildrenAfter = true;
+                    }
+
                 }
             }
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
 using DocxAdapterLib;
 using G2RModel.Model;
 using Ged2Reg.Model;
@@ -464,6 +465,41 @@ namespace G2RModelTest.Model
             _settings.Generations = 99;
             ExecSampleReport(cfg);
             Assert.IsTrue(cfg.Eval());
+        }
+
+        [TestMethod]
+        public void FocusMissingpersonTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A003_FocusOn_b.docx",
+                Title = "Focus - Yes",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.Focus),
+                    nameof(G2RSettings.OmitFocusSpouses),
+                    nameof(G2RSettings.GenerationPrefix),
+                    nameof(G2RSettings.IncludeBackRefs),
+                },
+                FlagsOff = new List<string>()
+                {
+                    nameof(G2RSettings.Placeholders)
+                },
+                RegexesToAssertTrue = new List<string>() { @"\b06-55\b", },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            _settings.FocusId = FocusAncestorId;
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
+
+            var matches = Regex.Matches(cfg.GetDocContent(), cfg.RegexesToAssertTrue[0]);
+            Assert.AreEqual(2, matches.Count);
+
         }
 
         [TestMethod]
@@ -937,8 +973,8 @@ namespace G2RModelTest.Model
                 FlagsOff = new List<string>()
                 {
                     nameof(G2RSettings.DownshiftNames),
-                },
-                RegexesToAssertTrue = new List<string>() { @"(?-i)\bWILMA\b.*?ADAMS\b" },
+                }, 
+                RegexesToAssertTrue = new List<string>() { @"(?-i)\bBARBARA\b.*?BRIGGS\b" },
                 MustOccur = new List<string>() { },
                 MustNotOccur = new List<string>() { },
             }.Init();

@@ -83,6 +83,12 @@ namespace G2RModelTest.Model
             return true;
         }
 
+        public string GetDocContent()
+        {
+            DocFile doc = new DocFile().Init(Settings.OutFile);
+            return doc.MainText;
+        }
+
         #region Implementation of ICloneable
 
         public object Clone()
