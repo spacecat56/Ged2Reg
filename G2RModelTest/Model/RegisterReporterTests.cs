@@ -1044,6 +1044,42 @@ namespace G2RModelTest.Model
         }
 
         [TestMethod]
+        public void WrongGenerationPrefixTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A010_GenerationNumbers.docx",
+                Title = "GenerationNumbers Test",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.GenerationPrefix),
+                    nameof(G2RSettings.StandardBriefContinued),
+                    nameof(G2RSettings.AbbreviateChildEvents),
+                    nameof(G2RSettings.IncludeBackRefs),
+                    nameof(G2RSettings.IncludeSiblings),
+                },
+                FlagsOff = new List<string>()
+                {
+                },
+                MustOccur = new List<string>() { "See 39-473520776200." },
+                MustNotOccur = new List<string>() { "See 40-473520776200." },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
+        }
+
+        // She and she 
+
+
+
+
+        [TestMethod]
         public void DownshiftTest()
         {
             ReportConfig cfg = new ReportConfig()

@@ -574,13 +574,18 @@ namespace Ged2Reg.Model
         {
             IWpdParagraph p = doc.InsertParagraph();
             EmitMainPersonName(doc, p, individual, gen);
-            p.Append($". See {FormatAncestorNumber(individual.FirstAppearance, gen, _generationNumberPrefixes)}.");
+            p.Append($". See {FormatAncestorNumber(individual.FirstAppearance, 0, _generationNumberPrefixes)}.");
 
             // this allows for back references... which are distinct, even when the indi repeats
             ConditionallyEmitFamily(doc, individual, gen, -1);
         }
         private string FormatAncestorNumber(BigInteger bi, int gen, bool prefix)
         {
+            if (gen == 0)
+            {
+                gen = (int) BigInteger.Log(bi, 2) + 1;
+            }
+
             return prefix
                 ? $"{gen:00}-{bi}"
                 : $"{bi}";
