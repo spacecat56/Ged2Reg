@@ -898,7 +898,7 @@ namespace G2RModelTest.Model
                 FlagsOff = new List<string>()
                 {
                 },
-                RegexesToAssertTrue = new List<string>() { @"b[.](?!.*(w:p)).*d[.]" },
+                RegexesToAssertTrue = new List<string>() { @"b[.](?!.*(w:p)).*d[.]", "m[.] first" },
                 MustOccur = new List<string>() { },
                 MustNotOccur = new List<string>() { },
             }.Init();
@@ -942,6 +942,7 @@ namespace G2RModelTest.Model
             };
             cfg.RegexesToAssertFalse = cfg.RegexesToAssertTrue;
             cfg.RegexesToAssertTrue = new List<string>();
+            cfg.MustOccur = new List<string>(){"married first"};
 
             foreach (ReportConfig rc in optionCycler.CycleOptions())
             {
@@ -949,10 +950,65 @@ namespace G2RModelTest.Model
                 ExecSampleReport(rc);
                 Assert.IsTrue(rc.Eval());
             }
+        }
 
 
+        [TestMethod]
+        public void AncestorBackrefMalformedTextTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A008_AbbreviationOn.docx",
+                Title = "Abbreviation - On",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.GenerationPrefix),
+                    nameof(G2RSettings.StandardBriefContinued),
+                    nameof(G2RSettings.AbbreviateChildEvents),
+                    nameof(G2RSettings.IncludeBackRefs),
+                    nameof(G2RSettings.IncludeSiblings),
+                },
+                FlagsOff = new List<string>()
+                {
+                },
+                MustOccur = new List<string>() { "02-2.", "m. Henry Pierce", "m. first" },
+                MustNotOccur = new List<string>() { "; Henry Pierce" },
+            }.Init();
 
 
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
+
+            cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A008_AbbreviationOff.docx",
+                Title = "Abbreviation - Off",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.GenerationPrefix),
+                    nameof(G2RSettings.StandardBriefContinued),
+                    nameof(G2RSettings.IncludeBackRefs),
+                    nameof(G2RSettings.IncludeSiblings),
+                },
+                FlagsOff = new List<string>()
+                {
+                    nameof(G2RSettings.AbbreviateChildEvents),
+                },
+                MustOccur = new List<string>() { "02-2.", "married Henry Pierce", "married first" },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
         }
 
 

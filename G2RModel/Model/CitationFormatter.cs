@@ -13,7 +13,10 @@ namespace Ged2Reg.Model
     public class CitationResult
     {
         public static bool DetectHyperlinksInTextPieces { get; set; } = true;
+
+
         public static Regex UrlRex = new Regex(@"(?i)\b(?<root>https?://.*?[.][a-z]+)/\S+\b");
+
 
         public string Text => Pieces.Count == 1 && Pieces[0].PieceType == PieceType.Text
             ? Pieces[0].Text
@@ -79,6 +82,15 @@ namespace Ged2Reg.Model
     {
         public static bool PreferEditedCitation { get; set; }
 
+        /// <summary>
+        /// FTM has a quirky way of emitting a simple citation, prefxing it with
+        /// "Details: ", which is pretty ugly in the output.  we will strip that
+        /// off when we see it... but leave the option public so it could be suppressed
+        /// </summary>
+        public static bool StripLeadingWordDetails { get; set; } = true;
+        private const string WordDetails = "Details: ";
+
+
         public TextCleanerContext OperationContext { get; set; } = TextCleanerContext.FullCitation;
         public List<CitationPart> Parts { get; set; }
 
@@ -102,7 +114,12 @@ namespace Ged2Reg.Model
                 // citation with no source reference is just a piece of text
                 string simpleText = cv?.SourceTag?.Content;
                 if (!string.IsNullOrEmpty(simpleText))
+                {
+                    if (StripLeadingWordDetails && simpleText.StartsWith(WordDetails) 
+                    && simpleText.Length > WordDetails.Length)
+                        simpleText = simpleText.Substring(WordDetails.Length);
                     rv.AppendText(simpleText);
+                }
                 return rv;
             }
 
@@ -180,6 +197,7 @@ namespace Ged2Reg.Model
             sb.Append(pendingAnotherPiece); // ugh.  'must be' a '.' supplied by a nullvalue at the end, otherwise, not working
             if (sb.Length > 0)
                 rv.AppendText(sb.ToString());
+
             return rv;
         }
 

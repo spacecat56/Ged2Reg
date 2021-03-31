@@ -1029,27 +1029,38 @@ namespace Ged2Reg.Model
 
             // BIRT event
             string clauseOpener = null;
-            string clauseEnder = (marriagesToFollow || (p2_bapt ?? p3_deat ?? p4_buri) != null) ? "," : ".";
+            string clauseEnder = DetermineClauseEnder(p2_bapt ?? p3_deat ?? p4_buri);//(marriagesToFollow || (p2_bapt ?? p3_deat ?? p4_buri) != null) ? "," : ".";
             EmitEvent(p, p1_birt, lCite, clauseEnder);
 
             // BAPM event;
             clauseOpener = null;
-            clauseEnder = (marriagesToFollow || (p3_deat ?? p4_buri) != null) ? "," : ".";
+            clauseEnder = DetermineClauseEnder(p3_deat ?? p4_buri);//(marriagesToFollow || (p3_deat ?? p4_buri) != null) ? "," : ".";
             EmitEvent(p, p2_bapt, lCite, clauseEnder);
 
             // DEAT event
             clauseOpener = null;
-            clauseEnder = (marriagesToFollow || (p4_buri) != null) ? "," : ".";
+            clauseEnder = DetermineClauseEnder(p4_buri);// (marriagesToFollow || (p4_buri) != null) ? "," : ".";
             EmitEvent(p, p3_deat, lCite, clauseEnder);
 
             // BURI event
             clauseOpener = null;
-            clauseEnder = marriagesToFollow ? "," : ".";
+            clauseEnder = DetermineClauseEnder(null); //marriagesToFollow ? "" : ".";
             EmitEvent(p, p4_buri, lCite, clauseEnder);
 
-            EmitStandardChildsMarriageClause(p, re, ";");
-            
+            if (marriagesToFollow)
+            {
+                EmitStandardChildsMarriageClause(p, re,  $" {AbbreviationManager.TextFor(TagCode.MARR, true, " ")}");
+                p.Append(".");
+            }
+
             return new List<GedcomIndividual>();
+
+            string DetermineClauseEnder(object next)
+            {
+                if (next != null) return ",";
+                if (marriagesToFollow) return ";";
+                return ".";
+            }
         }
 
         private void AppendMarriagesSentences(IWpdParagraph p, ReportEntry re, bool isChild, List<GedcomIndividual> toDoNotes,
