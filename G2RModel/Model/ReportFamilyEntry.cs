@@ -25,7 +25,8 @@ namespace G2RModel.Model
             sb.Append(Wife.Individual.SafeGivenName);
 
             // extend with names up to this marriage
-            sb.Append(' ').Append(ExtendedWifeSurname(placeholder));
+            if (!Wife.Individual.HasNoSurname)
+                sb.Append(' ').Append(ExtendedWifeSurname(placeholder));
 
             //sb.Append(" (").Append(Wife.Individual.SafeSurname).Append(')');
 

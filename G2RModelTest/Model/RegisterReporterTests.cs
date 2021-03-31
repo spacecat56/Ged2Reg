@@ -1003,6 +1003,7 @@ namespace G2RModelTest.Model
                     nameof(G2RSettings.AbbreviateChildEvents),
                 },
                 MustOccur = new List<string>() { "02-2.", "married Henry Pierce", "married first" },
+                MustNotOccur = new List<string>() { "  married" },
             }.Init();
 
             ReadyModel(cfg.ModelState);
@@ -1011,7 +1012,36 @@ namespace G2RModelTest.Model
             Assert.IsTrue(cfg.Eval());
         }
 
+        [TestMethod]
+        public void MalformedMarriedNamesTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A009_MarriedNames.docx",
+                Title = "Married Names Test",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.GenerationPrefix),
+                    nameof(G2RSettings.StandardBriefContinued),
+                    nameof(G2RSettings.AbbreviateChildEvents),
+                    nameof(G2RSettings.IncludeBackRefs),
+                    nameof(G2RSettings.IncludeSiblings),
+                },
+                FlagsOff = new List<string>()
+                {
+                },
+                MustOccur = new List<string>() { "02-2.", "m. Henry Pierce", "m. first" },
+                MustNotOccur = new List<string>() { "Maud of Flanders () _____" },
+            }.Init();
 
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
+        }
 
         [TestMethod]
         public void DownshiftTest()

@@ -1049,7 +1049,7 @@ namespace Ged2Reg.Model
 
             if (marriagesToFollow)
             {
-                EmitStandardChildsMarriageClause(p, re,  $" {AbbreviationManager.TextFor(TagCode.MARR, true, " ")}");
+                EmitStandardChildsMarriageClause(p, re,  $" {AbbreviationManager.TextFor(TagCode.MARR, true)}");
                 p.Append(".");
             }
 
