@@ -25,6 +25,7 @@ namespace Ged2Reg.Model
         public List<CitationResultPiece> Pieces { get; set; } = new List<CitationResultPiece>();
 
         public string SourceId { get; set; }
+        public bool IsSimpleDetail { get; set; }
 
         public void AppendText(string t)
         {
@@ -112,13 +113,15 @@ namespace Ged2Reg.Model
             if (sv == null)
             {
                 // citation with no source reference is just a piece of text
+                rv.IsSimpleDetail = true;
                 string simpleText = cv?.SourceTag?.Content;
                 if (!string.IsNullOrEmpty(simpleText))
                 {
                     if (StripLeadingWordDetails && simpleText.StartsWith(WordDetails) 
                     && simpleText.Length > WordDetails.Length)
                         simpleText = simpleText.Substring(WordDetails.Length);
-                    rv.AppendText(simpleText);
+                    string ext = simpleText.EndsWith(".") ? string.Empty : ".";
+                    rv.AppendText($"{simpleText}{ext}");
                 }
                 return rv;
             }

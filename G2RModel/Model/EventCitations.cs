@@ -144,8 +144,14 @@ namespace Ged2Reg.Model
             //{
             //    throw new Exception("Internal error: footnote not applied");
             //}
-            SelectedItem.IsEmitted = true;
-            SelectedItem.FirstFootnote = SelectedItem.FirstFootnote ?? f;
+
+            // 'simple detail' notes are not assembled and any 'see note' references 
+            // would be pure noise; so, don't do the tracking that can evoke them
+            if (!c.IsSimpleDetail)
+            {
+                SelectedItem.IsEmitted = true;
+                SelectedItem.FirstFootnote = SelectedItem.FirstFootnote ?? f;
+            }
 
             return true;
         }
