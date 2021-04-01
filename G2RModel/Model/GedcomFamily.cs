@@ -144,6 +144,13 @@ namespace Ged2Reg.Model
             return this;
         }
 
+        public bool CoupleAreBinomial()
+        {
+            bool notBinomial = Husband?.HasNoSurname ?? false;
+            notBinomial |= Wife?.HasNoSurname ?? false;
+            return !notBinomial;
+        }
+
         public void Reset()
         {
             IsIncluded = false;

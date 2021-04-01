@@ -102,6 +102,8 @@ namespace G2RModel.Model
 
         public bool IsIncluded { get; set; }
 
+        public bool CoupleAreBinomial => Family?.CoupleAreBinomial() ?? false;
+
         internal ReportFamilyEntry(GedcomFamily gf)
         {
             Family = gf;

@@ -721,10 +721,13 @@ namespace Ged2Reg.Model
             IWpdParagraph p = doc.InsertParagraph(); // NB insert empty "" para with a styleid DOES NOT WORK
             p.StyleName = _styleMap[StyleSlots.KidsIntro].CharacterStyleName;
             p.Append(((numberToList > 1) ? "Children" : "Child"));
-            p.Append($" of {(family.Husband?.Individual?.SafeGivenName) ?? "unknown"}");
+            if (family.CoupleAreBinomial)
+                p.Append($" of {(family.Husband?.Individual?.SafeGivenName) ?? "unknown"}");
+            else
+                p.Append($" of {(family.Husband?.Individual?.SafeNameForward) ?? "unknown"}");
             if (!_suppressGenSuperscripts)
                 p.Append($"{_gnMapper.GenerationNumberFor(_currentGeneration)}", false, _generationNumberFormatting);
-            string s = family.ExtendedWifeName();
+            string s = family.CoupleAreBinomial ? family.ExtendedWifeName() : family.Family?.Wife?.SafeNameForward;
             if (!string.IsNullOrEmpty(s))
                 p.Append($" and {s}:");
             else
@@ -1242,7 +1245,7 @@ namespace Ged2Reg.Model
                 string conj = null;
                 if (hasPere)
                 {
-                    if (hasMere)
+                    if (hasMere && spousesChildhoodFamily.CoupleAreBinomial())
                     {
                         p.Append($" {spousesChildhoodFamily.Husband.GivenOrFullName}"); // uses full name in the pre-binomial era
                     }
@@ -1262,7 +1265,10 @@ namespace Ged2Reg.Model
                 }
                 if (hasMere)
                 {
-                    p.Append($" {conj}{spousesChildhoodFamily.ExtendedWifeName()}"); // extended to recognize no surn
+                    if (spousesChildhoodFamily.CoupleAreBinomial())
+                        p.Append($" {conj}{spousesChildhoodFamily.ExtendedWifeName()}"); // extended to recognize no surn (?; now skipped, husband complicates it)
+                    else
+                        p.Append($" {conj}{spousesChildhoodFamily.Wife.SafeNameForward}"); 
                     MyReportStats.SpouseParents++;
                     if (!spousesChildhoodFamily.Wife.PresumedDeceased)
                         MyReportStats.MaybeLiving++;
