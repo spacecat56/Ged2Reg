@@ -1074,8 +1074,37 @@ namespace G2RModelTest.Model
             Assert.IsTrue(cfg.Eval());
         }
 
-        // She and she 
+        // She and she ?? can't find this in the output any more
 
+        [TestMethod]
+        public void UnlinkedCitationsTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A011_UnlinkedCitationsTest.docx",
+                Title = "Unlinked Citations Test",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.GenerationPrefix),
+                    nameof(G2RSettings.StandardBriefContinued),
+                    nameof(G2RSettings.AbbreviateChildEvents),
+                    nameof(G2RSettings.IncludeBackRefs),
+                    nameof(G2RSettings.IncludeSiblings),
+                },
+                FlagsOff = new List<string>()
+                {
+                },
+                MustOccur = new List<string>() { "BUTLER 12", "BUTLER 10" },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
+        }
 
 
 

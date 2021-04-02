@@ -31,6 +31,7 @@ namespace Ged2Reg.Model
 
         public string SourceId { get; set; }
         public string FullText { get; set; }
+        public string Content { get; set; }
         //public string ShortText { get; set; }
         public int ReferenceCount { get; set; }
         public int SelectedCount { get; set; }
@@ -62,14 +63,24 @@ namespace Ged2Reg.Model
         {
             SourceId = cv.SourceId;
             FullText = cv.FullText;
+            Content = cv.SourceTag?.Content;
             Title = cv.TheSourceView?.Title;
             CitationViews.Add(cv);
         }
 
         public bool AppendIfMatch(CitationView cv)
         {
-            if (cv.SourceId != SourceId || cv.FullText != FullText)
+            if (cv.SourceId == null && cv.SourceId == SourceId)
+            {
+                // citation without source... FullText is not a good compare, 
+                // we need to look at the Content property
+                if (cv.SourceTag.Content != Content)
+                    return false;
+            }
+            else if (cv.SourceId != SourceId || cv.FullText != FullText)
+            {
                 return false;
+            }
             CitationViews.Add(cv);
             return true;
         }
