@@ -1107,6 +1107,49 @@ namespace G2RModelTest.Model
         }
 
 
+        [TestMethod]
+        public void OdtTitleAuthorTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A012_TitleAuthorTest.odt",
+                Title = "Title/Author Test",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.GenerationPrefix),
+                    nameof(G2RSettings.StandardBriefContinued),
+                    nameof(G2RSettings.AbbreviateChildEvents),
+                    nameof(G2RSettings.IncludeBackRefs),
+                    nameof(G2RSettings.IncludeSiblings),
+                },
+                    FlagsOff = new List<string>()
+                    {
+                    },
+                    RegexesToAssertTrue = new List<string>()
+                {
+                    @"dc:creator.*?Title/Author Test Author.*?/dc:creator",
+                    @"meta:initial-creator.*?Title/Author Test Author.*?/meta:initial-creator",
+                    @"dc:title.*?Title/Author Test Title.*?/dc:title",
+                },
+                RegexesToAssertFalse = new List<string>()
+                {
+                    "meta:creation-date.*?2021-02-15.*?/meta:creation-date"
+                },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            cfg.Settings.Title = "Title/Author Test Title";
+            cfg.Settings.Author = "Title/Author Test Author";
+            _settings.Generations = 5;
+            ExecSampleReport(cfg, justOdt);
+            Assert.IsTrue(cfg.Eval());
+
+        }
+
+
 
         [TestMethod]
         public void DownshiftTest()
