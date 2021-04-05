@@ -40,7 +40,7 @@
     <ProjectReference Include="..\CCL\CommonClassesLib5\CommonClassesLib5.csproj" />
     <ProjectReference Include="..\OoXmlWranglerLib\DocxAdapterLib.csproj" />
     <ProjectReference Include="..\SGL\SimpleGedcomLib5\SimpleGedcomLib5.csproj" />
-    <ProjectReference Include="..\SOL\SOL\SOL.csproj" />
+    <ProjectReference Include="..\SOL\SOL\SimpleOdtLib.csproj" />
     <ProjectReference Include="..\WpdInterfaceLib\WpdInterfaceLib.csproj" />
   </ItemGroup>
 

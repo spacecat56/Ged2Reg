@@ -25,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonClassesLib5", "CCL\Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleGedcomLib5", "SGL\SimpleGedcomLib5\SimpleGedcomLib5.csproj", "{00FCF9EC-808C-40C7-B88A-CC6F2E9C26E0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SOL", "SOL\SOL\SOL.csproj", "{82DBEFDB-8249-4C2F-BA75-E8E2115E131D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleOdtLib", "SOL\SOL\SimpleOdtLib.csproj", "{82DBEFDB-8249-4C2F-BA75-E8E2115E131D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
