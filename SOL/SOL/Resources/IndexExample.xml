@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<text:alphabetical-index text:style-name="RegisterSect2" text:protected="true" text:name="Alphabetical Index1" xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" >
+  <text:alphabetical-index-source text:main-entry-style-name="RegisterMainindexentry" text:ignore-case="true" text:alphabetical-separators="true" text:combine-entries-with-pp="false" text:capitalize-entries="true" text:sort-algorithm="alphanumeric" fo:language="en" fo:country="US">
+    <text:index-title-template text:style-name="RegisterIndexHeading">Index of Names</text:index-title-template>
+    <text:alphabetical-index-entry-template text:outline-level="separator" text:style-name="RegisterIndexSeparator">
+      <text:index-entry-text/>
+    </text:alphabetical-index-entry-template>
+    <text:alphabetical-index-entry-template text:outline-level="1" text:style-name="RegisterIndex1">
+      <text:index-entry-text/>
+      <text:index-entry-tab-stop style:type="right" style:leader-char="."/>
+    </text:alphabetical-index-entry-template>
+    <text:alphabetical-index-entry-template text:outline-level="2" text:style-name="RegisterIndex2">
+      <text:index-entry-text/>
+      <text:index-entry-tab-stop style:type="right" style:leader-char="."/>
+      <text:index-entry-page-number/>
+    </text:alphabetical-index-entry-template>
+    <text:alphabetical-index-entry-template text:outline-level="3" text:style-name="RegisterIndex3">
+      <text:index-entry-text/>
+      <text:index-entry-tab-stop style:type="right" style:leader-char="."/>
+      <text:index-entry-page-number/>
+    </text:alphabetical-index-entry-template>
+  </text:alphabetical-index-source>
+  <text:index-body>
+    <!-- not doing what I wanted <text:p style:name="PageBreakStyle"></text:p>-->
+    <text:p>right click to update index</text:p>
+  </text:index-body>
+</text:alphabetical-index>

@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <AssemblyVersion>0.5.*</AssemblyVersion>
+    <Deterministic>false</Deterministic>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Company>West Leitrim Software</Company>
+    <Copyright>Copyright © 2021</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\AutomaticStyles.xml" />
+    <None Remove="Resources\IndexExample.xml" />
+    <None Remove="Resources\Model.odt" />
+    <None Remove="Resources\Model2.odt" />
+    <None Remove="Resources\TextStyles.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\AutomaticStyles.xml" />
+    <EmbeddedResource Include="Resources\IndexExample.xml" />
+    <EmbeddedResource Include="Resources\Model.odt" />
+    <EmbeddedResource Include="Resources\Model2.odt" />
+    <EmbeddedResource Include="Resources\TextStyles.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
+  </ItemGroup>
+
+</Project>
