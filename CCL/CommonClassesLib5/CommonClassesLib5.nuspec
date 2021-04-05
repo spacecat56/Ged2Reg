@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>CommonClassesLib5</id>
+        <version>1.0.0.30</version>
+        <title>Common Classes Library for Winforms and dotnet5</title>
+        <authors>Thomas W. Shanley</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<license type="file">LICENSE.txt</license>
+		<licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+		<copyright>2005, 2021 Thomas W. Shanley</copyright>
+		<repository type="git" url="https://github.com/spacecat56/CommonClassesLib" />
+		<dependencies>
+		  <group targetFramework="net5.0" />
+		</dependencies>
+        <description>Some little helper classes useful with Winforms binding and settings serialization.</description>
+        <releaseNotes>Beta level software. MIT License.</releaseNotes>
+    </metadata>
+    <files>
+        <file src="bin\Release\net5.0\CommonClassesLib5.dll" target="lib\net50\CommonClassesLib5.dll" />
+        <file src="..\LICENSE.txt" target="LICENSE.txt" />
+    </files>
+</package>

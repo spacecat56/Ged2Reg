@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageId>CommonClassesLib</PackageId>
+    <Authors>CommonClassesLib</Authors>
+    <Product>CommonClassesLib</Product>
+    <Copyright>2005, 2021 Thomas W. Shanley</Copyright>
+    <PackageProjectUrl></PackageProjectUrl>
+    <RepositoryUrl>https://github.com/spacecat56/CommonClassesLib</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Description>Some little helper classes useful with Winforms binding and settings serialization</Description>
+    <VersionPrefix>1.0.0.4</VersionPrefix>
+    <VersionSuffix>beta</VersionSuffix>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\CommonClassesLib\AbstractBindableModel.cs" Link="AbstractBindableModel.cs" />
+    <Compile Include="..\CommonClassesLib\ApplicationInfo.cs" Link="ApplicationInfo.cs" />
+    <Compile Include="..\CommonClassesLib\NamedValue.cs" Link="NamedValue.cs" />
+    <Compile Include="..\CommonClassesLib\PropertiesList.cs" Link="PropertiesList.cs" />
+    <Compile Include="..\CommonClassesLib\SimpleSerializer.cs" Link="SimpleSerializer.cs" />
+    <Compile Include="..\CommonClassesLib\SortableBindingList.cs" Link="SortableBindingList.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
