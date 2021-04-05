@@ -95,10 +95,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommonClassesLib" Version="1.0.0.4-beta" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\G2RModel\G2RModel.csproj" />
     <ProjectReference Include="..\GedcomObfuscationLib\GedcomObfuscationLib.csproj" />
     <ProjectReference Include="..\OdtAdapterLib\OdtAdapterLib.csproj" />
