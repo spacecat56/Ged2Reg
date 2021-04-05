@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <!--<Version>1.0.0.2-beta</Version>-->
+    <VersionPrefix>1.0.0.2</VersionPrefix>
+    <VersionSuffix>beta</VersionSuffix>
+    <Authors>SimpleGedcomLib</Authors>
+    <Company>West Leitrim Software</Company>
+    <PackageId>SimpleGedcomLib</PackageId>
+    <Description>Library to read and parse GEDCOM files into an object model that can be used in reporting and analysis</Description>
+    <Copyright>2005, 2021 Thomas W Shanley</Copyright>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/spacecat56/SimpleGedcomLib</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/spacecat56/SimpleGedcomLib</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Product>SimpleGedcomLib</Product>
+    <AssemblyVersion>1.0.0.7</AssemblyVersion>
+    <FileVersion>1.0.0.7</FileVersion>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Version>1.0.0.7-beta</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\SimpleGedcomLib\CitationView.cs" Link="CitationView.cs" />
+    <Compile Include="..\SimpleGedcomLib\FamilyView.cs" Link="FamilyView.cs" />
+    <Compile Include="..\SimpleGedcomLib\GedcomFile.cs" Link="GedcomFile.cs" />
+    <Compile Include="..\SimpleGedcomLib\IndividualView.cs" Link="IndividualView.cs" />
+    <Compile Include="..\SimpleGedcomLib\MediaCitationModel.cs" Link="MediaCitationModel.cs" />
+    <Compile Include="..\SimpleGedcomLib\MediaObjectView.cs" Link="MediaObjectView.cs" />
+    <Compile Include="..\SimpleGedcomLib\SourceView.cs" Link="SourceView.cs" />
+    <Compile Include="..\SimpleGedcomLib\Tag.cs" Link="Tag.cs" />
+    <Compile Include="..\SimpleGedcomLib\TagEnums.cs" Link="TagEnums.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\SimpleGedcomLib\Resources\TagMap.txt" Link="Resources\TagMap.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
+
+</Project>

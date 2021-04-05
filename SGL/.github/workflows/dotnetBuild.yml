@@ -1,0 +1,27 @@
+name: .NET
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    # no packages in this lib
+    - name: Restore dependencies
+      run: dotnet restore SimpleGedcomLib5/SimpleGedcomLib5.csproj
+    - name: Build
+      run: dotnet build SimpleGedcomLib5/SimpleGedcomLib5.csproj --no-restore
+    # no test project in this lib
+    # - name: Test
+    #  run: dotnet test --no-build --verbosity normal
