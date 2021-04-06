@@ -6,7 +6,7 @@ namespace SimpleGedcomLib
 {
     public class IndividualView
     {
-        public static Regex NameRex = new Regex(@"(?<given>.*?)\s/(?<surn>.*)/");
+        public static Regex NameRex = new Regex(@"((?<given>.*?)\s)?/(?<surn>.*)/(\s*(?<suffix>\w+)[.]?)?");
 
         private Tag _indiTag;
         public Tag IndiTag
@@ -22,8 +22,10 @@ namespace SimpleGedcomLib
 
         public string GivenName { get; set; }
         public string Surname { get; set; }
+        public string Suffix { get; set; }
+        public string OptionalSuffix => string.IsNullOrEmpty(Suffix) ? null : $" {Suffix}";
 
-        public string Name => $"{Surname}, {GivenName}";
+        public string Name => $"{Surname}, {GivenName}{OptionalSuffix}";
         public string Id => _indiTag?.Id;
         public List<Tag> Notes { get; set; } = new List<Tag>();
 
@@ -37,6 +39,7 @@ namespace SimpleGedcomLib
             if (!m.Success) return;
             GivenName = m.Groups["given"].Value;
             Surname = m.Groups["surn"].Value;
+            Suffix = m.Groups["suffix"].Value;
         }
 
         public void Link(Dictionary<string, Tag> notesMap)

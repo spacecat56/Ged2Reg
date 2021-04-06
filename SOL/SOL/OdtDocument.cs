@@ -42,7 +42,7 @@ namespace SOL
             {
                 //string[] resNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
                 //string rn = resNames.FirstOrDefault(s => s.Contains("Model.odt"));
-                stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("SOL.Resources.Model2.odt");
+                stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("SimpleOdtLib.Resources.Model2.odt");
             }
             using (stream )
             {

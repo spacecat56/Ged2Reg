@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -26,7 +27,7 @@ namespace G2RModelTest.Model
         }
 
         // todo: these must be externalized / abstracted
-        public string OutputPath = @"c:\test\ged2reg";
+        public string OutputPath = Path.Combine(Path.GetTempPath(), @"test\ged2reg\"); // @"c:\test\ged2reg";
         public string FocusAncestorId = "@I4961@";
         public string SampleFilePath = @"D:\projects\public\retarget\Ged2Reg\G2RModel\Resources\sample.ged";
 
@@ -1202,6 +1203,36 @@ namespace G2RModelTest.Model
 
         }
 
+        [TestMethod]
+        public void NameSuffixesTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A013_NameSuffixesTest.docx",
+                Title = "Name Suffixes Test",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.GenerationPrefix),
+                    nameof(G2RSettings.IncludeBackRefs),
+                    nameof(G2RSettings.Placeholders)
+                },
+                FlagsOff = new List<string>()
+                {
+                    nameof(G2RSettings.OmitFocusSpouses),
+                    nameof(G2RSettings.Focus),
+                },
+                MustOccur = new List<string>() { @"Baudoiun IV", },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
+
+        }
 
         [TestCleanup]
         public void LogResults()

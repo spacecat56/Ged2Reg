@@ -25,7 +25,7 @@ namespace SOL
 
             //string[] resNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
             //string rn = resNames.FirstOrDefault(s => s.Contains("TextStyles.xml"));
-            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("SOL.Resources.TextStyles.xml"))
+            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("SimpleOdtLib.Resources.TextStyles.xml"))
             {
                 using (XmlReader xr = XmlReader.Create(stream))
                 {

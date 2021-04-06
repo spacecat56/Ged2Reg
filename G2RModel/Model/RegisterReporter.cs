@@ -51,8 +51,8 @@ namespace Ged2Reg.Model
         };
 
 
-    #region Fields to internalize settings/policies
-    private Dictionary<StyleSlots, Formatting> _styleMap;
+        #region Fields to internalize settings/policies
+        private Dictionary<StyleSlots, Formatting> _styleMap;
         private char[] _splitSpace = { ' ' };
         private int _currentGeneration;
         private Regex _rexDivider1 = new Regex(@"^[\-_]+$");

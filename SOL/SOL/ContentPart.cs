@@ -27,7 +27,7 @@ namespace SOL
             BodyTextElement = BodyElement?.Element(XName.Get(OdtNames.Text, OdtNames.NamespaceManager.LookupNamespace(OdtNames.Office)));
             //BodyTextElement?.Descendants().Remove();
 
-            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("SOL.Resources.AutomaticStyles.xml"))
+            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("SimpleOdtLib.Resources.AutomaticStyles.xml"))
             {
                 using (XmlReader xr = XmlReader.Create(stream))
                 {

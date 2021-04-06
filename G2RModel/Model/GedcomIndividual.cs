@@ -83,12 +83,13 @@ namespace Ged2Reg.Model
             return FormattedName;
         }
 
-        public string Name => $"{Surname}, {GivenName}";
-        public string NameForward => string.IsNullOrEmpty(Surname) ? GivenName : $"{GivenName} {Surname}";
+        public string Name => $"{Surname}, {GivenName}{SafeSuffix}";
+        public string NameForward => string.IsNullOrEmpty(Surname) ? $"{GivenName}{SafeSuffix}" : $"{GivenName} {Surname}{SafeSuffix}";
         public string GivenName => FormattedName.UnknownGivenName
             ? Settings.UnknownInReport
             : FormattedName.GivenNames;
 
+        public string SafeSuffix => PresumedDeceased || !ConsiderLivingStatus ? IndividualView?.OptionalSuffix : null;
         /// <summary>
         /// If we fail to consider the given name here we wind up with nonsense
         /// such as Charlemagne (Unknown) in the output
@@ -117,11 +118,12 @@ namespace Ged2Reg.Model
 
         public string SafeNameForward => IsUnknown(IndividualView?.GivenName, IndividualView?.Surname)
             ? Settings.UnknownInReport
-            : (string.IsNullOrEmpty(SafeSurname) ? SafeGivenName : $"{SafeGivenName} {SafeSurname}");
+            : (string.IsNullOrEmpty(SafeSurname) ? $"{SafeGivenName}{SafeSuffix}" : $"{SafeGivenName} {SafeSurname}{SafeSuffix}");
 
         public string SafeGivenName => PresumedDeceased || !ConsiderLivingStatus ? $"{GivenName}" : "(Living)";
         public string SafeSurname => $"{Surname}"; // this usage is ambiguous
         public string IndexableSurname => string.IsNullOrEmpty(SafeSurname) ? NoSurnameIndexValue : SafeSurname;
+        public string IndexableGivenName => $"{SafeGivenName}{SafeSuffix}";
 
         public static string NoSurnameIndexValue { get; set; } = "(No surname)";
 

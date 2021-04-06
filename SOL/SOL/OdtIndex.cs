@@ -28,7 +28,7 @@ namespace SOL
             var textNamespace = OdtNames.NamespaceManager.LookupNamespace(OdtNames.Text);
             var styleNamespace = OdtNames.NamespaceManager.LookupNamespace(OdtNames.Style);
 
-            Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("SOL.Resources.IndexExample.xml");
+            Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("SimpleOdtLib.Resources.IndexExample.xml");
             ContentElement = XElement.Load(s);
 
             // then we may need to tweak a few things
