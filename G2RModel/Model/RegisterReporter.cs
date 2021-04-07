@@ -457,7 +457,7 @@ namespace Ged2Reg.Model
             WpdFieldBase ex;
             string ixn = _c.Settings.NameIndexSettings.IndexName;
 
-            ex = doc.BuildIndexEntryField(ixn, $"{indi.IndexableSurname}:{indi.SafeGivenName}").Build();
+            ex = doc.BuildIndexEntryField(ixn, $"{indi.IndexableSurname}:{indi.IndexableGivenName}").Build();
             p.AppendField(ex);
             MyReportStats.NameIndexEntries++;
 
@@ -474,6 +474,10 @@ namespace Ged2Reg.Model
             foreach (ReportFamilyEntry fre in re.SafeFamilyEntries)
             {
                 string altName;
+                // note: we are ignoring possible name suffixes here
+                //      on the somewhat careless assumption that 
+                //      it is rare for a female to be designated
+                //      as "jr.", "III", etc.
                 if ((altName = fre?.IndexableExtendedWifeForeName) == null)
                     continue;
                 ex = doc.BuildIndexEntryField(ixn, $"{fre.Husband.Individual.IndexableSurname}:{altName}").Build();
@@ -660,8 +664,9 @@ namespace Ged2Reg.Model
             p.Append(indi.Individual.SafeGivenName, false, _styleMap[StyleSlots.MainPerson]);
             if (!_suppressGenSuperscripts)
                 p.Append($"{_gnMapper.GenerationNumberFor(gen)}", false, _generationNumberFormatting);
-            if (!string.IsNullOrEmpty(indi.Individual.SafeSurname))
-                p.Append($" {indi.Individual.SafeSurname}", false, _styleMap[StyleSlots.MainPerson]);
+            string surnPlus = $"{indi.Individual.SafeSurname}{indi.Individual.SafeSuffix}".Trim(); // suffix-only will have space
+            if (!string.IsNullOrEmpty(surnPlus))
+                p.Append($" {surnPlus}", false, _styleMap[StyleSlots.MainPerson]);
 
             EmitNameIndexEntries(p, indi);
 

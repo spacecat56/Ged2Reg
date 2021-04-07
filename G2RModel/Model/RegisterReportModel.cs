@@ -187,6 +187,7 @@ namespace Ged2Reg.Model
             // using the factory Configure method; just 'host name' ATM
             DocFactory.Configure(Settings.UseHostName);
 
+            Directory.CreateDirectory(Path.GetDirectoryName(Settings.OutFile));
             Doc = DocFactory.Create(Settings.OutFile);
 
             // todo: this has to be factory-type-aware; or otherwise reconciled; ATM odt ignores it!
