@@ -1234,6 +1234,37 @@ namespace G2RModelTest.Model
 
         }
 
+        [TestMethod]
+        public void EmptyEventsTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A014_EmptyEvents.docx",
+                Title = "Empty Events Test",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.OmitFocusSpouses),
+                    nameof(G2RSettings.GenerationPrefix),
+                    nameof(G2RSettings.IncludeBackRefs),
+                },
+                FlagsOff = new List<string>()
+                {
+                    nameof(G2RSettings.Focus),
+                    nameof(G2RSettings.Placeholders)
+                },
+                MustNotOccur = new List<string>() { @"She and she died", "She  " },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
+
+        }
+
         [TestCleanup]
         public void LogResults()
         {

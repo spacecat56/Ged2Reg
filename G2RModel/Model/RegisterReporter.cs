@@ -1326,7 +1326,7 @@ namespace Ged2Reg.Model
             }
             else
             {
-                connector = $" and {spouse.Individual.Pronoun.ToLower()}";
+                connector = $""; //and {spouse.Individual.Pronoun.ToLower()}";
             }
 
             if (hasDb)
