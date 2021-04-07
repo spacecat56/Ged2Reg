@@ -577,6 +577,9 @@ namespace Ged2Reg.Model
 
         private void EmitRepeatedAncestor(IWpdDocument doc, ReportEntry individual, int gen)
         {
+            if (_omitFocusSpouses && individual.OutOfFocus)
+                return;
+
             IWpdParagraph p = doc.InsertParagraph();
             EmitMainPersonName(doc, p, individual, gen);
             p.Append($". See {FormatAncestorNumber(individual.FirstAppearance, 0, _generationNumberPrefixes)}.");
