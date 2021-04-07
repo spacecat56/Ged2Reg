@@ -1,8 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <!--<Version>1.0.0.2-beta</Version>-->
+    <AssemblyVersion>1.0.*</AssemblyVersion>
+    <!--<FileVersion>0.5.0.0</FileVersion>-->
+    <Deterministic>false</Deterministic>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Company>West Leitrim Software</Company>
+    <Copyright>Copyright © 2005, 2021</Copyright>
+
+
+    <!--<Version>1.0.0.2-beta</Version>
     <VersionPrefix>1.0.0.2</VersionPrefix>
     <VersionSuffix>beta</VersionSuffix>
     <Authors>SimpleGedcomLib</Authors>
@@ -18,7 +26,7 @@
     <AssemblyVersion>1.0.0.7</AssemblyVersion>
     <FileVersion>1.0.0.7</FileVersion>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <Version>1.0.0.7-beta</Version>
+    <Version>1.0.0.7-beta</Version>-->
   </PropertyGroup>
 
   <ItemGroup>
