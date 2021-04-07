@@ -1,0 +1,10 @@
+﻿Installer version 5.0.36 - 04/07/21
+	fix: name suffixes following surname in GEDCOM NAME records are now included in output
+	fix: the docx limit of 32767 footnotes is enforced; docx file with more fns are considered "corrupt" by Word and cannot be opened or repaired.
+
+
+Installer version 5.0.35 - 04/03/21
+	fix: for the odt properties including creation date, title, author
+	fix: selection of citations not linked to sources 
+	fix: the names of parents were sometimes malformed in the "child of" clause and in the "kinds intro" line.
+	UI: limit number of index columns to 1 or 2 (other values do not work in odt, and are rather useless in docx)
