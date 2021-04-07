@@ -15,7 +15,8 @@ namespace DocxAdapterLib
 
 
         public static string BookmarkNamePattern = "_RefN{0}";
-
+        internal static int MaxNotes = 32767;
+        //public override int MaxFootnoteId => MaxNotes;
         public string NoteReferenceNode { get; internal set; }
         public string NoteRefNode { get; internal set; }
         public string NoteNode { get; internal set; }
@@ -26,10 +27,6 @@ namespace DocxAdapterLib
         internal XElement noteElement;
         internal XElement noteRefElement;
 
-        // Paragraph implementation of bookmarks is broken in the branch this is based on
-        // we can't reverse engineer any code out of the Xceed/master branch, due to its more
-        // restrictive license
-        // so, we need to keep our bookmarkid counter for notes and "hope" there will be no collisions
         internal static int _nextBookmarkId = 0;
         public static int NextBookmarkId => _nextBookmarkId++;
         private int _id;

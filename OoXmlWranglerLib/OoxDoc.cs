@@ -17,9 +17,15 @@ namespace DocxAdapterLib
         private MainDocumentPart _mainPart;
         private StyleDefinitionsPart _stylesPart;
         private Body _body;
+        
         internal FootnotesPart _footnotesPart;
         private EndnotesPart _endnotesPart;
+        int _maxFootnoteId = 0;
+        int _maxEndnoteId = 0;
+        private bool _doingEndnotes;
+
         private OoxParagraph _para;
+
         
         private SectionProperties _sectionProperties;
 
@@ -57,6 +63,12 @@ namespace DocxAdapterLib
             }
             
             return this;
+        }
+
+        public bool HasReachedFootnoteLimit()
+        {
+            return (_doingEndnotes ? _maxEndnoteId : _maxFootnoteId ) 
+                   >=  OoxFootnote.MaxNotes;
         }
 
         private StyleDefinitionsPart CreateStylePart()
@@ -265,7 +277,9 @@ namespace DocxAdapterLib
 
         public void ConfigureFootnotes(bool asEndnotes, string[] brackets)
         {
-            // no-op in this stack
+            _doingEndnotes = asEndnotes;
+            if (_doingEndnotes && _endnotesPart == null)
+                CreateEndnotesPart();
         }
 
         public IWpdParagraph InsertParagraph(string text = null)
@@ -300,17 +314,14 @@ namespace DocxAdapterLib
             return new OoxEndnote(this, noteText, brackets);
         }
 
-        int maxFootnoteId = 0;
-        int maxEndnoteId = 0;
-
         public int MaxFootnoteId()
         {
-            return maxFootnoteId++;
+            return _maxFootnoteId++;
         }
 
         public int MaxEndnoteId()
         {
-            return maxEndnoteId++;
+            return _maxEndnoteId++;
         }
 
         public void Dispose()

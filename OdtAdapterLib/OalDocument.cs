@@ -120,7 +120,10 @@ namespace OdtAdapterLib
         {// todo
             return false;
         }
-
+        public bool HasReachedFootnoteLimit()
+        {
+            return false; // not clear if there is / what is the limit here
+        }
         public void BreakForIndex()
         {
             //  no-op here

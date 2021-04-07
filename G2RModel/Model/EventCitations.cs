@@ -52,8 +52,7 @@ namespace Ged2Reg.Model
         /// <returns></returns>
         public bool EmitNote(IWpdDocument doc, IWpdParagraph p, string citedFor)
         {
-            if (SelectedItem == null)
-                return false;
+            if (!HasNoteToEmit()) return false;
 
             G2RSettings settings = ReportContext.Instance.Settings; // for lexical convenience
 
@@ -154,6 +153,11 @@ namespace Ged2Reg.Model
             }
 
             return true;
+        }
+
+        public bool HasNoteToEmit()
+        {
+            return SelectedItem != null;
         }
 
         public CitationResult BestCitation(bool appendSummary, CitationFormatter citationFormatter, string citedFor)

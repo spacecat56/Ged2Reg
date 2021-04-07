@@ -20,6 +20,7 @@ namespace Ged2Reg.Model
         public int PlaceIndexEntries { get; set; }
 
         public int UncitedEvents { get; set; }
+        public int CitesBeyondLimit { get; set; }
 
         public ReportStats Init(TimeSpan prep)
         {

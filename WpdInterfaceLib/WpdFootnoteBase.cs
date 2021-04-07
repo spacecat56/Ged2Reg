@@ -8,6 +8,7 @@ namespace WpdInterfaceLib
         public string[] Brackets;
         public static string DefaultFootnoteStyle { get; set; }  = "FootnoteText";
         public static string DefaultFootnoteRefStyle { get; set; } = "FootnoteReference";
+        //public abstract int MaxFootnoteId { get; }
         public string NoteReferenceStyle { get;  set; }
         public string NoteTextStyle { get;  set; }
         public bool IsApplied { get;  set; }

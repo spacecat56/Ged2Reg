@@ -27,5 +27,6 @@ namespace WpdInterfaceLib
         bool HasNonDefaultEndnotes();
         bool HasNonDefaultFootnotes();
         void BreakForIndex();
+        bool HasReachedFootnoteLimit();
     }
 }

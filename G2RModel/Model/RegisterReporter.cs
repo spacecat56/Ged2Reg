@@ -392,6 +392,7 @@ namespace Ged2Reg.Model
             sb.AppendLine($"\tDistinct citations...........{MyReportStats.DistinctCitations,8:N0}");
             sb.AppendLine($"\tDeferred/combined citations..{CitationCoordinator.Deferred,8:N0}");
             sb.AppendLine($"\tFacts with no citations......{MyReportStats.UncitedEvents,8:N0}");
+            sb.AppendLine($"\tCitations exceeding limit....{MyReportStats.CitesBeyondLimit,8:N0}");
             //sb.AppendLine($"\tPrep time...................{MyReportStats.PrepTime:h\\:mm\\:ss\\.fff}");
             //sb.AppendLine($"\tRun time....................{MyReportStats.ReportTime:h\\:mm\\:ss\\.fff}");
             sb.AppendLine($"\tReport preparation time.......{MyReportStats.ReportTime.Add(MyReportStats.PrepTime):h\\:mm\\:ss\\.fff}");
@@ -936,13 +937,20 @@ namespace Ged2Reg.Model
             {
                 CitationProposal cp = lcc[$"{ev.EventTagCode.ToString()}{keyUniquifier}"];
                 EventCitations ec = cp?.Citation;
-                if (ec?.SelectedItem != null)
-                { // the lcc detects multiplicity and here we will push the extra sentence to the EmitNote
-                    MyReportStats.Citations++;
-                    if (!ec.SelectedItem.IsEmitted)
-                        MyReportStats.DistinctCitations++;
-                    ec.EmitNote(p.Document, p, cp.AppliesTo());
-                } 
+                if (ec?.HasNoteToEmit() ?? false)
+                {
+                    if (p.Document.HasReachedFootnoteLimit())
+                    {
+                        MyReportStats.CitesBeyondLimit++;
+                    }
+                    else 
+                    { // the lcc detects multiplicity and here we will push the extra sentence to the EmitNote
+                        MyReportStats.Citations++;
+                        if (!ec.SelectedItem.IsEmitted)
+                            MyReportStats.DistinctCitations++;
+                        ec.EmitNote(p.Document, p, cp.AppliesTo());
+                    } 
+                }
                 else if (lcc.IsUncited(ev.Owner?.InternalId, ev.EventTagCode))
                 {
                     MyReportStats.UncitedEvents++;
@@ -1157,13 +1165,20 @@ namespace Ged2Reg.Model
                 {
                     CitationProposal cp = lcc[TagCode.MARR.ToString() + family.Family.FamilyView.Id];
                     EventCitations ec = cp?.Citation;
-                    if (ec?.SelectedItem != null)
+                    if (ec?.HasNoteToEmit() ?? false)
                     {
-                        MyReportStats.Citations++;
-                        if (!ec.SelectedItem.IsEmitted)
-                            MyReportStats.DistinctCitations++;
-                        ec.EmitNote(_c.Model.Doc, p, cp.AppliesTo());
-                    } 
+                        if (p.Document.HasReachedFootnoteLimit())
+                        {
+                            MyReportStats.CitesBeyondLimit++;
+                        }
+                        else 
+                        {
+                            MyReportStats.Citations++;
+                            if (!ec.SelectedItem.IsEmitted)
+                                MyReportStats.DistinctCitations++;
+                            ec.EmitNote(_c.Model.Doc, p, cp.AppliesTo());
+                        }
+                    }
                     else if (p5Marr!=null && lcc.IsUncited(family.InternalId, p5Marr.EventTagCode))
                     {
                         MyReportStats.UncitedEvents++;
