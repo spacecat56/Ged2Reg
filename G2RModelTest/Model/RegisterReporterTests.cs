@@ -1336,6 +1336,38 @@ namespace G2RModelTest.Model
         }
 
 
+        [TestMethod]
+        public void SpecialParentheticalWordsTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A017_SpecialParentheticalWordsTest.docx",
+                Title = "Special Parenthetical Words Test",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.OmitFocusSpouses),
+                    nameof(G2RSettings.GenerationPrefix),
+                    nameof(G2RSettings.IncludeBackRefs),
+                    nameof(G2RSettings.Placeholders),
+                },
+                FlagsOff = new List<string>()
+                {
+                    nameof(G2RSettings.Focus),
+                },
+                MustNotOccur = new List<string>() { @"(Now " },
+                MustOccur = new List<string>() { @"(now " },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
+
+        }
+
 
         [TestCleanup]
         public void LogResults()

@@ -19,6 +19,7 @@ namespace Ged2Reg.Model
         /// upper case letter 
         /// </summary>
         public static Regex Word1Regex { get;  } = new Regex(@"(?-i)^[(](?<word1>[A-Z][a-z]*)[ ,][^A-Z]");
+        public static Regex Word1aRegex { get; } = new Regex(@"(?-i)^[(](?<word1>Also|And|But|Her|His|Maybe|Now|Perhaps|Possibly)\b");
 
         public string EventString { get; set; }
         public string PlaceIndexEntry { get; set; }
@@ -119,6 +120,8 @@ namespace Ged2Reg.Model
 
                 // even "unedited: we REALLY want to get rid of intrusive leading uppercase letters
                 Match m = Word1Regex.Match(detail);
+                if (!m.Success)
+                    m = Word1aRegex.Match(detail);
                 if (m.Success)
                 {
                     if (!NameSurveyor.IsKnown(m.Groups["word1"].Value))
