@@ -1303,6 +1303,39 @@ namespace G2RModelTest.Model
         }
 
 
+        [TestMethod]
+        public void GenerationSpanningPlaceholdersTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A016_GenerationSpanningPlaceholdersTest.docx",
+                Title = "Generation Spanning Placeholders Test",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.OmitFocusSpouses),
+                    nameof(G2RSettings.GenerationPrefix),
+                    nameof(G2RSettings.IncludeBackRefs),
+                    nameof(G2RSettings.Placeholders),
+                },
+                FlagsOff = new List<string>()
+                {
+                    nameof(G2RSettings.Focus),
+                },
+                MustNotOccur = new List<string>() { @"09-249" },
+                MustOccur = new List<string>() { @"08-249" },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
+
+        }
+
+
 
         [TestCleanup]
         public void LogResults()

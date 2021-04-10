@@ -568,7 +568,8 @@ namespace Ged2Reg.Model
             int gen = g ?? _currentGeneration;
             IWpdParagraph p = doc.InsertParagraph();
             p.StyleName = _styleMap[StyleSlots.MainPersonText].CharacterStyleName;
-            string slot = FormatAncestorNumber(frum, gen, _generationNumberPrefixes);
+            int fromGen = (int) Math.Floor(BigInteger.Log(frum, 2)) + 1;
+            string slot = FormatAncestorNumber(frum, fromGen, _generationNumberPrefixes);
             p.Append($"{slot}");
             if (thru > frum)
                 p.Append($" - {FormatAncestorNumber(thru, gen, _generationNumberPrefixes)}");
