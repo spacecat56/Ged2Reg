@@ -1256,6 +1256,7 @@ namespace G2RModelTest.Model
                     nameof(G2RSettings.Placeholders)
                 },
                 MustNotOccur = new List<string>() { @"She and she died", "She  " },
+                CheckPlainText = true,
             }.Init();
 
             ReadyModel(cfg.ModelState);
@@ -1264,6 +1265,44 @@ namespace G2RModelTest.Model
             Assert.IsTrue(cfg.Eval());
 
         }
+
+        [TestMethod]
+        public void EmptyEventsTest2()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A015_EmptyEvents2.docx",
+                Title = "Empty Events Test 2",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.OmitFocusSpouses),
+                    nameof(G2RSettings.GenerationPrefix),
+                    nameof(G2RSettings.IncludeBackRefs),
+                },
+                FlagsOff = new List<string>()
+                {
+                    nameof(G2RSettings.Focus),
+                    nameof(G2RSettings.Placeholders)
+                },
+                // regex is too general, it matches e.g. "She died..."
+                //RegexesToAssertFalse = new List<string>() { @"[A-Z][a-z]+\sdied" },
+                // there are about 40 specific cases in this test output, 
+                // we just need to pick one
+                MustNotOccur = new List<string>() { @"Clere died" },
+                CheckPlainText = true,
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
+
+        }
+
+
 
         [TestCleanup]
         public void LogResults()

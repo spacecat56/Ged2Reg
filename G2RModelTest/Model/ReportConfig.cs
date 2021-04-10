@@ -32,6 +32,7 @@ namespace G2RModelTest.Model
         public List<string> RegexesToAssertFalse { get; set; }
         public bool RestrictRexToMainDoc { get; set; }
         public int MinSize { get; set; } = 1024;
+        public bool CheckPlainText { get; set; }
 
         public ReportConfig Init(bool conform = true, bool asRegister = true)
         {
@@ -59,13 +60,16 @@ namespace G2RModelTest.Model
             DocFile doc = new DocFile().Init(Settings.OutFile);
             //string txt = File.ReadAllText(Settings.OutFile);
             Assert.IsTrue(doc.FullText.Length >= MinSize);
+
+            string checkText = CheckPlainText ? doc.MainTextPlainText() : doc.FullText;
+
             foreach (string s in MustOccur ?? new List<string>())
             {
-                Assert.IsTrue(doc.FullText.IndexOf(s) >= 0, $"Expected {s} not found in {FileName}");
+                Assert.IsTrue(checkText.IndexOf(s) >= 0, $"Expected {s} not found in {FileName}");
             }
             foreach (string s in MustNotOccur ?? new List<string>())
             {
-                Assert.IsTrue(doc.FullText.IndexOf(s) < 0, $"Unexpected {s} was found in {FileName}");
+                Assert.IsTrue(checkText.IndexOf(s) < 0, $"Unexpected {s} was found in {FileName}");
             }
 
             string rexTxt = RestrictRexToMainDoc ? doc.MainText : doc.FullText;
