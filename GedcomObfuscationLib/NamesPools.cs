@@ -18,6 +18,10 @@ namespace GedcomObfuscationLib
             "MARK",
             "STILL",
             "IRELAND",
+            "DAY",
+            "DAUGHTER",
+            "SON",
+            "CHILD",
         };
 
         public static string[] Surnames =
