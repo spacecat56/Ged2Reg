@@ -3,6 +3,7 @@
 	fix: leading generation number (if selected on) was wrong when placeholder spanned generations (ancestors)
 	improve: obfuscator will not map some "names" (Day, Daughter); undo some damage in sample.ged
 	improve: recognize some words to downshift at the start of (an event description)
+	improve: small updates to the User Guide
 
 Installer version 5.0.39 - 04/07/21
 	fix: name suffixes following surname in GEDCOM NAME records are now included in output
