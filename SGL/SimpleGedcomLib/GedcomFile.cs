@@ -346,5 +346,35 @@ namespace SimpleGedcomLib
 
         }
 
+        private Dictionary<string, List<FamilyView>> _indiIdToFamilyViewsMap;
+
+        public List<FamilyView> FindFamilies(IndividualView iv)
+        {
+            (_indiIdToFamilyViewsMap ??= BuildFvMap()).TryGetValue(iv.Id, out List<FamilyView> rv);
+            return rv??new List<FamilyView>();
+        }
+
+        private Dictionary<string, List<FamilyView>> BuildFvMap()
+        {
+            _indiIdToFamilyViewsMap = new Dictionary<string, List<FamilyView>>();
+
+            foreach (FamilyView fv in FamilyViews)
+            {
+                if (fv?.Husband?.Id != null)
+                    Map(_indiIdToFamilyViewsMap, fv.Husband.Id, fv);
+                if (fv?.Wife?.Id != null)
+                    Map(_indiIdToFamilyViewsMap, fv.Wife.Id, fv);
+            }
+            return _indiIdToFamilyViewsMap;
+        }
+
+        private void Map(Dictionary<string, List<FamilyView>> d, string id, FamilyView fv)
+        {
+            if (!d.TryGetValue(id, out List<FamilyView> list))
+            {
+                d.Add(id, list = new List<FamilyView>());
+            }
+            list.Add(fv);
+        }
     }
 }

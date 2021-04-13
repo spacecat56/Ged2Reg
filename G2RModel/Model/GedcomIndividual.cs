@@ -413,10 +413,11 @@ namespace Ged2Reg.Model
             Families = new List<GedcomFamily>();
             Spouses = new List<GedcomIndividual>();
 
-            // find families
-            var fs = (from view in ReportContext.Instance.Model.GedcomFile.FamilyViews
-                where (IndividualView.Equals(view.Husband) || IndividualView.Equals(view.Wife))
-                select view).ToList();
+            // find families (the linq search was terribly slow on huge/complex tree)
+            //var fs = (from view in ReportContext.Instance.Model.GedcomFile.FamilyViews
+            //    where (IndividualView.Equals(view.Husband) || IndividualView.Equals(view.Wife))
+            //    select view).ToList();
+            List<FamilyView> fs = ReportContext.Instance.Model.GedcomFile.FindFamilies(IndividualView);
             foreach (FamilyView view in fs)
             {
                 //GedcomFamily fam = GedcomFamily.AllFamilies.Find(f => f.FamilyView == view);
