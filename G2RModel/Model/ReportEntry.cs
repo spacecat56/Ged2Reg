@@ -12,6 +12,12 @@ namespace G2RModel.Model
         public string OverrideId { get; set; }
         public string NaturalId => IndividualView?.Id;
 
+        #region Overrides of ReportEntryBase
+
+        public override string Who => Individual?.NameForward;
+
+        #endregion
+
         /// <summary>
         /// The "natural" Id is the GEDCOM id. But, we allow an
         /// override (set to recognize duplicates, when and where that

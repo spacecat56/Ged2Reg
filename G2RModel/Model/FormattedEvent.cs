@@ -28,12 +28,29 @@ namespace Ged2Reg.Model
 
         public ReportEntryBase Owner { get; set; }
 
+        private string _eventDate;
+        private string _eventPlace;
+
         private static char[] _splitSpace = { ' ' };
 
         //public static FormattedEvent ConditionalEvent(string ev, string dayt, string place, string detail = null, bool omitDate = false)
         //{
         //    return new FormattedEvent().Init(ev, dayt, place, detail, omitDate);
         //}
+
+        public string SummaryStatement()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(EventTagCode.Map());
+            string who = Owner.Who;
+            if (!string.IsNullOrEmpty(who))
+                sb.Append(" of ").Append(who);
+            if (!string.IsNullOrEmpty(_eventDate))
+                sb.Append(", ").Append(_eventDate);
+            if (!string.IsNullOrEmpty(_eventPlace))
+                sb.Append(", ").Append(_eventPlace);
+            return sb.ToString();
+        }
 
         public FormattedEvent Init(string ev, string dayt, string place, string detail = null, bool omitDate = false)
         {
@@ -43,7 +60,7 @@ namespace Ged2Reg.Model
                 {
                     FormattedPlaceName fpn = GenealogicalPlaceFormatter.Instance.Reformat(place);
 
-                    sb1.Append($" {fpn.Preposition} ").Append(fpn.PreferredName);
+                    sb1.Append($" {fpn.Preposition} ").Append(_eventPlace = fpn.PreferredName);
                     PlaceIndexIndex = sb1.Length;
                     PlaceIndexEntry = fpn.IndexEntry;
                 }
@@ -55,10 +72,10 @@ namespace Ged2Reg.Model
                     return;
                 // here, anything that is SUPPOSED TO BE a date will be 
                 // output, EVEN IF we can't parse and reformat it
-                string d = GenealogicalDateFormatter.Instance.Reformat(dayt);
-                if (string.IsNullOrEmpty(d)) 
-                    d = dayt.Trim();
-                stringBuilder.Append(' ').Append(d);
+                _eventDate = GenealogicalDateFormatter.Instance.Reformat(dayt);
+                if (string.IsNullOrEmpty(_eventDate)) 
+                    _eventDate = dayt.Trim();
+                stringBuilder.Append(' ').Append(_eventDate);
             }
 
             if (string.IsNullOrEmpty(dayt) && string.IsNullOrEmpty(place))

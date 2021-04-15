@@ -959,7 +959,7 @@ namespace Ged2Reg.Model
                 {
                     MyReportStats.UncitedEvents++;
                     if (_insertUncitedNotes)
-                        EventCitations.InsertUnciteNote(p, $"{ev.EventTagCode.Map()}");
+                        EventCitations.InsertUnciteNote(p, ev.SummaryStatement());
                 }
             }
             ConditionallyEmitPlaceIndexEntry(p.Document, p, ev);
@@ -992,7 +992,7 @@ namespace Ged2Reg.Model
         }
 
         private void EmitStandardChildsMarriageClause(IWpdParagraph p, ReportEntry re, string conn)
-        {
+        { // todo: shouldn't this possibly emit citations?
             string mnbr = re.SafeFamilyEntries.Count > 1 ? $" {_wordsForNumbers[1]}" : "";
             for (int i = 0; i < re.SafeFamilyEntries.Count; i++)
             {
@@ -1163,11 +1163,25 @@ namespace Ged2Reg.Model
                     p.Append($"{pending}{p5Marr.EventString}");
                     ConditionallyEmitPlaceIndexEntry(_c.Model.Doc, p, p5Marr);
                 }
-                p.Append(p6Divc==null?".":";");                 // divorce (complicates the punctuation and citation placement)
+                p.Append(p6Divc == null ? "." : ";");                 // divorce (complicates the punctuation and citation placement)
+                
+                //else if (_insertUncitedNotes)
+                //{
+                //    p.Append(p6Divc == null ? "." : ";");                 // divorce (complicates the punctuation and citation placement)
+                //    EventCitations.InsertUnciteNote(p,
+                //        (p5Marr ??= new FormattedEvent() {EventTagCode = TagCode.MARR, Owner = family})
+                //        .SummaryStatement());
+                //}
+                //else
+                //{
+                //    p.Append(p6Divc == null
+                //        ? "."
+                //        : ";"); // divorce (complicates the punctuation and citation placement)
+                //}
 
                 if (doCite)
                 {
-                    CitationProposal cp = lcc[TagCode.MARR.ToString() + family.Family.FamilyView.Id];
+                    CitationProposal cp = lcc[TagCode.MARR + family.Family.FamilyView.Id];
                     EventCitations ec = cp?.Citation;
                     if (ec?.HasNoteToEmit() ?? false)
                     {
@@ -1183,11 +1197,11 @@ namespace Ged2Reg.Model
                             ec.EmitNote(_c.Model.Doc, p, cp.AppliesTo());
                         }
                     }
-                    else if (p5Marr!=null && lcc.IsUncited(family.InternalId, p5Marr.EventTagCode))
+                    else if (lcc.IsUncited(re.InternalId, TagCode.MARR))
                     {
                         MyReportStats.UncitedEvents++;
                         if (_insertUncitedNotes)
-                            EventCitations.InsertUnciteNote(p, $"{TagCode.MARR.Map()}");
+                            EventCitations.InsertUnciteNote(p, (p5Marr ?? new FormattedEvent() { EventTagCode = TagCode.MARR, Owner = family }).SummaryStatement());
                     }
                 }
 

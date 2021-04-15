@@ -6,7 +6,12 @@ using Ged2Reg.Model;
 namespace G2RModel.Model
 {
     public class ReportFamilyEntry : ReportEntryBase
-    { public ReportEntry Husband { get; set; }
+    {
+        #region Overrides of ReportEntryBase
+        public override string Who => $"{Husband?.Who}, {Wife?.Who}";
+        #endregion
+
+        public ReportEntry Husband { get; set; }
         public ReportEntry Wife { get; set; }
         public ListOfReportEntry Children { get; set; }
         public GedcomFamily Family { get; set; }

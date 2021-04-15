@@ -1369,6 +1369,42 @@ namespace G2RModelTest.Model
         }
 
 
+        [TestMethod]
+        public void CitationPlaceholdersTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A018_CitationPlaceholdersTest.docx",
+                Title = "Citation Placeholders Test",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.CitationPlaceholders),
+                    nameof(G2RSettings.GenerationPrefix),
+                    nameof(G2RSettings.IncludeBackRefs),
+                    //nameof(G2RSettings.DebuggingOutput),
+                    nameof(G2RSettings.GenerationHeadings),
+
+                },
+                FlagsOff = new List<string>()
+                {
+                    nameof(G2RSettings.Focus),
+                    nameof(G2RSettings.Placeholders),
+                },
+                //MustNotOccur = new List<string>() { @"(Now " },
+                // see 17-112896
+                MustOccur = new List<string>() { "***Citation needed*** for: Birth ", "***Citation needed*** for: Marriage " },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
+
+        }
+
         [TestCleanup]
         public void LogResults()
         {

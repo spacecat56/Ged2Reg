@@ -6,5 +6,10 @@ namespace G2RModel.Model
     {
         internal static BigInteger _nextInternalId;
         public string InternalId { get; set; } = $"{_nextInternalId++}";
+
+        public virtual string Who
+        {
+            get { throw new System.NotImplementedException(); }
+        }
     }
 }
