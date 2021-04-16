@@ -1445,6 +1445,49 @@ namespace G2RModelTest.Model
             Assert.IsTrue(cfg.Eval());
 
         }
+
+        //***Citation needed*** for: Marriage of Charles Chauncey, Sarah Burr
+        [TestMethod]
+        public void UnseenCitationsTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A020_UnseenCitationsTest.docx",
+                Title = "Unseen Citations Test",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.CitationPlaceholders),
+                    nameof(G2RSettings.GenerationPrefix),
+                    nameof(G2RSettings.IncludeBackRefs),
+                    nameof(G2RSettings.DebuggingOutput),
+                    nameof(G2RSettings.GenerationHeadings),
+                    nameof(G2RSettings.DeferConsecutiveRepeats),
+                    nameof(G2RSettings.UseSeeNote),
+
+                },
+                FlagsOff = new List<string>()
+                {
+                    nameof(G2RSettings.Focus),
+                    nameof(G2RSettings.Placeholders),
+                },
+                //MustNotOccur = new List<string>() { @"(Now " },
+                // see 17-112896
+                // note this test is inadequate, as it it did not capture the condition
+                // of missing cites due to accretion onto non-emitted marriage
+                MustNotOccur = new List<string>() { "***Citation needed*** for: Marriage of Charles Chauncey, Sarah Burr" },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
+
+        }
+
+
         [TestCleanup]
         public void LogResults()
         {

@@ -844,7 +844,7 @@ namespace Ged2Reg.Model
                           && !doNotCite
                           && (!_c.Settings.ObscureLiving || !_c.Settings.OmitLivingCitations || re.Individual.PresumedDeceased);
 
-            if (re.AssignedMainNumber == 5369)
+            if (re.AssignedMainNumber == 1764)
                 Debug.WriteLine($"debug trap for {re.AssignedMainNumber}");
             LocalCitationCoordinator localCitations = BuildLocalCitationCoordinator(re, doCite, 
                 re.SuppressSpouseInfo ? _indiCitableEvents : _allCitableEvents, !re.SuppressSpouseInfo);
@@ -953,7 +953,7 @@ namespace Ged2Reg.Model
         {
             if (ev == null || string.IsNullOrEmpty(ev.EventString)) return;
 
-            if ((ev.Owner as ReportEntry)?.AssignedMainNumber == 5369)
+            if ((ev.Owner as ReportEntry)?.AssignedMainNumber == 1764)
                 Debug.WriteLine($"debug trap for {(ev.Owner as ReportEntry).AssignedMainNumber}");
 
             p.Append($"{clauseOpener}{ev.EventString}{clauseEnder}");

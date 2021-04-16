@@ -380,9 +380,10 @@ namespace Ged2Reg.Model
 
             // find and combine consecutive repeats of the same citation
             CitationProposal candidateProposal = coordinator[0];
+            
             for (int i = 1; i < coordinator.Count; i++)
             {
-                if (coordinator[i].Matches(candidateProposal))
+                if (coordinator[i].Matches(candidateProposal) && !FamilyEventsToCite.Contains(candidateProposal.EventTagCode))
                 { // push the name of the vanishing event(s) to the survivor 
                     coordinator[i].AddApplicableEvents(candidateProposal);
                     candidateProposal = coordinator[i];
