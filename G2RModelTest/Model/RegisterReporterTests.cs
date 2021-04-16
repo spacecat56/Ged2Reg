@@ -1405,6 +1405,46 @@ namespace G2RModelTest.Model
 
         }
 
+
+        [TestMethod]
+        public void CitationPlaceholdersDeferTest()
+        {
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.AncestorReady,
+                OutputPath = OutputPath,
+                FileName = "A019_CitationPlaceholdersDeferTest.docx",
+                Title = "Citation Placeholders Defer Test",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.CitationPlaceholders),
+                    nameof(G2RSettings.GenerationPrefix),
+                    nameof(G2RSettings.IncludeBackRefs),
+                    //nameof(G2RSettings.DebuggingOutput),
+                    nameof(G2RSettings.GenerationHeadings),
+                    nameof(G2RSettings.DeferConsecutiveRepeats),
+                    nameof(G2RSettings.UseSeeNote),
+
+                },
+                FlagsOff = new List<string>()
+                {
+                    nameof(G2RSettings.Focus),
+                    nameof(G2RSettings.Placeholders),
+                },
+                //MustNotOccur = new List<string>() { @"(Now " },
+                // see 17-112896
+                // note this test is inadequate, as it it did not capture the condition
+                // of missing cites due to accretion onto non-emitted marriage
+                MustOccur = new List<string>() { "***Citation needed*** for: Death of Alice Boleyn" },
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            _settings.Generations = 99;
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
+
+        }
         [TestCleanup]
         public void LogResults()
         {

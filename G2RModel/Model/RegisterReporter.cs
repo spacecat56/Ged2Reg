@@ -50,6 +50,20 @@ namespace Ged2Reg.Model
             TagCode.DIV,
         };
 
+        // events list without marriage; the defer logic
+        // can accrete cites onto the MARR, and then 
+        // suppress spouse info leaves them non-emitted
+        private List<TagCode> _indiCitableEvents = new List<TagCode>()
+        {
+            TagCode.BIRT,
+            TagCode.BAPM,
+            TagCode.CHR,
+            TagCode.DEAT,
+            TagCode.BURI,
+            //TagCode.MARR,
+            //TagCode.DIV,
+        };
+
 
         #region Fields to internalize settings/policies
         private Dictionary<StyleSlots, Formatting> _styleMap;
@@ -830,7 +844,10 @@ namespace Ged2Reg.Model
                           && !doNotCite
                           && (!_c.Settings.ObscureLiving || !_c.Settings.OmitLivingCitations || re.Individual.PresumedDeceased);
 
-            LocalCitationCoordinator localCitations = BuildLocalCitationCoordinator(re, doCite, eventsToCiteFor:_allCitableEvents);
+            if (re.AssignedMainNumber == 5369)
+                Debug.WriteLine($"debug trap for {re.AssignedMainNumber}");
+            LocalCitationCoordinator localCitations = BuildLocalCitationCoordinator(re, doCite, 
+                re.SuppressSpouseInfo ? _indiCitableEvents : _allCitableEvents, !re.SuppressSpouseInfo);
 
             string comma = null;
             if (!isChild && _ancestryReport && re.HasParents)
@@ -936,6 +953,9 @@ namespace Ged2Reg.Model
         {
             if (ev == null || string.IsNullOrEmpty(ev.EventString)) return;
 
+            if ((ev.Owner as ReportEntry)?.AssignedMainNumber == 5369)
+                Debug.WriteLine($"debug trap for {(ev.Owner as ReportEntry).AssignedMainNumber}");
+
             p.Append($"{clauseOpener}{ev.EventString}{clauseEnder}");
             if (lcc.DoCite)
             {
@@ -1018,7 +1038,8 @@ namespace Ged2Reg.Model
 
             bool doCite = _c.Settings.Citations
                           && (!_c.Settings.ObscureLiving || !_c.Settings.OmitLivingCitations || re.Individual.PresumedDeceased);
-            LocalCitationCoordinator lCite = BuildLocalCitationCoordinator(re, doCite, _allCitableEvents);
+            LocalCitationCoordinator lCite = BuildLocalCitationCoordinator(re, doCite, 
+                re.SuppressSpouseInfo ? _indiCitableEvents : _allCitableEvents, !re.SuppressSpouseInfo);
 
             // to position footnote superscripts in the running text correctly (especially,
             // in relation to punctuation), we need to know IN ADVANCE all of the pieces that 
