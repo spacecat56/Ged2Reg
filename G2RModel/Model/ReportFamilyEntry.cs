@@ -44,7 +44,8 @@ namespace G2RModel.Model
 
             //sb.Append(' ').Append(SafeSurname(Husband?.Individual?.SafeSurname, placeholder));
 
-            return sb.ToString();
+            string rv = sb.ToString();
+            return rv;
         }
         public string IndexableExtendedWifeForeName
         {
@@ -82,13 +83,13 @@ namespace G2RModel.Model
             StringBuilder sb = new StringBuilder();
 
             // start with the maiden name
-            sb.Append("(").Append(Wife.Individual.SafeSurname).Append(')');
+            sb.Append(WrapSafely(Wife.Individual.SafeSurname));
 
             // add the surnames of all prior marriages
             int ix = Wife.Families.IndexOf(Family);
             for (int i = 0; i < ix; i++)
             {
-                sb.Append(" (").Append(SafeSurname(Wife?.Individual?.Families[i].Husband?.SafeSurname, placeholder)).Append(')');
+                sb.Append(WrapSafely(SafeSurname(Wife?.Individual?.Families[i].Husband?.SafeSurname, placeholder)));
             }
 
             if (includeHusbandSurname)
@@ -98,6 +99,15 @@ namespace G2RModel.Model
             }
 
             return sb.ToString();
+        }
+
+        private string WrapSafely(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return s;
+            s = s.Trim();
+            if (s.StartsWith('(') && s.EndsWith(')'))
+                return s;
+            return $"({s})";
         }
 
         private string SafeSurname(string s, string placeholder)

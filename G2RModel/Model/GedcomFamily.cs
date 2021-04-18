@@ -190,6 +190,15 @@ namespace Ged2Reg.Model
         {
             return indi == Husband ? Wife : Husband;
         }
+        private string WrapSafely(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return s;
+            s = s.Trim();
+            if (s.StartsWith('(') && s.EndsWith(')'))
+                return s;
+            return $"({s})";
+        }
+
         public string ExtendedWifeName(string placeholder = "_____")
         {
             if (Wife?.Families == null)
@@ -210,13 +219,13 @@ namespace Ged2Reg.Model
 
             // start with given name and maiden name
             sb.Append(Wife.SafeGivenName);
-            sb.Append(" (").Append(Wife.SafeSurname).Append(')');
+            sb.Append(' ').Append(WrapSafely(Wife.SafeSurname));
 
             // add the surnames of all prior marriages
             int ix = Wife.Families.IndexOf(this);
             for (int i = 0; i < ix; i++)
             {
-                sb.Append(" (").Append(SafeName(Wife?.Families[i].Husband?.SafeSurname, placeholder)).Append(')');
+                sb.Append(' ').Append(WrapSafely(SafeName(Wife?.Families[i].Husband?.SafeSurname, placeholder)));
             }
 
             if (!Husband?.HasNoSurname??true) // ugh.  todo: true or false here
