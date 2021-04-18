@@ -33,7 +33,7 @@ namespace Ged2Reg.Model
         {
             if (SelectedItem != null && !force) 
                 return false;
-            if (!DistinctCitations.Contains(dc)) 
+            if (!DistinctCitations.Contains(dc)) // todo: this is the biggest time-consumer in the application
                 return false;
             SelectedItem = dc;
             SelectedItem.SelectedCount++;
