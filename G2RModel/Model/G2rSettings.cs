@@ -254,6 +254,8 @@ namespace Ged2Reg.Model
         private bool _downshiftNames;
         private bool _abbreviate;
 
+        private bool _appendTitle;
+
         #endregion
 
         #region initializations
@@ -670,6 +672,13 @@ namespace Ged2Reg.Model
         }
         #endregion
 
+
+        [DataMember]
+        public bool AppendTitle
+        {
+            get { return _appendTitle; }
+            set { _appendTitle = value; OnPropertyChanged(); }
+        }
 
         [DataMember]
         public bool AbbreviateChildEvents

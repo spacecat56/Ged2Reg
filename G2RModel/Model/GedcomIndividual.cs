@@ -62,6 +62,8 @@ namespace Ged2Reg.Model
                 BaptizedDescription = tag?.FullText();
                 BaptismTagCode = tag?.Code ?? TagCode.BAPM;
 
+                Title = _iView.IndiTag.GetChild(TagCode.TITL)?.Content;
+
                 InitPersonalName();
             }
         }
@@ -124,6 +126,7 @@ namespace Ged2Reg.Model
         public string SafeSurname => $"{Surname}"; // this usage is ambiguous
         public string IndexableSurname => string.IsNullOrEmpty(SafeSurname) ? NoSurnameIndexValue : SafeSurname;
         public string IndexableGivenName => $"{SafeGivenName}{SafeSuffix}";
+        public string Title { get; set; }
 
         public static string NoSurnameIndexValue { get; set; } = "(No surname)";
 

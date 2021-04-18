@@ -104,6 +104,7 @@ namespace Ged2Reg.Model
         private bool _placeFirst;
         private bool _insertUncitedNotes;
         private bool _spaceCouples;
+        private bool _appendTitle;
 
         private Formatting _childNameFormatting;
         private Formatting _generationNumberFormatting;
@@ -153,6 +154,7 @@ namespace Ged2Reg.Model
             _standardBriefContdChild = _c.Settings.StandardBriefContinued;
 
             _spaceCouples = _c.Settings.SpaceBetweenCouples;
+            _appendTitle = _c.Settings.AppendTitle;
 
             ReportEntryFactory.Init(!_allowMultiple);
 
@@ -697,6 +699,9 @@ namespace Ged2Reg.Model
             MyReportStats.MainPerson++;
             if (!indi.Individual.PresumedDeceased)
                 MyReportStats.MaybeLiving++;
+
+            if (_appendTitle && !string.IsNullOrEmpty(indi.Individual.Title))
+                p.Append($", {indi.Individual.Title}");
         }
 
 

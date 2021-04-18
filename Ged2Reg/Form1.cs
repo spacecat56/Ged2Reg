@@ -73,6 +73,7 @@ namespace Ged2Reg
         private CheckBox kbPlaceholderCites;
         private CheckBox kbPreferEditedCites;
         private CheckBox kbAbrreviations;
+        private CheckBox kbAppendTitle;
 
         private void AdjustForm ()
         {
@@ -214,6 +215,16 @@ namespace Ged2Reg
                 nameof(kbEditDescr));
 
             comboBox2.Top -= 2;
+
+
+            lbColPos = label27.Left;
+            kbColPos = checkBox21.Left;
+            yPos = label35.Bottom + (label35.Height / 2);
+            kbAppendTitle = AddBoundCheckBox(tpContentOptions,
+                "Append Title to main person names",
+                nameof(G2RSettings.AppendTitle));
+
+
 
             // extra copy of this setting, not needed
             kbAncestorsReport.Visible = label65.Visible = false;
