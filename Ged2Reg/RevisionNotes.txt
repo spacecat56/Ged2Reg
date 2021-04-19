@@ -1,4 +1,13 @@
-﻿Installer version 5.0.40 - 04/10/21
+﻿Installer version 5.0.41 - 04/19/21
+	Improve: performance in finding a persons families (when building tree)
+	fix: missing 'cite needed' on main person marriages
+	fix: cites could be lost when deferred onto a MARR that is suppressed
+	fix: 1st MARR cites lost if same as 2nd MARR cite and defer setting 'true'
+	improve: Add setting to emit Title after main person name
+	fix: could emit doubled parens around (Unknown) if parens in UnkownInReport setting value
+	Doc: 'title' option, and discuss issues with deep/interlinked trees
+
+Installer version 5.0.40 - 04/10/21
 	fix: conjunction was missing in spouse sentence with parents, no BIRT but with DEAT or BURI
 	fix: leading generation number (if selected on) was wrong when placeholder spanned generations (ancestors)
 	improve: obfuscator will not map some "names" (Day, Daughter); undo some damage in sample.ged
