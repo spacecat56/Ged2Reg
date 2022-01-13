@@ -893,6 +893,9 @@ namespace Ged2Reg
             {
                 MessageBox.Show("Canceled");
                 Log("Canceled");
+                if (_rrm.ActionDelegates != null) 
+                    // don't leave cancel request lying around
+                    _rrm.ActionDelegates.CancelRequested = false;
             }
             catch (Exception ex)
             {

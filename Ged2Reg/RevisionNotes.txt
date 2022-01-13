@@ -1,4 +1,8 @@
-﻿Installer version 5.0.41 - 04/19/21
+﻿Installer version 5.0.?? - 01/??/22
+	fix: clear 'cancel requested' condition so as to not interfere with subsequent actions
+	todo: back-references to children in focused ancestors report sometimes placed after first of two parents
+
+Installer version 5.0.41 - 04/19/21
 	Improve: performance in finding a persons families (when building tree)
 	fix: missing 'cite needed' on main person marriages
 	fix: cites could be lost when deferred onto a MARR that is suppressed

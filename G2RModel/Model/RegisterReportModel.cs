@@ -278,6 +278,9 @@ namespace Ged2Reg.Model
             {
                 individual.Reset();
             }
+            if (ActionDelegates != null)
+                // don't leave cancel request lying around
+                ActionDelegates.CancelRequested = false;
         }
 
         public void OpenGedcom(string fn)
