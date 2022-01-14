@@ -203,7 +203,7 @@ namespace G2RModel.Model
                         // "whatever" the preceding accomplishes...
                         // if a spouse is out of focus but had EmitChildrenAfter == true,
                         // we need to "transfer" that setting to the remaining parent
-                        if (spousEntryThisGeneration.OutOfFocus && spousEntryThisGeneration.EmitChildrenAfter)
+                        if (suppressingSpouses && spousEntryThisGeneration.OutOfFocus && spousEntryThisGeneration.EmitChildrenAfter)
                             ngs[i][j].EmitChildrenAfter = true;
                     }
 

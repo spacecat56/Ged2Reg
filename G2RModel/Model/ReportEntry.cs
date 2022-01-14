@@ -45,9 +45,14 @@ namespace G2RModel.Model
         /// is also chosen nothing additional needs to be done
         /// beyond putting them in the tree
         /// </summary>
-        public bool OutOfFocus { get; set; }
+        public bool OutOfFocus
+        {
+            get => _outOfFocus;
+            set => _outOfFocus = value;
+        }
+        private bool _outOfFocus;
 
- 
+
         /// <summary>
         /// but we also need InFocus, which is NOT the same as
         /// "not OutOfFocus"... InFocus males with OOF wives
