@@ -31,7 +31,9 @@ namespace Ged2Reg
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            string[] args = Environment.GetCommandLineArgs();
+            bool forceLicense = (args.Length > 1 && args[1] == "-L");
+            Application.Run(new Form1() { ForceLicense = forceLicense });
         }
     }
 }

@@ -39,7 +39,7 @@ namespace Ged2Reg
             }
             if (!File.Exists(path))
                 throw new FileNotFoundException();
-            SimpleSerializer<Agreement> ser = new SimpleSerializer<Agreement>();
+            SimpleSerializer<Agreement> ser = new SimpleSerializer<Agreement>() { MaxStringLength = 16384};
             Agreement rv = ser.Load(path);
             return rv;
         }
@@ -72,5 +72,9 @@ namespace Ged2Reg
         [DataMember] public string AgreedAuthorship { get; set; }
         [DataMember] public StateOfPlay Status { get; set; } = StateOfPlay.None;
 
+        internal void Reset()
+        {
+            Status = StateOfPlay.None;
+        }
     }
 }

@@ -24,6 +24,8 @@ namespace CommonClassesLib
     {
         public Type[] ExtraTypes { get; set; }
 
+        public int MaxStringLength { get; set; } = 8192; // defaults to the default
+
         public TT Load(string path)
         {
             if (path == null)
@@ -33,7 +35,7 @@ namespace CommonClassesLib
             DataContractSerializer dcs = new DataContractSerializer(typeof(TT), ExtraTypes);
             using (FileStream fs = new FileStream(path, FileMode.Open))
             {
-                using (XmlDictionaryReader reader = XmlDictionaryReader.CreateTextReader(fs, new XmlDictionaryReaderQuotas()))
+                using (XmlDictionaryReader reader = XmlDictionaryReader.CreateTextReader(fs, new XmlDictionaryReaderQuotas() {MaxStringContentLength=MaxStringLength }))
                 {
                     TT rv = (TT)dcs.ReadObject(reader);
                     return rv;

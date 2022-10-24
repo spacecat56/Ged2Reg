@@ -51,6 +51,7 @@ namespace Ged2Reg
                     case StateOfPlay.None:
                         TheAgreement.Status = StateOfPlay.EUL;
                         teAgreement.Text = TheAgreement.AgreedAuthorship;
+                        pbAgree.Text = "ACKNOWLEDGED";
                         break;
                     case StateOfPlay.EUL:
                         TheAgreement.Status = StateOfPlay.Authorship;

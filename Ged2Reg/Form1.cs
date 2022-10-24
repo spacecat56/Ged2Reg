@@ -42,6 +42,8 @@ namespace Ged2Reg
         private Uri _githubUrl = new Uri("https://github.com/spacecat56/Ged2Reg");
         private bool _forceClose = false;
 
+        public bool ForceLicense { get; set; }
+
         #region WinformsDesigner Fails - Workaround 
 
         // the dotnet core / dotnet5 winforms designer is unusable (tends to lose it
@@ -573,13 +575,16 @@ namespace Ged2Reg
                 {
                     didAgree = false;
                 }
+                didAgree &= !ForceLicense;
                 if (didAgree)
                     return;
                 agreed = new Agreement();
-                string path = RegisterReportModel.PathToFileResource("eul.txt");
+                string path = RegisterReportModel.PathToFileResource("LICENSE");
                 agreed.AgreedEul = File.ReadAllText(path);
-                path = RegisterReportModel.PathToFileResource("YouAreTheAuthor.txt");
+                path = RegisterReportModel.PathToFileResource("NOTICE");
                 agreed.AgreedAuthorship = File.ReadAllText(path);
+                if (ForceLicense)
+                    agreed.Reset();
                 fa = new frmAgreement().Init(agreed);
                 DialogResult dra = fa.ShowDialog(this);
                 if (dra != DialogResult.OK || agreed.Status != StateOfPlay.Authorship)
@@ -594,6 +599,7 @@ namespace Ged2Reg
             catch (Exception ex)
             {
                 //
+                Log(ex);
             }
         }
 
