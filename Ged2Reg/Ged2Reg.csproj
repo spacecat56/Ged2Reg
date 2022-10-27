@@ -1,0 +1,83 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+    <RootNamespace>Ged2Reg</RootNamespace>
+    <AssemblyName>Ged2Reg</AssemblyName>
+    <ApplicationIcon>Custom-Icon-Design-Pretty-Office-5-Glossary.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Resources\Custom-Icon-Design-Pretty-Office-5-Glossary.ico" />
+    <EmbeddedResource Include="Resources\stylesFile.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="stylesFile.docx" />
+  </ItemGroup>
+
+  <ItemGroup><!--<EmbeddedResource Include="AboutBox1.resx">
+      <DependentUpon>AboutBox1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmSettingsSets.resx">
+      <DependentUpon>frmSettingsSets.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>-->
+  
+    <None Remove="Resources\Custom-Icon-Design-Pretty-Office-5-Glossary.ico" />
+  
+    <None Remove="stylesFile.docx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommonClassesLib" Version="1.0.0.4-beta" />
+    <PackageReference Include="SimpleGedcomLib" Version="1.0.0.2-beta" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\G2RModel\G2RModel.csproj" />
+    <ProjectReference Include="..\OoXmlWranglerLib\OoXmlWranglerLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="DocX">
+      <HintPath>..\..\..\alternate\DocX\DocX\bin\Debug\net5.0-windows\DocX.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>
