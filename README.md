@@ -1,0 +1,7 @@
+# Ged2Reg
+Ged2Reg (“Gedcom-to-Register”) is a desktop application that can be used to create readable (and editable) text output from a GEDCOM (Genealogical Data Communication) input file.  The GEDCOM input is a cryptic data interchange format that can be written and read by many genealogy applications.  The output word processing files (docx or odt) present selected content in one of two “standard” formats. The first of these is called Register Format, which was designed for effective communication of lineage (descendants) information to human readers and has long been used in major journals, such as those published by the NEHGS (New England Historic Genealogical Society). The second kind is an Ancestors Table (“Ahnentafel”).  
+
+Both of these report conventions are probably familiar to most users who may be interested in Ged2Reg. They are commonly available as options in desktop genealogy applications.  Generally, however, those programs treat the report as a final product; further editing may be difficult or effectively impossible. In contrast, Ged2Reg assumes that the user will edit the output in a word processing application, for instance to make minor corrections, to add details not in the input database, to extend the text with hand-crafted family history narrative, or even to paste the entire output into another document as a chapter or section.  
+
+# Status
+Ged2Reg is under development and presently available in pre-realease or "beta" status.
