@@ -3,24 +3,31 @@ Ged2Reg (“Gedcom-to-Register”) is a Windows desktop application that can be used
 
 Both of these report conventions are probably familiar to most users who may be interested in Ged2Reg. They are commonly available as options in desktop genealogy applications.  Generally, however, those programs treat the report as a final product; further editing may be difficult or effectively impossible. In contrast, Ged2Reg assumes that the user will edit the output in a word processing application, for instance to make minor corrections, to add details not in the input database, to extend the text with hand-crafted family history narrative, or even to paste the entire output into another document as a chapter or section.  
 
+Within Ged2Reg a user can easily build and save different configurations to produce different reports.
+
+Source citations in Ged2Reg output can be emitted as footnotes or endnotes and can be as dense as one per fact. Ged2Reg offers a choice of strategies for choosing the "best" citations, filters to exclude some sources (such as, "never choose *Ancestry Public Member Trees* for a footnote"), and can optionally summarize the other sources for a given fact in its footnote.
+
 # Status
 Ged2Reg is under development and is made available in pre-realease or "beta" status.
 
 Ged2Reg is designed for Windows 10 or later.  It has been reported to run on Windows 7, but this is not "supported" in any particular sense.
 
-# To Build
-Ged2Reg is developed with Visual Studio 2019.  To build most easily, open the solution file in the project root direction with Visual Studio 2019 or later, and Build / Rebuild all.
+# To Build or Not to Build
+The latest developer build and documentation are available for download here as a release. 
+
+Ged2Reg is developed with Visual Studio 2019.  To build it yourself, open the solution file in the project root direction with Visual Studio 2019 or later, and Build / Rebuild all.
 
 # Architecture
 ![block diagram](ged2reg_arch.png)
-This diagram does not show all dependencies, but it does convey some key points about the architecture of Ged2Reg and its libraries. Note that, to avoid license conflicts and other dependencies, third party libraries are not used for the document file formats.  For docx files, the OpenXML system libraries are used. For odt files, an internal implementation of the file format is included in the project (SOL library); it is not a complete implementation, as it is limited to the features needed by Ged2Reg.  The component projects include
-•	Ged2Reg – Winforms application that provides the UI and control logic.
-•	G2RModel – library that provides a richer model of data from a GEDCOM file, and contains the reporting logic, to generate text from the selected data; also manages settings, inluding intialization and persistence.
-•	SGL (SimpleGedcomLib) – reads and parses a GEDCOM file and builds a low-level object model linking related tags such as families to spouses and children, sources to citations, etc.
-•	WpdInterfaceLib – provides an abstraction over word processing document (WPD) formats primarily for use by the model library; defines interfaces for document factory methods and documents.
-•	DocxAdapterLib – fully encapsulates (hides) all details of the docx file format needed in this application.
-•	OdtAdapterLib  – fully encapsulates (hides) all details of the odt file format needed in this application.
-•	CommonClassesLib (not shown) – provides a few template classes that are used in the UI, model, and other layers.
+
+This simple block diagram conveys some key points about the architecture of Ged2Reg and its libraries (it does not show all dependencies). Note that, to avoid license conflicts and other dependencies, third party libraries are not used for the document file formats.  For docx files, the OpenXML system libraries are used. For odt files, an internal implementation of the file format is included in the project (SOL library); it is not a complete implementation, as it is limited to the features needed by Ged2Reg.  The component projects include
+- Ged2Reg – Winforms application that provides the UI and control logic.
+- G2RModel – library that provides a richer model of data from a GEDCOM file, and contains the reporting logic, to generate text from the selected data; also manages settings, inluding intialization and persistence.
+- SGL (SimpleGedcomLib) – reads and parses a GEDCOM file and builds a low-level object model linking related tags such as families to spouses and children, sources to citations, etc.
+- WpdInterfaceLib – provides an abstraction over word processing document (WPD) formats primarily for use by the model library; defines interfaces for document factory methods and documents.
+- DocxAdapterLib – fully encapsulates (hides) all details of the docx file format needed in this application.
+- OdtAdapterLib  – fully encapsulates (hides) all details of the odt file format needed in this application.
+- CommonClassesLib (not shown) – provides a few template classes that are used in the UI, model, and other layers.
 
 
 # Modifications
