@@ -7,6 +7,10 @@ Within Ged2Reg a user can easily build and save different configurations to prod
 
 Source citations in Ged2Reg output can be emitted as footnotes or endnotes and can be as dense as one per fact. Ged2Reg offers a choice of strategies for choosing the "best" citations, filters to exclude some sources (such as, "never choose *Ancestry Public Member Trees* for a footnote"), and can optionally summarize the other sources for a given fact in its footnote.
 
+Option settings allow the user to choose to include person notes and to generate markup for automatic indexing of names and/or places.
+
+Ged2Reg is a complicated program with many options. These choices are thoroughly documented. "One button configuration" (*Conform* button) for each report type lets the user choose a configuration to create output that closely conforms to the standards and conventions used in some major journals; from there many variations may be chosen to suit the user's preferences.
+
 # Status
 Ged2Reg is under development and is made available in pre-realease or "beta" status.
 
@@ -20,7 +24,11 @@ Ged2Reg is developed with Visual Studio 2019.  To build it yourself, open the so
 # Architecture
 ![block diagram](ged2reg_arch.png)
 
-This simple block diagram conveys some key points about the architecture of Ged2Reg and its libraries (it does not show all dependencies). Note that, to avoid license conflicts and other dependencies, third party libraries are not used for the document file formats.  For docx files, the OpenXML system libraries are used. For odt files, an internal implementation of the file format is included in the project (SOL library); it is not a complete implementation, as it is limited to the features needed by Ged2Reg.  The component projects include
+This simple block diagram conveys some key points about the architecture of Ged2Reg and its libraries (it does not show all dependencies). 
+
+Note that, to avoid license conflicts and other dependencies, third party libraries are not used for the document file formats.  For docx files, the OpenXML system libraries are used. For odt files, an internal implementation of the file format is included in the project (SOL library); it is not a complete implementation, as it is limited to the features needed by Ged2Reg.  
+
+The component projects include
 - Ged2Reg – Winforms application that provides the UI and control logic.
 - G2RModel – library that provides a richer model of data from a GEDCOM file, and contains the reporting logic, to generate text from the selected data; also manages settings, inluding intialization and persistence.
 - SGL (SimpleGedcomLib) – reads and parses a GEDCOM file and builds a low-level object model linking related tags such as families to spouses and children, sources to citations, etc.
