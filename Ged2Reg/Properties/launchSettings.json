@@ -1,8 +1,7 @@
 {
   "profiles": {
     "Ged2Reg": {
-      "commandName": "Project",
-      "commandLineArgs": "-L"
+      "commandName": "Project"
     }
   }
 }
