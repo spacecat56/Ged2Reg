@@ -109,55 +109,6 @@ namespace Ged2Reg.Model
         }
         #endregion
         
-        #region testing
-        public G2RSettings TestInit()
-        {
-            Init();
-            OutFile = @"test_g2r.docx";
-            GedcomFile = @"D:\projects\TestData\gedcom\Shanley-Ticehurst tree 2018-private_2018-09-18.ged";
-            TextCleaners = new ListOfTextCleanerEntry()
-            {
-                new TextCleanerEntry()
-                {
-                    Context = TextCleanerContext.Everywhere,
-                    FirstUseUnchanged = true,
-                    ReplaceEntire = true,
-                    Input = "The Whitney Family of Connecticut And Its Affiliations",
-                    Output = "Whitney Family"
-                },
-                new TextCleanerEntry()
-                {
-                    Context = TextCleanerContext.SeeNote,
-                    FirstUseUnchanged = true,
-                    Input = "History and Genealogy of the Families of Old Fairfield",
-                    Output = "Families of Old Fairfield"
-                },
-                new TextCleanerEntry()
-                {
-                    Context = TextCleanerContext.OthersList,
-                    FirstUseUnchanged = true,
-                    Input = "History and Genealogy of the Families of Old Fairfield",
-                    Output = "FoF"
-                },
-                new TextCleanerEntry()
-                {
-                    Context = TextCleanerContext.FullCitation,
-                    FirstUseUnchanged = true,
-                    Input = "History and Genealogy of the Families of Old Fairfield",
-                    Output = "Families of Old Fairfield"
-                },
-                new TextCleanerEntry()
-                {
-                    Context = TextCleanerContext.Everywhere,
-                    FirstUseUnchanged = false,
-                    Input = "United States Federal Census",
-                    Output = "US Census"
-                }, 
-            };
-            return this;
-        }
-        #endregion
-
         #region private/backing fields
         private string _stylesFile;
         private string _outfile;

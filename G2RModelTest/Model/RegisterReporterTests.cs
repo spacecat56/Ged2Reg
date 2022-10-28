@@ -44,7 +44,7 @@ namespace G2RModelTest.Model
         // todo: these must be externalized / abstracted
         public string OutputPath = Path.Combine(Path.GetTempPath(), @"test\ged2reg\"); // @"c:\test\ged2reg";
         public string FocusAncestorId = "@I4961@";
-        public string SampleFilePath = @"D:\projects\public\retarget\Ged2Reg\G2RModel\Resources\sample.ged";
+        public string SampleFilePath = @"..\G2RModel\Resources\sample.ged";
 
         G2RSettings _settings;
         ReportContext _rc;

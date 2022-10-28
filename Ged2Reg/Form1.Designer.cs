@@ -321,7 +321,7 @@ namespace Ged2Reg
             this.teStylesFile.Name = "teStylesFile";
             this.teStylesFile.Size = new System.Drawing.Size(508, 32);
             this.teStylesFile.TabIndex = 1;
-            this.teStylesFile.Text = "D:\\projects\\Ged2Reg\\Ged2Reg\\Resources\\stylesFile.docx";
+            this.teStylesFile.Text = "..\\Resources\\stylesFile.docx";
             // 
             // bsG2RSettings
             // 

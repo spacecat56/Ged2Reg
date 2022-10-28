@@ -30,6 +30,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FCB7F77B-941D-48A4-B9ED-6936339F3B12}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		Ged2Reg Architecture Overview.docx = Ged2Reg Architecture Overview.docx
+		ged2reg_arch.png = ged2reg_arch.png
 		LICENSE = LICENSE
 		NOTICE = NOTICE
 		README.md = README.md
