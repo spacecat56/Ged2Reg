@@ -11,6 +11,8 @@ Option settings allow the user to choose to include person notes and to generate
 
 Ged2Reg is a complicated program with many options. These choices are thoroughly documented. "One button configuration" (*Conform* button) for each report type lets the user choose a configuration to create output that closely conforms to the standards and conventions used in some major journals; from there many variations may be chosen to suit the user's preferences.
 
+The Ged2Reg Ancestors report includes unique, innovative features, notably the option to choose one ancestor as the "focus" for a particular report configuration. With an ancestor in focus, the report will show only (and all) the lines that lead to that ancestor. In this way you may "discover" ancestors common to both of your parents; choose one line of descent over another, less-secure line for your lineage society application; and so on.
+
 # Status
 Ged2Reg is under development and is made available in pre-realease or "beta" status.
 
@@ -34,8 +36,8 @@ The component projects include
 - SGL (SimpleGedcomLib) – reads and parses a GEDCOM file and builds a low-level object model linking related tags such as families to spouses and children, sources to citations, etc.
 - WpdInterfaceLib – provides an abstraction over word processing document (WPD) formats primarily for use by the model library; defines interfaces for document factory methods and documents.
 - DocxAdapterLib – fully encapsulates (hides) all details of the docx file format needed in this application.
-- OdtAdapterLib  – fully encapsulates (hides) all details of the odt file format needed in this application.
-- CommonClassesLib (not shown) – provides a few template classes that are used in the UI, model, and other layers.
+- OdtAdapterLib (aka OoXmlWranglerLib)  – fully encapsulates (hides) all details of the odt file format needed in this application.
+- CCL (CommonClassesLib) (not shown) – provides a few template classes that are used in the UI, model, and other layers.
 
 
 # Modifications
