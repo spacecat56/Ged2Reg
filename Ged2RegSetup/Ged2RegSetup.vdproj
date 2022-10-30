@@ -58,10 +58,10 @@
             "ComponentsUrl" = "8:"
                 "Items"
                 {
-                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.CoreRuntime.5.0.x64"
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.DesktopRuntime.5.0.x86"
                     {
-                    "Name" = "8:.NET Runtime 5.0.1 (x64)"
-                    "ProductCode" = "8:Microsoft.NetCore.CoreRuntime.5.0.x64"
+                    "Name" = "8:.NET Desktop Runtime 5.0.17 (x86)"
+                    "ProductCode" = "8:Microsoft.NetCore.DesktopRuntime.5.0.x86"
                     }
                 }
             }
@@ -235,15 +235,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Ged2Reg"
-        "ProductCode" = "8:{3FCB8D6D-E997-428F-A559-D0A97F1D12A4}"
-        "PackageCode" = "8:{7C698315-87F8-4392-957B-B6D76734D9BF}"
+        "ProductCode" = "8:{6B3140AC-68BC-43F1-AD75-99E0A64D8340}"
+        "PackageCode" = "8:{753507CD-FDEA-4805-B1D2-22EE36B212A0}"
         "UpgradeCode" = "8:{198F5A83-1DFE-4AFA-BAC4-B5B6D51D3D44}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:0.5.43"
+        "ProductVersion" = "8:0.5.44"
         "Manufacturer" = "8:West Leitrim Software"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
