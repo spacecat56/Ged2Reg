@@ -21,7 +21,7 @@ Ged2Reg is designed for Windows 10 or later.  It has been reported to run on Win
 # To Build or Not to Build
 The latest developer build and documentation are available for download here as a release. 
 
-Ged2Reg is developed with Visual Studio 2019.  To build it yourself, open the solution file in the project root direction with Visual Studio 2019 or later, and Build / Rebuild all.
+Ged2Reg is developed with Visual Studio 2019.  To build it yourself, open the Ged2Reg solution file in the project root directory with Visual Studio 2019 or later, and Build / Rebuild all.
 
 # Architecture
 ![block diagram](ged2reg_arch.png)
@@ -35,8 +35,8 @@ The component projects include
 - G2RModel – library that provides a richer model of data from a GEDCOM file, and contains the reporting logic, to generate text from the selected data; also manages settings, inluding intialization and persistence.
 - SGL (SimpleGedcomLib) – reads and parses a GEDCOM file and builds a low-level object model linking related tags such as families to spouses and children, sources to citations, etc.
 - WpdInterfaceLib – provides an abstraction over word processing document (WPD) formats primarily for use by the model library; defines interfaces for document factory methods and documents.
-- DocxAdapterLib – fully encapsulates (hides) all details of the docx file format needed in this application.
-- OdtAdapterLib (aka OoXmlWranglerLib)  – fully encapsulates (hides) all details of the odt file format needed in this application.
+- DocxAdapterLib (aka OoXmlWranglerLib) – fully encapsulates (hides) all details of the docx file format needed in this application.
+- OdtAdapterLib – fully encapsulates (hides) all details of the odt file format needed in this application.
 - CCL (CommonClassesLib) (not shown) – provides a few template classes that are used in the UI, model, and other layers.
 
 
