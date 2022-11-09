@@ -40,6 +40,7 @@ namespace Ged2Reg.Model
 
         public string SourceId { get; set; }
         public bool IsSimpleDetail { get; set; }
+        public string AltText { get; set; }
 
         public void AppendText(string t)
         {
@@ -120,6 +121,7 @@ namespace Ged2Reg.Model
                 if (!string.IsNullOrEmpty(edText))
                 {
                     rv.AppendText(edText);
+                    rv.AltText = TextCleaner.TitleCleaner.Exec(sv.Title, TextCleanerContext.SeeNote) ?? "";
                     return rv;
                 }
             }

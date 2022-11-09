@@ -169,6 +169,30 @@ namespace G2RModelTest.Model
         }
 
         [TestMethod]
+        public void SeeNoteTest2()
+        {
+            // evoke bug with split of _FOOT due to URL
+            ReportConfig cfg = new ReportConfig()
+            {
+                Settings = _settings,
+                ModelState = ModelState.DescendantReady,
+                OutputPath = OutputPath,
+                FileName = "D001_SeeNoteOn_2.docx",
+                Title = "Evoke SeeNote NRX",
+                FlagsOn = new List<string>()
+                {
+                    nameof(G2RSettings.UseSeeNote),
+                    nameof(G2RSettings.PreferEditedCitations),
+                },
+                MustOccur = new List<string>() { "see note " }
+            }.Init();
+
+            ReadyModel(cfg.ModelState);
+            ExecSampleReport(cfg);
+            Assert.IsTrue(cfg.Eval());
+        }
+
+        [TestMethod]
         public void SeeNoteTests()
         {
             ReportConfig cfg = new ReportConfig()
@@ -178,7 +202,7 @@ namespace G2RModelTest.Model
                 OutputPath = OutputPath,
                 FileName = "D001_SeeNoteOn.docx",
                 Title = "Use SeeNote",
-                FlagsOn = new List<string>(){nameof(G2RSettings.UseSeeNote)},
+                FlagsOn = new List<string>() { nameof(G2RSettings.UseSeeNote) },
                 MustOccur = new List<string>() {"see note "}
             }.Init();
 

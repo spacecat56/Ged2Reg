@@ -98,7 +98,7 @@ namespace Ged2Reg.Model
                 CitationResult cr = settings.CitationShortFormatter.Apply(SelectedItem.CitationViews[0]); // no URL in this format
                 string noteText = ReportContext.Instance.Settings.DebuggingOutput
                     ? $"[{cr.SourceId}] {cr.Text}"
-                    : cr.Text;
+                    : cr.AltText ?? cr.Text ?? ""; // this effectively nullifies "prefer edited" and uses TITL (if present) for see note
                 //OoxFootnote laterNote = settings.AsEndnotes
                 //    ? new OoxEndnote(doc, noteText, settings.BracketArray)
                 //    : new OoxFootnote(doc, noteText, settings.BracketArray);

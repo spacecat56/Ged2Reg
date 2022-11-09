@@ -19,9 +19,16 @@ Ged2Reg is under development and is made available in pre-realease or "beta" sta
 Ged2Reg is designed for Windows 10 or later.  It has been reported to run on Windows 7, but this is not "supported" in any particular sense.
 
 # To Build or Not to Build
-The latest developer build and documentation are available for download here as a release. 
+The latest developer build and documentation are available for download here as a release. [https://github.com/spacecat56/Ged2Reg/releases]
 
 Ged2Reg is developed with Visual Studio 2019.  To build it yourself, open the Ged2Reg solution file in the project root directory with Visual Studio 2019 or later, and Build / Rebuild all.
+
+# Bugs and Other Issues
+If you find a bug or experience another issue, you may want to check the Issues tab [https://github.com/spacecat56/Ged2Reg/issues] to see if it is already known.
+
+To report a bug you may add a new issue.  Please be sure to review the user manual FIRST.  
+
+Issues and bugs may or may not be addressed by future changes, as time permits.
 
 # Architecture
 ![block diagram](ged2reg_arch.png)
